@@ -1,0 +1,2505 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Station Master Play</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Fonts are bundled (SIL OFL: Chakra Petch, Inter) so the game looks the same offline. */
+@font-face{font-family:"Chakra Petch";font-weight:500;font-display:swap;src:url(fonts/chakrapetch-500.woff2) format("woff2")}
+@font-face{font-family:"Chakra Petch";font-weight:600;font-display:swap;src:url(fonts/chakrapetch-600.woff2) format("woff2")}
+@font-face{font-family:"Chakra Petch";font-weight:700;font-display:swap;src:url(fonts/chakrapetch-700.woff2) format("woff2")}
+@font-face{font-family:"Inter";font-weight:400 600;font-display:swap;src:url(fonts/inter-var-latin.woff2) format("woff2")}
+/* Layout: score bar, instruction strip, one wide playable track diagram, point guide. Single dark look by choice. */
+:root{
+  --bg:#0e2a33; --panel:#16404b; --line:#2f7080; --fg:#f2fbfd; --muted:#a9cdd6; --amber:#ffc23d; --green:#2cf5a0; --red:#ff4d6d; --blue:#4dc3ff; --violet:#9b6bff;
+  --glow-amber:0 0 14px rgba(255,194,61,.55); --glow-green:0 0 12px rgba(44,245,160,.5);
+  --display:"Chakra Petch","Segoe UI",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+html,body{background:var(--bg);color:var(--fg)}
+body{background:radial-gradient(1000px 520px at 12% -8%,rgba(44,245,160,.22),transparent 60%),radial-gradient(900px 520px at 100% 0,rgba(255,194,61,.14),transparent 58%),radial-gradient(900px 420px at 50% 115%,rgba(77,195,255,.14),transparent 60%),linear-gradient(180deg,#123740,var(--bg));background-attachment:fixed}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,4vw,36px);line-height:1.1;margin:0;letter-spacing:.02em;background:linear-gradient(90deg,var(--amber),#ff8a5c 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{color:var(--muted);margin:4px 0 0;max-width:70ch}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+.seg{display:flex;gap:4px;background:linear-gradient(180deg,#153f4b,#0d2931);border:1px solid #2f7080;border-radius:8px;padding:3px;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+button{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.04em;color:var(--fg);background:linear-gradient(180deg,#205361,#133842);border:1px solid #377b8c;border-radius:6px;padding:6px 12px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:all .12s ease}
+button:hover{background:linear-gradient(180deg,#276575,#184552);border-color:var(--blue);box-shadow:0 0 8px rgba(77,195,255,.3)}
+button:active{transform:translateY(1px);background:linear-gradient(180deg,#102f37,#17424d);box-shadow:inset 0 2px 4px rgba(0,0,0,.5)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#pause{background:linear-gradient(180deg,#229267,#135a3f);border-color:#2cf5a0;color:#f3fff9;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 8px rgba(44,245,160,.25)}
+#pause:hover{background:linear-gradient(180deg,#2ab17d,#18704e);border-color:#5affba;box-shadow:0 0 12px rgba(44,245,160,.45)}
+#pause:active{background:linear-gradient(180deg,#114c35,#1b7552)}
+#pause.is-paused{background:linear-gradient(180deg,#d49826,#8a5e0f);border-color:var(--amber);color:#fffdf5;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 8px rgba(255,194,61,.3)}
+#pause.is-paused:hover{background:linear-gradient(180deg,#ebb03b,#a37116);border-color:#ffd67a;box-shadow:0 0 12px rgba(255,194,61,.5)}
+.stats{display:flex;gap:10px;align-items:center;flex-wrap:nowrap}
+.stat{background:linear-gradient(180deg,rgba(22,64,75,.6),rgba(14,42,51,.8));border:1px solid rgba(61,128,145,.35);border-radius:6px;padding:0 12px;height:34px;display:inline-flex;align-items:center;box-sizing:border-box;box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+.stat b{font-family:var(--display);font-size:15px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--muted);margin-left:6px;line-height:1}
+.stat.score b{font-size:15px;color:var(--amber);text-shadow:0 0 14px rgba(255,194,61,.55)}
+.pis-strip{position:absolute;top:6px;left:8px;right:8px;z-index:3;display:flex;gap:8px;align-items:center;background:transparent;border:none;box-shadow:none;padding:0;font-family:var(--display);font-size:12px;color:var(--muted);overflow:hidden;white-space:nowrap;pointer-events:none}
+.pis-clock{color:var(--amber);font-weight:700;letter-spacing:.08em;background:rgba(9,27,34,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(35,81,94,.5);border-radius:4px;padding:2px 7px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pis-blocks{display:flex;gap:5px;align-items:center}
+.pis-blk{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(9,27,34,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.1);box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pis-blk.free{color:#2cf5a0;border-color:rgba(44,245,160,.45)}
+.pis-blk.occ{color:#ff4d6d;border-color:rgba(255,77,109,.55);background:rgba(255,77,109,.18)}
+.pis-blk.warn{color:#ffc23d;border-color:rgba(255,194,61,.55);background:rgba(255,194,61,.18)}
+.pis-ticker{margin-left:auto;color:#a2c9d4;font-size:12px;font-family:var(--display);letter-spacing:.04em;background:rgba(9,27,34,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(35,81,94,.5);border-radius:4px;padding:2px 8px;box-shadow:0 2px 6px rgba(0,0,0,.35);overflow:hidden;text-overflow:ellipsis}
+.caption{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:8px;padding:10px 14px;min-height:3.4em}
+.toast{position:absolute;left:50%;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 40px);transform:translateX(-50%);max-width:92%;z-index:2;pointer-events:none;background:rgba(7,28,35,.94);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:8px;padding:5px 12px;font-size:13px;line-height:1.35;text-align:center;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+.toast.bad{border-left-color:var(--red)}
+.toast.good{border-left-color:var(--green)}
+.seg button{white-space:nowrap}
+.rsat{margin-bottom:10px}
+.satbar{position:relative;height:12px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.satbar i{display:block;height:100%;background:linear-gradient(90deg,#ff8a5c,#ffc23d 70%,#2cf5a0)}
+.satbar span{position:absolute;left:90%;top:0;bottom:0;width:2px;background:#fff}
+.effbar span{left:80%}
+/* Narrow screens (phones): shorter stat labels and tighter spacing so four stats fit beside the buttons */
+@media (max-width:1000px){.stat{padding:0 5px}.stats{gap:3px}.stat b,.stat.score b{font-size:14px}.stat .lb{font-size:0;margin-left:2px}.stat .lb::after{content:attr(data-s);font-size:12px;font-family:var(--display);font-weight:600;letter-spacing:0;color:var(--muted)}}
+.satline{margin-top:5px;font-size:14px}
+.q.best{margin-left:auto;border-color:var(--amber);color:var(--amber);font-weight:600}
+.q.best b{font-family:var(--display);color:#fff}
+.q.rnd{border-color:var(--amber);color:var(--amber);font-family:var(--display);font-weight:700;letter-spacing:.04em}
+.stage{background:#12353f;border:1px solid #3b8496;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px rgba(44,245,160,.2),0 8px 26px rgba(2,14,18,.55)}
+canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* Stop Android WebView flashing a highlight box over tapped elements (the canvas fills the whole game area). */
+*{-webkit-tap-highlight-color:transparent}
+button,.bar,.caption,.stage{-webkit-user-select:none;user-select:none}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{background:linear-gradient(180deg,#1f5361,var(--panel));border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.card h3{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+.card ol,.card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:14px}
+.pts{display:grid;grid-template-columns:1fr auto;gap:2px 14px;font-size:14px;font-variant-numeric:tabular-nums}
+.pts b.pos{color:var(--green)}.pts b.neg{color:var(--red)}
+.quota{display:flex;flex-wrap:wrap;gap:8px}
+.q{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:3px 12px 3px 8px;font-size:13px;font-variant-numeric:tabular-nums}
+.q i{width:12px;height:8px;border-radius:2px;display:inline-block}
+.q.done{border-color:var(--green);color:var(--green);box-shadow:0 0 12px rgba(44,245,160,.35)}
+.stage{position:relative}
+.roundend{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,24,30,.84)}
+.roundend[hidden]{display:none}
+.roundend{z-index:5}
+.rbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:flex;flex-direction:row;gap:18px;align-items:stretch;width:min(96%,920px);max-height:94%;box-sizing:border-box}
+.rleft{flex:0 0 220px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;text-align:center}
+.rright{flex:1 1 auto;min-width:0;overflow-y:auto;font-size:14px;line-height:1.35;padding-right:6px;text-align:left}
+.rright h3{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px;font-weight:600}
+.rright h3:first-child{margin-top:0}
+.rrow{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.rrow>b{font-size:16px;white-space:nowrap}
+.rn{color:var(--muted);font-size:12px}
+.rhow{color:var(--muted);font-size:12px;line-height:1.3}
+.rright ul,.rright ol{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.rright li{padding:3px 0;border-bottom:1px solid rgba(42,53,102,.5)}
+.rt{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:6px}
+.rright b.pos,.rright .pos{color:var(--green)}.rright b.neg,.rright .neg{color:var(--red)}
+@media (max-width:640px){.rbox{flex-direction:column}.rleft{flex:0 0 auto}}
+.roundend h2{font-family:var(--display);margin:0;font-size:26px}
+.roundend .stars{font-size:30px;color:var(--amber);letter-spacing:.2em;text-shadow:0 0 16px rgba(255,194,61,.7)}
+.roundend button{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;padding:8px 18px;margin-top:6px;font-size:14px;box-shadow:0 0 18px rgba(255,194,61,.45)}
+.roundend button:hover{background:linear-gradient(180deg,#ffe08f,#ffcb52)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:16px;height:8px;border-radius:2px;display:inline-block}
+footer{font-size:12px;color:var(--muted)}
+footer a{color:var(--amber)}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+/* Play layout: Full-bleed canvas with floating frosted-glass HUD overlays */
+html,body{height:100%;margin:0;overflow:hidden;padding:0}
+body{box-sizing:border-box}
+.wrap{position:relative;width:100vw;height:100vh;max-width:none;margin:0;padding:0;overflow:hidden}
+.stage{position:absolute;inset:0;width:100%;height:100%;border-radius:0;background:#0d242c;z-index:1}
+.scroller{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none;width:0;height:0}
+canvas{display:block;width:100%;height:100%;max-width:none;max-height:none;touch-action:pan-x pan-y}
+
+/* Floating Top Control Bar (Left buttons, Right stats) */
+.bar{position:absolute;top:max(8px,env(safe-area-inset-top,0px));left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:10;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.seg{pointer-events:auto;display:flex;gap:4px;background:rgba(9,27,34,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(47,112,128,.6);border-radius:8px;padding:3px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.stats{pointer-events:auto;display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+.stat{background:rgba(9,27,34,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(47,112,128,.6);border-radius:8px;padding:0 12px;height:34px;display:inline-flex;align-items:center;box-sizing:border-box;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.stat b{font-family:var(--display);font-size:15px;line-height:1}
+.stat.score b{font-size:15px;line-height:1}
+.stat span{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.04em;margin-left:5px;white-space:nowrap;line-height:1}
+button{padding:6px 12px;font-size:15px}
+
+/* Floating Bottom Quota Pill Strip (padded on right so ⛶ button sits in line without collision) */
+.quota{position:absolute;bottom:max(8px,env(safe-area-inset-bottom,0px));left:max(10px,env(safe-area-inset-left,0px));right:max(52px,calc(env(safe-area-inset-right,0px) + 48px));z-index:10;display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;pointer-events:none}
+.q{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;height:28px;box-sizing:border-box;background:rgba(9,27,34,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(47,112,128,.6);border-radius:99px;padding:3px 12px 3px 8px;font-size:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.q.best{margin-left:auto;border-color:var(--amber);color:var(--amber);font-weight:600;padding:3px 12px}
+.toast{font-size:16px;padding:6px 14px}
+.card ol,.card ul,.pts{font-size:16px}
+.card h3{font-size:14px}
+.legend{font-size:15px}
+
+/* Big screens (PC, tablet): scale floating HUD elements proportionally */
+@media (min-width:1100px){
+ .stat{height:42px;padding:0 14px}
+ .stat b{font-family:var(--display);font-size:18px;line-height:1}
+ .stat.score b{font-size:18px;line-height:1}
+ .stat span{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:.04em;line-height:1}
+ button{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:.04em;padding:8px 16px}
+ .quota{right:max(62px,calc(env(safe-area-inset-right,0px) + 58px))}
+ .q{font-size:20px;padding:4px 16px 4px 10px;height:36px}
+ .q.best{padding:4px 16px}
+ .hud-toggle-btn{width:42px;height:36px}
+ .hud-toggle-btn svg{width:22px;height:22px}
+ .toast{font-size:20px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 50px)}
+ .rright{font-size:17px}.rhow{font-size:14px}
+}
+
+/* Immersive Clean Screen Mode (Fit-to-Screen) */
+body.clean-mode .bar,
+body.clean-mode .quota{
+ display:none!important;
+}
+.hud-toggle-btn{
+ position:absolute;bottom:max(8px,env(safe-area-inset-bottom,0px));right:max(10px,env(safe-area-inset-right,0px));
+ z-index:100;display:inline-flex;align-items:center;justify-content:center;
+ width:34px;height:28px;box-sizing:border-box;background:rgba(9,27,34,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+ border:1px solid var(--amber);border-radius:99px;font-family:var(--display);
+ font-size:18px;font-weight:700;color:var(--amber);box-shadow:0 3px 10px rgba(0,0,0,.4);
+ cursor:pointer;transition:all .15s ease;-webkit-tap-highlight-color:transparent;
+}
+.hud-toggle-btn:hover{background:rgba(18,52,64,.88);box-shadow:0 0 12px rgba(255,194,61,.45)}
+.hud-toggle-btn:active{transform:scale(0.95)}
+.hud-toggle-btn .ic-compress{display:none}
+.hud-toggle-btn .ic-expand{display:block}
+body:has(#welcome:not([hidden])) .hud-toggle-btn,body:has(#finale:not([hidden])) .hud-toggle-btn,body:has(#help:not([hidden])) .hud-toggle-btn,body:has(#roundEnd:not([hidden])) .hud-toggle-btn{display:none} /* a gameplay control: not over the welcome, info, round-end or finale screens */
+body.clean-mode .hud-toggle-btn .ic-compress{display:block}
+body.clean-mode .hud-toggle-btn .ic-expand{display:none}
+/* Station upgrade panel (round-end popup) and Info-page extras. */
+.rup{background:linear-gradient(180deg,rgba(255,194,61,.2),rgba(255,194,61,.08));border:1px solid var(--amber);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.rup[hidden]{display:none}
+.rup h4{font-family:var(--display);margin:0 0 4px;font-size:17px;color:var(--amber);letter-spacing:.04em}
+.rup ul{margin:4px 0 0;padding-left:18px;display:block}
+.grade{font-family:var(--display);color:var(--amber);font-size:18px;letter-spacing:.04em}
+.vol{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:14px;color:var(--muted)}
+.vol input{width:120px;accent-color:var(--amber)}
+.helpreset{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.helpreset button{background:transparent;border:1px solid var(--line);color:var(--muted);font-size:13px;padding:6px 14px}
+.helpreset button.armed{border-color:var(--red);color:var(--red)}
+/* Info screen: shown once after install and on demand via the Info button. */
+/* Welcome page: shown every time the app opens (the Info/intro page sits above it so it can be opened from here). */
+.welcome{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;background:radial-gradient(900px 500px at 15% 0,rgba(44,245,160,.24),transparent 60%),radial-gradient(800px 500px at 100% 100%,rgba(255,194,61,.18),transparent 60%),linear-gradient(180deg,#123740,#0a2229)}
+.welcome[hidden]{display:none}
+.wcard{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:560px}
+.wcard h1{font-size:clamp(34px,7vw,60px)}
+.wtag{color:var(--muted);margin:0;font-size:18px}
+.wstatus{color:var(--amber);font-family:var(--display);font-size:19px;min-height:1.4em;letter-spacing:.03em}
+.wsound{position:absolute;top:max(10px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));font-size:22px;padding:8px 12px;border:1px solid var(--line);background:rgba(255,255,255,.07)}
+#sound{font-size:17px;padding:5px 10px}
+.wbest{color:#fff;font-family:var(--display);font-size:20px;letter-spacing:.04em}
+.wbest b{color:var(--amber);font-size:26px}
+.wbtns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.wbtns button{font-size:20px;padding:12px 30px;border:1px solid var(--line);background:rgba(255,255,255,.07)}
+.wbtns .wprimary{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;border:0;box-shadow:0 0 22px rgba(255,194,61,.5)}
+@media (max-height:460px){.wlogo{width:60px;height:60px}.wcard{gap:6px}.wcard h1{font-size:34px}.wtag{font-size:15px}.wbtns button{font-size:17px;padding:9px 24px}}
+.help{position:fixed;inset:0;z-index:40;overflow-y:auto;background:#09202a;padding:20px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:block}
+.help[hidden]{display:none}
+.helpin{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.helpbtn{position:sticky;bottom:0;display:flex;justify-content:center;padding:14px 0 18px;background:linear-gradient(180deg,transparent,#09202a 40%)}
+.helpbtn button{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;padding:10px 28px;font-size:15px;box-shadow:0 0 18px rgba(255,194,61,.45)}
+/* Timetable boards: what is due at each end, and what is about to leave it. They never block taps. */
+.board{position:absolute;z-index:8;left:max(10px,env(safe-area-inset-left,0px));top:60px;width:182px;pointer-events:none;background:rgba(7,28,35,.74);border:1px solid rgba(47,112,128,.55);border-radius:8px;padding:4px 8px 5px;font-size:11.5px;line-height:1.32;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.board.bR{left:auto;right:max(10px,env(safe-area-inset-right,0px))}
+.board .bh{font-family:var(--display);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-size:11px}
+.board .bs{font-family:var(--display);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.board .br{display:grid;grid-template-columns:minmax(0,1fr) 3.1em 3.6em;align-items:center;column-gap:4px;white-space:nowrap;overflow:hidden;padding:1px 0;border-bottom:1px solid rgba(47,112,128,.28)}
+.board .br.bnone{display:block;border-bottom:0;color:var(--muted)}
+.board .br.bth{font-family:var(--display);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(47,112,128,.7);margin-top:2px}
+.board .br .bt{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden}
+.board .br .bt>span{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.board .br .bp{text-align:center}
+.board .br b{text-align:right}
+.board .br i{width:9px;height:7px;border-radius:2px;flex:0 0 auto}
+.board .br b{font-family:var(--display);font-variant-numeric:tabular-nums;margin-left:auto;padding-left:4px}
+.board .br b.now{color:var(--amber)}
+.board .br em{font-style:normal;color:#ffc23d}
+.board .br em.late{color:#ff9a6c}.board .br em.early{color:#7fd0ff}
+.board .br u{text-decoration:none;font-family:var(--display);font-weight:700;color:#9fe3b0;margin-right:1px}.board .br u.chg{color:#ffc23d}
+.board .br.hl{background:rgba(255,194,61,.24);box-shadow:0 0 0 1px rgba(255,194,61,.7);border-radius:3px}
+.annc{position:absolute;left:50%;top:8px;transform:translateX(-50%);max-width:90%;z-index:9;pointer-events:none;background:rgba(60,38,4,.95);border:1px solid #ffc23d;border-radius:8px;padding:6px 16px;font-size:14px;font-weight:700;color:#ffe29a;text-align:center;opacity:0;transition:opacity .25s}
+.annc.show{opacity:1}
+.noboard .board,.clean-mode .board{display:none}
+/* Compact boards (phones: short or narrow screens): one slim line per end, so they never cover the track */
+.bcompact .board{display:flex;align-items:center;gap:7px;width:calc(50% - 14px);padding:2px 7px;font-size:10.5px;line-height:1.25;white-space:nowrap;overflow:hidden;background:rgba(7,28,35,.66)}
+.bcompact .board .bh{font-size:10px;letter-spacing:.1em;margin:0;flex:0 0 auto}
+.bcompact .board .bs{font-size:0;margin:0;flex:0 0 auto}
+.bcompact .board .bs::after{content:attr(data-s);font-size:11px;color:var(--muted)}
+.bcompact .board .br{display:flex;flex:0 0 auto;gap:3px;border-bottom:0;padding:0}
+.bcompact .board .br.bth{display:none}
+.bcompact .board .br .bp{text-align:left}
+.bcompact .board .br b{margin-left:2px;padding-left:0}
+@media (min-width:1100px){.board{width:228px;font-size:13.5px;padding:6px 10px 7px}.board .bh{font-size:12px}.board .bs{font-size:10.5px}}
+/* Finale: final rank, score and a Share button */
+.finale{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(900px 500px at 50% 0,rgba(255,194,61,.18),transparent 60%),rgba(6,22,28,.94);padding:12px}
+.finale[hidden]{display:none}
+/* The finale banner: a 3D ribbon in the level's colour (blue/green/red) with its stars, hanging from bunting above a plaque with the results and a strip of rail below. */
+.finale{--lc:#2fd08a;--lc2:#86f0bd;--lc3:#127a4d;overflow:hidden}
+.frays{position:absolute;left:50%;top:50%;width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 55%);mask:radial-gradient(circle,#000 0,transparent 55%);animation:fspin 60s linear infinite;pointer-events:none}
+@keyframes fspin{to{transform:rotate(360deg)}}
+.fbanner{position:relative;z-index:1;width:min(94%,600px);max-height:98%;overflow-y:auto;overflow-x:hidden;text-align:center;perspective:1000px;padding:2px 4px 8px;animation:fdrop .8s cubic-bezier(.2,1.15,.3,1) both;scrollbar-width:none}
+.fbanner::-webkit-scrollbar{display:none}
+@keyframes fdrop{from{opacity:0;transform:translateY(-60px) rotateX(35deg)}to{opacity:1;transform:none}}
+.fbunting{height:30px;margin:0 -4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='30'%3E%3Cpath d='M0 3Q60 9 120 3' stroke='%23d9eef2' stroke-width='1.6' fill='none'/%3E%3Cpath d='M6 5L34 7L20 28Z' fill='%23ffc23d'/%3E%3Cpath d='M46 7L74 7L60 28Z' fill='%23d9eef2'/%3E%3Cpath d='M86 7L114 5L100 28Z' fill='%23ff4d6d'/%3E%3C/svg%3E") repeat-x center top/120px 30px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4))}
+.fribbon{position:relative;margin:2px 14px 0;transform:rotateX(7deg);transform-origin:50% 100%;animation:fsway 5s ease-in-out infinite alternate;filter:drop-shadow(0 10px 8px rgba(0,0,0,.55))}
+@keyframes fsway{from{transform:rotateX(7deg) rotateZ(-.6deg)}to{transform:rotateX(5deg) rotateZ(.6deg)}}
+.rmain{position:relative;z-index:2;padding:8px 18px 10px;border-radius:6px;background:linear-gradient(180deg,var(--lc2) 0,var(--lc) 38%,var(--lc3) 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(0,0,0,.28),0 0 0 2px rgba(0,0,0,.18)}
+.rtail{position:absolute;z-index:1;top:16px;width:64px;height:calc(100% - 4px);background:linear-gradient(180deg,var(--lc) 0,var(--lc3) 100%);filter:brightness(.78)}
+.rl{left:-34px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,22px 50%)}
+.rr{right:-34px;clip-path:polygon(0 0,100% 0,calc(100% - 22px) 50%,100% 100%,0 100%)}
+.rmain::before,.rmain::after{content:"";position:absolute;bottom:-12px;width:0;height:0;border-style:solid}
+.rmain::before{left:0;border-width:12px 0 0 34px;border-color:transparent transparent transparent rgba(0,0,0,.45)}
+.rmain::after{right:0;border-width:12px 34px 0 0;border-color:transparent rgba(0,0,0,.45) transparent transparent}
+.fkick{font-family:var(--display);letter-spacing:.24em;text-transform:uppercase;font-size:12px;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.flv{font-size:clamp(30px,7vw,44px);line-height:1;letter-spacing:.12em;margin:2px 0;color:#ffd24a;text-shadow:0 1px 0 #b8860b,0 2px 0 #a0740a,0 3px 0 #8a6208,0 4px 3px rgba(0,0,0,.45),0 0 16px rgba(255,210,74,.55)}
+.fbanner h2{font-family:var(--display);margin:0;font-size:clamp(22px,5vw,32px);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35),0 3px 4px rgba(0,0,0,.45)}
+.fstars{display:flex;gap:7px;justify-content:center;margin-top:5px}
+.fstars i{width:11px;height:11px;border-radius:50%;background:rgba(0,0,0,.28);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.fstars i.on{background:radial-gradient(circle at 35% 30%,#fff6c8,#ffc23d 60%,#c98a0a);box-shadow:0 0 8px rgba(255,210,74,.8)}
+.fbox{position:relative;z-index:1;margin:14px 6px 0;text-align:center;background:linear-gradient(180deg,rgba(18,52,62,.97),rgba(10,32,40,.98));border:2px solid var(--lc);border-radius:14px;padding:14px 20px;box-shadow:0 0 0 3px rgba(0,0,0,.25),0 14px 30px rgba(0,0,0,.5),0 0 34px color-mix(in srgb,var(--lc) 30%,transparent)}
+.frail{height:12px;margin:10px 6px 0;border-top:3px solid #9fb8bf;border-bottom:3px solid #9fb8bf;background:repeating-linear-gradient(90deg,#6b4a2b 0 8px,transparent 8px 22px);opacity:.85}
+.fdesc{margin:6px 0 10px;color:var(--muted);font-size:14px}
+.fscore{font-family:var(--display);font-weight:700;font-size:clamp(34px,8vw,52px);line-height:1;color:var(--amber);text-shadow:0 2px 0 #9a6a0a,0 0 22px rgba(255,194,61,.5)}
+.flabel{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+.fgrid div{background:rgba(9,27,34,.6);border:1px solid var(--line);border-radius:10px;padding:6px 4px}
+.fgrid b{display:block;font-family:var(--display);font-size:18px}
+.fgrid span{font-size:11px;color:var(--muted);line-height:1.2;display:block}
+.fbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.fbtns button{font-size:16px;padding:9px 20px}
+.fbtns .fprimary{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;border:0;box-shadow:0 0 18px rgba(255,194,61,.45)}
+.fnote{margin-top:8px;font-size:13px;color:var(--muted);min-height:1.2em;word-break:break-word;user-select:text;-webkit-user-select:text}
+@media (max-height:460px){.fbunting,.frail{display:none}.rmain{padding:4px 14px 6px}.flv{font-size:24px;margin:0}.fbanner h2{font-size:20px}.fkick{font-size:10px}.fstars{margin-top:2px}.fbox{margin-top:10px;padding:8px 14px}.fdesc{margin:2px 0 4px;font-size:12px}.fscore{font-size:30px}.flabel{margin-bottom:4px}.fgrid{margin:4px 0 6px}.fgrid b{font-size:14px}.fbtns button{padding:6px 14px;font-size:13px}}
+@media (prefers-reduced-motion:reduce){.fbanner,.fribbon,.frays{animation:none}}
+/* level picker on the welcome page, and the level stars next to the round number */
+.wlevels{display:flex;gap:10px;margin:4px 0}
+.wlv{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:96px;padding:8px 12px;border-radius:12px;border:2px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:inherit;cursor:pointer}
+.wlv .wlst{font-size:17px;letter-spacing:.1em;color:var(--lc)}.wlv b{font-family:var(--display);font-size:15px}.wlv small{font-size:11px;color:var(--muted)}
+.wlv[data-lv=easy]{--lc:#4aa8ff}.wlv[data-lv=normal]{--lc:#2fd08a}.wlv[data-lv=hard]{--lc:#ff4d6d}
+.wlv.sel{border-color:var(--lc);background:rgba(255,255,255,.12);box-shadow:0 0 18px color-mix(in srgb,var(--lc) 55%,transparent)}
+.lvb{letter-spacing:.05em;margin-left:2px}
+@media (max-height:460px){.wlv{min-width:84px;padding:4px 8px}.wlv small{display:none}.wlevels{margin:0}}
+/* Round-end report: pop-in card, stars that pop one by one, filling satisfaction bar, confetti */
+.rbox{animation:rpop .35s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes rpop{from{opacity:0;transform:scale(.92) translateY(10px)}}
+.roundend h2.pass{color:#2cf5a0;text-shadow:0 0 18px rgba(44,245,160,.4)}
+.roundend h2.fail{color:#ff8a8a}
+.stars .st{display:inline-block;color:var(--muted);opacity:.4}
+.stars .st.on{color:var(--amber);opacity:1;animation:starpop .5s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(.35s + var(--i)*.28s)}
+@keyframes starpop{from{transform:scale(0) rotate(-40deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.satbar i{transform-origin:left center;animation:satgrow .9s .4s cubic-bezier(.3,.8,.3,1) both}
+@keyframes satgrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:6}
+.confetti i{position:absolute;top:-16px;left:var(--x);width:8px;height:14px;background:var(--c);border-radius:1px;animation:cfall var(--d) linear var(--dl) both}
+@keyframes cfall{to{transform:translateY(105vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.rbox,.stars .st.on,.satbar i{animation:none}.confetti{display:none}}
+/* Welcome backdrop: twinkling stars and two trains passing (pure CSS; stops for reduced-motion players) */
+.wstars{position:absolute;inset:0 0 40% 0;pointer-events:none;background-image:radial-gradient(1.6px 1.6px at 8% 22%,#fff,transparent),radial-gradient(1.2px 1.2px at 19% 9%,#cfe,transparent),radial-gradient(1.8px 1.8px at 33% 30%,#fff,transparent),radial-gradient(1.2px 1.2px at 47% 12%,#fe9,transparent),radial-gradient(1.6px 1.6px at 61% 26%,#fff,transparent),radial-gradient(1.2px 1.2px at 74% 8%,#cfe,transparent),radial-gradient(1.8px 1.8px at 86% 24%,#fff,transparent),radial-gradient(1.4px 1.4px at 93% 11%,#fe9,transparent);animation:wtw 4s ease-in-out infinite alternate}
+@keyframes wtw{from{opacity:.35}to{opacity:1}}
+.wscene{position:absolute;left:0;right:0;bottom:0;height:34%;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(5,20,25,.55))}
+.wtrack{position:absolute;left:0;right:0;height:26px}
+.wtrack.a{bottom:46%}.wtrack.b{bottom:12%}
+.wtrack::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;background:linear-gradient(#bfe6ee,#bfe6ee) top/100% 2px no-repeat,repeating-linear-gradient(90deg,rgba(8,24,28,.55) 0 4px,transparent 4px 14px) bottom/100% 7px no-repeat;opacity:.7}
+.wtrain{position:absolute;bottom:0;display:flex;gap:3px;will-change:transform}
+.wtrain.loc{left:0;transform:translateX(-460px);animation:wdrive 17s linear infinite}
+.wtrain.gds{right:0;transform:translateX(560px);animation:wdriveL 25s linear infinite;animation-delay:-9s}
+@keyframes wdrive{to{transform:translateX(100vw)}}
+@keyframes wdriveL{from{transform:translateX(560px)}to{transform:translateX(-100vw)}}
+.wcar{position:relative;display:block;width:52px;height:24px;border-radius:5px;background:#4aa8ff;box-shadow:0 3px 0 rgba(0,0,0,.28)}
+.wcar::after{content:"";position:absolute;left:6px;right:6px;top:5px;height:6px;background:repeating-linear-gradient(90deg,#ffeebe 0 8px,transparent 8px 14px);border-radius:1px}
+.wcar.eng{width:62px;background:#ffc23d}
+.wcar.eng::before{content:"";position:absolute;top:9px;width:6px;height:6px;border-radius:50%;background:#fff7c9;box-shadow:0 0 10px 3px rgba(255,240,170,.75)}
+.loc .eng::before{right:3px}.gds .eng::before{left:3px}
+.gds .wcar{height:20px;background:repeating-linear-gradient(90deg,#b47d48 0 8px,#9a6a3a 8px 10px)}
+.gds .wcar::after{display:none}.gds .wcar.eng{background:#d6a14d}
+.wcard{position:relative;z-index:1}
+.wlogo{animation:wfloat 4.5s ease-in-out infinite alternate}
+@keyframes wfloat{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+.wbtns .wprimary{animation:wglow 2.4s ease-in-out infinite alternate}
+@keyframes wglow{from{box-shadow:0 0 14px rgba(255,194,61,.35)}to{box-shadow:0 0 30px rgba(255,194,61,.7)}}
+@media (prefers-reduced-motion:reduce){.wstars,.wlogo,.wbtns .wprimary{animation:none}.wtrain.loc,.wtrain.gds{animation:none;transform:translateX(30vw)}}
+@media (max-height:420px){.wscene{height:26%}}
+/* Demo: a finger plays the first train; the shield stops stray taps on the track while it runs */
+.demoShield{position:absolute;inset:0;z-index:9;display:none}
+.demoOn .demoShield{display:block}
+.finger{position:absolute;z-index:13;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:3px solid #fff;background:rgba(255,194,61,.45);box-shadow:0 0 18px rgba(255,194,61,.8);pointer-events:none;display:none;transition:left .9s cubic-bezier(.4,0,.2,1),top .9s cubic-bezier(.4,0,.2,1),transform .15s}
+.demoOn .finger{display:block}
+.finger.tap{transform:scale(.7);background:rgba(44,245,160,.6)}
+/* Guided first-play tutorial banner */
+.coach{position:absolute;left:50%;top:calc(max(8px,env(safe-area-inset-top,0px)) + 52px);transform:translateX(-50%);z-index:12;display:flex;align-items:center;gap:12px;max-width:min(94%,680px);background:rgba(7,28,35,.95);border:1px solid var(--amber);border-radius:12px;padding:8px 10px 8px 14px;box-shadow:0 4px 18px rgba(0,0,0,.5),0 0 14px rgba(255,194,61,.3);font-size:15px;line-height:1.35;pointer-events:none}
+.coach[hidden]{display:none}
+.coach .cstep{font-family:var(--display);font-weight:700;color:var(--amber);white-space:nowrap;letter-spacing:.04em}
+.coach .ctext{min-width:0}
+.coach button{pointer-events:auto;font-size:13px;padding:5px 10px;white-space:nowrap;background:transparent;border:1px solid var(--line);color:var(--muted)}
+@media (min-width:1100px){.coach{top:calc(max(8px,env(safe-area-inset-top,0px)) + 64px);font-size:18px}.coach button{font-size:15px}}
+</style>
+
+<div class="wrap">
+  <button class="hud-toggle-btn" id="hudToggle" aria-label="Toggle full-screen track view"><svg class="ic-expand" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ic-compress" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"/></svg></button>
+  <div class="bar">
+    <div class="seg"><button id="pause">Pause</button><button id="speed">Speed 1x</button><button id="restart">Restart</button><button id="zoom" aria-label="Zoom">Zoom</button><button id="sound" aria-label="Sound">🔊</button><button id="full" hidden aria-label="Full screen">Full screen</button><button id="info" aria-label="How to play">Info</button></div>
+    <div class="stats">
+      <div class="stat score"><b id="sScore">0</b><span class="lb" data-s="pts">points</span></div>
+      <div class="stat"><b id="sSat">100%</b><span class="lb" data-s="happy">happy</span></div>
+      <div class="stat" title="Efficiency: how well you use platforms and avoid avoidable delays"><b id="sEff">100%</b><span class="lb" data-s="eff">efficient</span></div>
+      <div class="stat"><b id="sHeld">0</b><span class="lb" data-s="wait">waiting</span></div>
+    </div>
+  </div>
+
+  <div class="stage"><div class="annc" id="annc" aria-live="assertive"></div><div class="toast" id="cap" aria-live="polite"></div><div class="scroller" id="scroller"><canvas id="cv" width="1400" height="520" aria-label="Playable station: tap a train, then a platform or siding, then the signal. Drag to scroll."></canvas></div>
+    <div class="roundend" id="roundEnd" hidden><div class="confetti" id="confetti" aria-hidden="true"></div><div class="rbox">
+    <div class="rleft"><h2 id="reTitle">Round complete</h2><div class="stars" id="reStars"></div><span id="reText"></span><button id="reBtn">Next round</button></div>
+    <div class="rright">
+     <div class="rup" id="reUp" hidden></div>
+     <div class="rsat" id="reSat"></div>
+     <div class="rsat" id="reEff"></div>
+     <h3>Operating Ledger &amp; Performance Breakdown</h3><div id="reBreak"></div>
+     <h3>Mistakes</h3><ul id="reMist"></ul>
+     <h3>Full log</h3><ol id="reLog"></ol>
+    </div></div></div>
+  </div>
+
+  <div class="board" id="boardW" aria-label="West end timetable"></div><div class="board bR" id="boardE" aria-label="East end timetable"></div>
+  <div class="finale" id="finale" hidden role="dialog" aria-modal="true" aria-label="Final results"><div class="frays" aria-hidden="true"></div><div class="confetti" id="confetti2" aria-hidden="true"></div>
+   <div class="fbanner" id="fbanner">
+    <div class="fbunting" aria-hidden="true"></div>
+    <div class="fribbon"><span class="rtail rl" aria-hidden="true"></span><span class="rtail rr" aria-hidden="true"></span>
+     <div class="rmain"><div class="fkick">Journey complete</div><div class="flv" id="fLv" role="img"></div><h2 id="fRank"></h2><div class="fstars" id="fStars" role="img"></div></div></div>
+   <div class="fbox">
+    <p class="fdesc" id="fDesc"></p>
+    <div class="fscore" id="fScore"></div><div class="flabel">final score</div>
+    <div class="fgrid"><div><b id="fSat"></b><span>passenger satisfaction</span></div><div><b id="fEff"></b><span>efficiency</span></div><div><b id="fTrains"></b><span>trains handled</span></div><div><b id="fBest"></b><span>best score</span></div></div>
+    <div class="fbtns"><button id="fShare" class="fprimary" type="button">Share my score</button><button id="fAgain" type="button">Play again</button></div>
+    <div class="fnote" id="fNote" aria-live="polite"></div>
+   </div><div class="frail" aria-hidden="true"></div></div></div>
+  <div class="quota" id="quota" aria-label="Trains needed this round"></div>
+  <div class="demoShield" id="demoShield"></div><div class="finger" id="finger"></div>
+  <div class="coach" id="demoBar" hidden role="status" aria-live="polite"><span class="cstep" id="demoStep"></span><span class="ctext" id="demoText"></span><button id="demoExit" type="button">Exit demo</button></div>
+  <div class="coach" id="coach" hidden role="status" aria-live="polite"><span class="cstep" id="coachStep"></span><span class="ctext" id="coachText"></span><button id="coachSkip" type="button">Skip tutorial</button></div>
+
+  <div class="help" id="help" hidden role="dialog" aria-modal="true" aria-label="How to play"><div class="helpin">
+  <h1>Station Master</h1>
+  <p class="lede">Route every train into the station and back out. Give each train its own platform type for full points, and never let two trains meet.</p>
+  <div class="grade" id="helpGrade"></div>
+  <div class="legend" id="legend"></div>
+
+  <div class="cols">
+    <section class="card">
+      <h3>How to play</h3>
+      <ol>
+        <li>Tap a train waiting at the outer signal.</li>
+        <li data-smax="2">Tap the platform it should use.</li>
+        <li data-smin="3">Tap a platform, or a siding to hold it.</li>
+        <li>Tap the flashing signal to send it in.</li>
+        <li>When boarding ends, tap the train, then its exit signal.</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h3>Points</h3>
+      <div class="pts">
+        <span>Its own platform type</span><b class="pos">+100</b>
+        <span data-smin="2">Another passenger platform</span><b class="pos" data-smin="2">+40</b>
+        <span data-smin="4">Non-stop on its through line (less the longer it waited)</span><b class="pos" data-smin="4">up to +160</b>
+        <span data-smin="4">Non-stop sent to a platform</span><b class="pos" data-smin="4">+20</b>
+        <span>Goods on a passenger platform, or the reverse</span><b class="neg">-38</b>
+        <span>Quick dispatch bonus</span><b class="pos">up to +30</b>
+        <span>Train waiting too long at the outer</span><b class="neg">-2.25 / s</b>
+        <span>Train kept at the platform past its buffer</span><b class="neg">-1.5 / s</b>
+        <span>Cleared too close behind another train (it has to slow down)</span><b class="neg">-15</b>
+        <span data-rmin="6">VIP train cleared quickly and leaving on time</span><b class="pos" data-rmin="6">+150</b>
+        <span data-rmin="6">VIP train delayed</span><b class="neg" data-rmin="6">-38</b>
+      </div>
+    </section>
+    <section class="card">
+      <h3>Rules</h3>
+      <ul>
+        <li>Only one train can use each end's junction at a time.</li>
+        <li>A signal will not clear a route that conflicts with another train.</li>
+        <li data-smin="3">Sidings hold a train out of the way while you wait for a platform. Each siding holds one train and then runs straight into the platforms beside it (the upper siding to the upper island, the lower siding to the lower island or the goods line), so a parked train can go directly to one of those platforms. Non-stop trains never use sidings. A train that cannot come in yet waits outside, and it costs points (more for express and non-stop trains) and arrives already late.</li>
+        <li>The timetable boards at each end show which trains are due, in how many seconds, and which are about to leave. Use them to plan: for example park a slow train in a siding so an express due in a few seconds can come straight in. Each train also has a planned platform (for example PF2) on the board: bring it there for bonus points and happier passengers. Tap a train and its row lights up on the board. If you send it to another platform, the board updates and an announcement appears at the top. You can switch the boards off on this page.</li>
+        <li>Some trains run late ("late 8s") or early ("early 4s"), shown on the boards and on the train. Passengers on a late train are already unhappy, but if you send it in promptly (within 3 seconds at the signal) and out again as soon as it has finished boarding (within 3 seconds), it recovers: its satisfaction is restored, you earn a bonus and its efficiency gets a lift. An early train has time in hand and can wait, so park it in a siding if a late train needs the way.</li>
+        <li data-smin="3" data-smax="3">Priority: express, local, goods.</li>
+        <li data-smin="4">Priority: non-stop, express, local, goods.</li>
+        <li data-smin="3">From time to time a passenger track closes for maintenance for a short while. You get a 20-second warning first (it flashes); in the last 6 seconds no new train can use it, and it stays closed until it reopens.</li>
+        <li data-smin="4">At the Junction a whole island platform (both its tracks) can also close for maintenance, with a 25-second warning. The through lines and the goods line never close, and one passenger track always stays open.</li>
+        <li>Keep a safe gap: trains on the same line must stay about three carriage lengths apart. A faster train will slow down behind a slower one automatically, but if you cleared it too close you lose points. Leave a train time to get clear before sending the next one.</li>
+        <li>Every train ends with a satisfaction score out of 100: it drops for a wrong platform, a long wait outside, a late departure or a too-close clearance. Your round's satisfaction is the average, shown at the top of the screen as "happy".</li>
+        <li>Pass a round with at least 90% satisfaction to earn bonus points: 50 at 90%, rising steadily to 200 at 100%.</li>
+        <li data-smin="4">From the Junction a branch line leaves the east side. A train from the west with a destination arrow ("→ Branch") must leave by the branch; the others go along the main line. A branch train leaves through the branch signal (the one with the amber arrow); every other train leaves through its platform's exit signal. Tap the departing train, then the exit signal for the way it should go. With Exit guidance on (Info page, the default) the right line glows, the right signal flashes and a wrong signal is refused with a hint. With guidance off nothing flashes, and a wrong signal sends the train the wrong way and costs points.</li>
+        <li>The journey ends at round 15. Pass it to see your final rank and share your score with a friend.</li>
+        <li>Efficiency is a second score out of 100, shown at the top as "efficient". A train loses efficiency when it waits outside while a right platform and a safe route were free, and when it sits at a platform after boarding is done (each after a 2.5 second grace). Reach 80% to earn bonus points: 40 at 80%, rising steadily to 150 at 100%.</li>
+        <li data-rmin="6">From round 6 a VIP train (gold star) sometimes arrives, with a warning first. Clear it quickly and send it on time for a big bonus.</li>
+        <li>After every round you get a score report listing each mistake and how the points were made.</li>
+        <li>Each round is a fixed set of trains (shown below the track). Handle every one to finish the round. Pass it to move on; the station gets bigger as you go.</li>
+        <li data-smax="1">Each train must stay its full time: local 6 s, goods 9 s. Then you get a free buffer (4 and 6 s). Past that, points drain.</li>
+        <li data-smin="2">Each train must stay its full time: express 4 s, local 6 s, goods 9 s. Then you get a free buffer (3, 4 and 6 s). Past that, points drain.</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="helpreset"><label class="vol">Music <input type="range" id="volMusic" min="0" max="100" step="5" value="100" aria-label="Music volume"></label><label class="vol">Effects <input type="range" id="volSfx" min="0" max="100" step="5" value="100" aria-label="Effects volume"></label><button id="boardToggle" type="button">Timetable: On</button><button id="guideToggle" type="button">Exit guidance: On</button><button id="cbToggle">Colour-blind mode: Off</button><button id="replayTut">Replay the tutorial</button><button id="resetProg">Start over from round 1</button></div>
+  <div class="helpbtn"><button id="helpClose">Start playing</button></div>
+  </div></div>
+
+  <div class="welcome" id="welcome" hidden role="dialog" aria-label="Welcome">
+   <div class="wstars" aria-hidden="true"></div>
+   <div class="wscene" aria-hidden="true">
+    <div class="wtrack a"><div class="wtrain loc"><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar eng"></b></div></div>
+    <div class="wtrack b"><div class="wtrain gds"><b class="wcar eng"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b></div></div>
+   </div>
+   <button class="wsound" id="wSound" aria-label="Sound">🔊</button>
+   <div class="wcard">
+    <svg class="wlogo" viewBox="0 0 108 108" width="88" height="88" aria-hidden="true">
+     <rect width="108" height="108" rx="22" fill="#0E2A33"/>
+     <rect x="22" y="28" width="64" height="46" rx="9" fill="#FFC23D"/>
+     <rect x="30" y="36" width="48" height="18" rx="4" fill="#0E2A33"/>
+     <circle cx="34" cy="63" r="4.5" fill="#2CF5A0"/><circle cx="74" cy="63" r="4.5" fill="#FF4D6D"/>
+     <rect x="14" y="84" width="80" height="6" rx="3" fill="#9B6BFF"/>
+    </svg>
+    <h1>Station Master</h1>
+    <p class="wtag">Keep the trains moving. Grow your station.</p>
+    <div class="wlevels" id="wLevels" role="radiogroup" aria-label="Choose a level">
+     <button type="button" class="wlv" data-lv="easy" role="radio"><span class="wlst">★</span><b>Easy</b><small></small></button>
+     <button type="button" class="wlv" data-lv="normal" role="radio"><span class="wlst">★★</span><b>Normal</b><small></small></button>
+     <button type="button" class="wlv" data-lv="hard" role="radio"><span class="wlst">★★★</span><b>Hard</b><small></small></button>
+    </div>
+    <div class="wstatus" id="wStatus"></div>
+    <div class="wbest" id="wBest" hidden></div>
+    <div class="wbtns"><button id="wPlay" class="wprimary">Play</button><button id="wDemo">Watch demo</button><button id="wInfo">How to play</button></div>
+   </div>
+  </div>
+</div>
+
+<script>
+(function(){
+/* Track is drawn on a 1400 x H canvas. Full screen bleed utilizes entire viewport height. */
+const W=1400;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),capEl=document.getElementById('cap');
+const DPR=Math.min(2,Math.max(window.devicePixelRatio||1,(typeof screen==='undefined'?W:Math.max(screen.width,screen.height))/W));
+function calcH(w,h){
+ const stg=document.querySelector('.stage');
+ const vw=w||(stg&&stg.clientWidth)||window.innerWidth||(typeof screen!=='undefined'?screen.width:1400);
+ const vh=h||(stg&&stg.clientHeight)||window.innerHeight||(typeof screen!=='undefined'?screen.height:700);
+ return Math.max(500,Math.min(840,Math.round(W*vh/vw)));
+}
+let H=calcH();
+cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+const CAR=20,LH=935,LE=880,LW=520,WAITX=1230,LHOLD=1005; // platform tracks run from LW to LE; LH is where the innermost platform peels off a trunk line
+/* Layout units: the track is laid out on a 1400 x UH grid scaled to the canvas height.
+   Real-station layout, top to bottom (LANE_Y is the y position of each track, indexed by lane number):
+     PF 1 | island platform 1 | PF 2      <- the platform sits BETWEEN its two tracks and serves both
+     through line from the west            <- the two through lines are the real main lines: they carry straight on out of the
+     PF 3 | island platform 2 | PF 4          station on each side (the approach lines), so a non-stop train never has to branch
+     through line from the east
+     goods line
+   PF 4 is the extra platform that opens with the Major junction. */
+// Real proportions, in fixed canvas units (never stretched with the screen): a train is ~19 units wide, so neighbouring tracks are
+// 32 apart (a small buffer between three trains side by side) and the two tracks of an island platform are 64 apart (room for the plinth).
+const KY=1;
+const LANE_Y=[180,40,136,224,408,364,320]; // by lane index: through-W, PF1, PF2, PF3, goods, through-E, PF4 (expanded platform island height)
+let Y0=Math.round((H-460)/2);            // accurately centres the expanded station across the full viewport height
+const LY=i=>Y0+LANE_Y[i];
+let INY={W:Y0+LANE_Y[0],E:Y0+LANE_Y[5]}; // the approach (IN/OUT) lines are the through lines
+function adaptCanvas(w,h){
+ const targetH=calcH(w,h);
+ if(targetH!==H){
+  const dY0=Math.round((targetH-460)/2)-Y0;
+  H=targetH;
+  Y0+=dY0;
+  INY.W=Y0+LANE_Y[0];
+  INY.E=Y0+LANE_Y[5];
+  if(typeof S!=='undefined'&&S&&S.trains){
+   for(const tr of S.trains){
+    if(tr.path&&tr.path.pts){for(const pt of tr.path.pts)pt[1]+=dY0}
+    if(tr.iy!==undefined)tr.iy+=dY0;
+   }
+  }
+  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+ }
+}
+const ISLANDS=[{name:'Island platform 1',top:1,bottom:2},{name:'Island platform 2',top:3,bottom:6}];
+// vertical offset of loop k from its line: loop 1 above, loop 2 below; loop 3 (an option no grade uses at the moment) goes where there is room: below at the east end, above at the west end
+const ldy=(side,k)=>k===1?-52*KY:k===2?52*KY:(side==='W'?-104*KY:104*KY);
+const KC={Main:'#ff7a59',Local:'#5fb0ff',Flex:'#b38cff',Goods:'#c08b5c'};
+const LANES=[
+ {name:'THROUGH',thru:true,dirOnly:'W',len:320,label:'Through line · non-stop trains from the west'},
+ // Platforms are numbered in order, top to bottom (PF 1 and PF 2 on island 1, PF 3 and PF 4 on island 2), and PF 1 is the first to open.
+ {name:'PF 1',kind:'Local',ok:['local'],len:320,label:'Local · local',isl:0,face:'top'},
+ {name:'PF 2',kind:'Main',ok:['express'],len:320,label:'Main · express',isl:0,face:'bottom'},
+ {name:'PF 3',kind:'Flex',ok:['local','express'],len:320,label:'Flexible · local or express',isl:1,face:'top'},
+ {name:'GOODS',kind:'Goods',ok:['goods'],len:320,label:'Goods line'},
+ {name:'THROUGH',thru:true,dirOnly:'E',len:320,label:'Through line · non-stop trains from the east'},
+ {name:'PF 4',kind:'Flex',ok:['local','express'],len:320,label:'Flexible · local or express',isl:1,face:'bottom'} // opens with the Major junction (round 10)
+];
+/* Where to tap for a platform face, and the box to highlight. A face lives on the plinth between its track and the other face's track. */
+const otherFace=l=>l.isl===undefined?null:(l.face==='top'?ISLANDS[l.isl].bottom:ISLANDS[l.isl].top);
+function tapY(l){const y=LY(l.idx);if(l.isl===undefined)return l.thru?y:y+20;return l.face==='top'?y+24:y-24} // goods: its platform strip is below the track
+function laneBox(l){const y=LY(l.idx);if(l.thru)return[y-16,y+16];if(l.isl===undefined)return[y-16,y+42];const mid=(y+LY(otherFace(l)))/2;return l.face==='top'?[y-14,mid]:[mid,y+14]}
+const TT={
+ nonstop:{label:'Non-stop',col:'#e2b43d',cars:6,dwell:0,w:1,pat:3,vmax:170,nonstop:true},
+ express:{label:'Express',col:'#d64541',cars:6,dwell:4,buf:3,w:2,pat:5,vmax:150},
+ local:{label:'Local',col:'#4aa8ff',cars:5,dwell:6,buf:4,w:3,pat:8,vmax:90},
+ goods:{label:'Goods',col:'#b47d48',cars:8,dwell:9,buf:6,w:1,pat:12,vmax:60}
+};
+const WEIGHTED=[];for(const k in TT)for(let i=0;i<TT[k].w;i++)WEIGHTED.push(k);
+/* Colour-blind mode: a safer palette (Okabe-Ito based, with clear light/dark steps), a pattern on each train type,
+   a symbol in each signal lamp (bar = stop, ring = go) and non-red/green timer bars. Saved on the device. */
+let CB=false;try{CB=localStorage.getItem('sm_cb')==='1'}catch(e){}
+const CB_TT={nonstop:'#f4f4f4',express:'#e69f00',local:'#56b4e9',goods:'#7a5a3c'},CB_KC={Main:'#e69f00',Local:'#56b4e9',Flex:'#cc79a7',Goods:'#9a7350'};
+const N_TT={},N_KC={...KC};for(const k in TT)N_TT[k]=TT[k].col;
+function applyCB(){
+ for(const k in TT)TT[k].col=CB?CB_TT[k]:N_TT[k];
+ for(const k in KC)KC[k]=CB?CB_KC[k]:N_KC[k];
+ const b=document.getElementById('cbToggle');if(b)b.textContent='Colour-blind mode: '+(CB?'On':'Off');
+}
+applyCB();
+const barGood=()=>CB?'#56b4e9':'#3ddc84',barMid=()=>CB?'#e69f00':'#ffb547',barBad=()=>CB?'#d55e00':'#ff5a5a';
+
+/* ---------- Station grades ----------
+   The station is promoted as the player progresses, like a real station growing with traffic.
+   lanes = indexes into LANES that exist in this grade (0 through W, 1 PF1, 2 PF2, 3 PF3, 4 goods, 5 through E).
+   Anything not built yet is drawn as a faint dashed outline with the round it opens in. */
+const STAGES=[
+ {id:1,from:1,name:'Halt station',types:['local','goods'],lanes:[1,4],loops:false,weights:{local:2,goods:1},newTypes:[],
+  news:['A small halt station: Local and Goods trains only.','One passenger platform (PF 1) and the goods line.']},
+ {id:2,from:4,name:'Small station',types:['local','goods','express'],lanes:[1,2,4],loops:false,weights:{local:3,goods:1.5,express:2},newTypes:['express'],
+  news:['Express trains now arrive: fast, with a short stop.','Platform 2 (main line) has been built for them.']},
+ {id:3,from:5,name:'Growing station',types:['local','goods','express'],lanes:[1,2,3,4],loops:true,maint:{first:[40,60],every:[60,90],dur:20},weights:{local:3,goods:1.5,express:2},newTypes:[],
+  news:['Platform 3 opens: local and express trains can both use it.','Sidings are built at both ends: park a train there to let another one pass, then send it straight into the platforms beside it. The timetable boards show what is coming.','Maintenance begins: a platform will now and then close for a short while, with a warning first.']},
+ {id:4,from:7,name:'Junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5],loops:true,branches:['W'],maint:{first:[35,55],every:[55,80],dur:20},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:['nonstop'],
+  news:['Non-stop trains now arrive. They never stop.','Two through lines are built so they can pass the station.','A branch line opens on the east side: some trains from the west are bound for it. Trains bound for it leave through the new branch signal, the one with the amber arrow.']},
+ {id:5,from:10,name:'Major junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,branches:['W','E'],branchRound:{E:13},maint:{first:[30,50],every:[45,70],dur:25},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
+  news:['Full junction status: an extra platform (PF 4) is built.','Maintenance closures are now more frequent and last longer: plan around them.']}
+];
+const stageFor=r=>{let s=STAGES[0];for(const st of STAGES)if(r>=st.from)s=st;return s};
+const LANE_FROM=LANES.map((l,i)=>Math.min(...STAGES.filter(s=>s.lanes.includes(i)).map(s=>s.from)));
+const LOOPS_FROM=Math.min(...STAGES.filter(s=>s.loops).map(s=>s.from));
+/* The journey ends at MAX_ROUND: the player gets a final rank and a score to share. A rank needs a fraction f of the level's ceiling (LV.ceil, a near-perfect run).
+   Calibrated with automatic players on every level (averages of 10 journeys, as a share of the ceiling): reacting instantly 100%, a good player (1 to 2.5 s reactions,
+   a few mistakes) about 88%, a sloppy one (2 to 4.5 s, many mistakes) about 73%, a novice (4 to 9 s, half the platforms wrong) about 51%.
+   So: a good player is a Divisional Controller, a sloppy one a Stationmaster, a novice a Signalman, and Chief Controller needs near-perfect play. */
+/* ---------- levels ----------
+   Three levels, chosen on the welcome page and kept for the whole journey. Each has its own saved progress, best score and finale (storage keys get a suffix; Normal keeps the plain keys).
+   They are shown by colour and stars: blue ★ Easy, green ★★ Normal, red ★★★ Hard. The rules are the same; these dials change how busy and how forgiving the station is:
+   speed (the game's pace), gap (spacing of arrivals), pat (passenger patience), lateP/earlyP/late/devFrom (how many trains run off-schedule, how late, and from which round),
+   maint (how often maintenance happens and how long it lasts), branchP (share of trains bound for a branch), guide (exit guidance: null = the player's choice),
+   planB (planned-platform bonus), share (first round in which two trains may be planned onto one platform),
+   ceil (the final score of a near-perfect journey on that level, measured with an automatic player that reacts instantly; the rank thresholds are fractions of it). */
+const LEVELS={
+ easy:{id:'easy',name:'Easy',stars:1,col:'#4aa8ff',lite:'#8fcbff',dark:'#1d5a9e',speed:.6,gap:1.25,pat:1.3,lateP:.15,earlyP:.1,late:[3,8],devFrom:4,maint:{every:1.4,dur:.7},branchP:.25,guide:true,planB:20,share:7,ceil:31600},
+ normal:{id:'normal',name:'Normal',stars:2,col:'#2fd08a',lite:'#86f0bd',dark:'#127a4d',speed:.75,gap:1,pat:1,lateP:.3,earlyP:.15,late:[4,14],devFrom:1,maint:{every:1,dur:1},branchP:.4,guide:null,planB:15,share:4,ceil:28300},
+ hard:{id:'hard',name:'Hard',stars:3,col:'#ff4d6d',lite:'#ff95a8',dark:'#a3182f',speed:1,gap:.8,pat:.8,lateP:.4,earlyP:.2,late:[6,18],devFrom:1,maint:{every:.75,dur:1.2},branchP:.55,guide:false,planB:10,share:2,ceil:25600}
+};
+let LEVEL='normal';try{const v=localStorage.getItem('sm_level');if(LEVELS[v])LEVEL=v}catch(e){}
+let LV=LEVELS[LEVEL];
+const Kof=(b,id)=>id==='normal'?b:b+'_'+id; // storage key of a level: Normal keeps the original keys, so earlier saves carry over
+const K=b=>Kof(b,LEVEL);
+function maintOf(st){const m=st.maint;if(!m)return null;return{first:m.first.map(v=>v*LV.maint.every),every:m.every.map(v=>v*LV.maint.every),dur:Math.round(m.dur*LV.maint.dur)}}
+const MAX_ROUND=15;
+const RANKS=[
+ {f:0,tier:1,name:'Platform Trainee',desc:'You made it all the way through. Every great stationmaster started here.'},
+ {f:.25,tier:2,name:'Signalman',desc:'Steady hands on the signals. The trains mostly ran on time.'},
+ {f:.55,tier:3,name:'Station Supervisor',desc:'A well-run station. Passengers noticed the difference.'},
+ {f:.68,tier:4,name:'Stationmaster',desc:'Calm under pressure and efficient with every platform.'},
+ {f:.84,tier:5,name:'Divisional Controller',desc:'Whole networks would run better with you in charge.'},
+ {f:.96,tier:6,name:'Chief Controller',desc:'Flawless railway mastery. Very few ever get here.'}
+];
+/* Trains per round: grows steadily (3, 4, 6, 7, 9, 10, 12...). Each type in the grade gets at least one, a newly introduced type gets two in its first round, and the rest are shared by weight. */
+const totalFor=r=>3+(r-1)+Math.floor((r-1)/2);
+function quotaFor(r){
+ const st=stageFor(r),q={};
+ for(const k of st.types)q[k]=1;
+ if(r===st.from)for(const k of st.newTypes)q[k]=2;
+ let left=totalFor(r)-Object.values(q).reduce((a,b)=>a+b,0);
+ while(left-->0){let best=null,bv=-1;for(const k of st.types){const v=st.weights[k]/(q[k]+1);if(v>bv){bv=v;best=k}}q[best]++}
+ return q;
+}
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let paused=false,speed=1;
+const mir=(side,pts)=>side==='E'?pts:pts.map(p=>[W-p[0],p[1]]);
+const X=(side,x)=>side==='E'?x:W-x;
+const SIDE={E:'east',W:'west'};
+// Sound and haptics hooks (audio in Web Audio API, haptics bridged to native Android or Web Vibration)
+const haptic=k=>{
+ try{
+  if(window.StationMasterHaptics&&typeof window.StationMasterHaptics.vibrate==='function'){
+   window.StationMasterHaptics.vibrate(k);return;
+  }
+  if(typeof navigator!=='undefined'&&navigator.vibrate){
+   if(k==='click'||k==='tick')navigator.vibrate(12);
+   else if(k==='signal'||k==='success')navigator.vibrate([35,40,45]);
+   else if(k==='warning'||k==='error')navigator.vibrate([60,40,70]);
+   else if(k==='vip')navigator.vibrate([25,35,30,35,55]);
+   else navigator.vibrate(20);
+  }
+ }catch(e){}
+};
+const sfx=n=>{
+ try{window.__audio&&window.__audio.sfx(n)}catch(e){}
+ if(n==='go')haptic('signal');
+ else if(n==='vip')haptic('vip');
+ else if(n==='select')haptic('click');
+ else if(n==='target')haptic('tick');
+ else if(n==='red')haptic('warning');
+ else if(n==='coin')haptic('tick');
+};
+const jingle=k=>{
+ try{window.__audio&&window.__audio.jingle(k)}catch(e){}
+ if(k==='lose')haptic('error');
+ else haptic('success');
+};
+const other=s=>s==='E'?'W':'E';
+
+function mkPath(pts){const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));return{pts,cum,total:cum[cum.length-1]}}
+function roundPath(pts,r){
+ const out=[pts[0]],map=[0];
+ for(let i=1;i<pts.length-1;i++){
+  const a=pts[i-1],b=pts[i],c=pts[i+1];
+  const da=Math.hypot(b[0]-a[0],b[1]-a[1]),dc=Math.hypot(c[0]-b[0],c[1]-b[1]);
+  const cross=Math.abs((b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]))/(da*dc||1);
+  if(cross<.02){out.push(b);map[i]=out.length-1;continue}
+  const rr=Math.min(r,da/2,dc/2);
+  const p1=[b[0]+(a[0]-b[0])/da*rr,b[1]+(a[1]-b[1])/da*rr],p2=[b[0]+(c[0]-b[0])/dc*rr,b[1]+(c[1]-b[1])/dc*rr];
+  let mid=0;
+  for(let k=0;k<=8;k++){const u=k/8,w=1-u;out.push([w*w*p1[0]+2*w*u*b[0]+u*u*p2[0],w*w*p1[1]+2*w*u*b[1]+u*u*p2[1]]);if(k===4)mid=out.length-1}
+  map[i]=mid;
+ }
+ out.push(pts[pts.length-1]);map[pts.length-1]=out.length-1;
+ return{pts:out,map};
+}
+function at(p,s){const n=p.pts.length;let i=1;if(s<=0)i=1;else if(s>=p.total)i=n-1;else{while(p.cum[i]<s)i++}
+ const a=p.pts[i-1],b=p.pts[i],L=(p.cum[i]-p.cum[i-1])||1,u=(s-p.cum[i-1])/L;
+ return{x:a[0]+(b[0]-a[0])*u,y:a[1]+(b[1]-a[1])*u,a:Math.atan2(b[1]-a[1],b[0]-a[0])}}
+
+let S,sel={train:null,target:null},capTimer=0;
+/* Progress is kept on the device: the round to resume from and the score carried into it. */
+let DEMO=false; // while the demo plays, nothing is saved (progress, best score)
+function saveProgress(r,s){if(DEMO)return;try{localStorage.setItem(K('sm_round'),String(r));localStorage.setItem(K('sm_score'),String(Math.round(s)))}catch(e){}}
+function loadProgress(){try{const r=parseInt(localStorage.getItem(K('sm_round')),10),s=parseFloat(localStorage.getItem(K('sm_score')));if(r>=1)return{round:Math.min(r,MAX_ROUND),score:Number.isFinite(s)?s:0}}catch(e){}return null}
+/* What each passed round scored for satisfaction and efficiency, so the finale can show the averages. Kept on the device with the progress. */
+let RUN={};try{RUN=JSON.parse(localStorage.getItem(K('sm_run'))||'{}')||{}}catch(e){RUN={}}
+function saveRun(){if(DEMO)return;try{localStorage.setItem(K('sm_run'),JSON.stringify(RUN))}catch(e){}}
+/* There is no coin economy: the station upgrades by itself as rounds are passed. Coin saves from older versions are cleaned up here.
+   "Start over" clears the round and score; the best score is deliberately kept. */
+try{localStorage.removeItem('sm_coins');localStorage.removeItem('sm_buy')}catch(e){}
+function clearProgress(){try{for(const b of ['sm_round','sm_score','sm_run','sm_final'])localStorage.removeItem(K(b))}catch(e){}RUN={}} // clears the current level only
+/* Best (highest) total score ever reached on this device. Updated live, saved at most every 1.5 s and whenever the page is hidden or a round ends. */
+let best=0,bestDirty=false,bestSavedAt=0;
+try{best=parseInt(localStorage.getItem(K('sm_best')),10)||0}catch(e){}
+function saveBest(){if(DEMO||!bestDirty)return;bestDirty=false;bestSavedAt=performance.now();try{localStorage.setItem(K('sm_best'),String(best))}catch(e){}}
+/* Switch level (from the welcome page, or temporarily to Normal for the demo): that level's best score and run history are loaded; its progress is loaded by the caller. */
+function applyLevel(id,temp){
+ saveBest(); // flush the outgoing level's best score first
+ LEVEL=id;LV=LEVELS[id];
+ if(!temp){try{localStorage.setItem('sm_level',id)}catch(e){}}
+ try{RUN=JSON.parse(localStorage.getItem(K('sm_run'))||'{}')||{}}catch(e){RUN={}}
+ best=0;try{best=parseInt(localStorage.getItem(K('sm_best')),10)||0}catch(e){}
+ bestDirty=false;applyGuide();document.body.dataset.level=id;
+}
+function noteBest(){if(DEMO)return;const cur=Math.round(S.score);if(cur>best){best=cur;bestDirty=true}if(bestDirty&&performance.now()-bestSavedAt>1500)saveBest()}
+/* Info page: show only what exists in the current grade (data-smin / data-smax = first / last grade an item applies to) and build the train legend. */
+function applyStageInfo(st,round){
+ if(!document.querySelectorAll)return;
+ document.querySelectorAll('[data-smin],[data-smax],[data-rmin]').forEach(el=>{const mn=+el.dataset.smin||0,mx=+el.dataset.smax||99,rm=+el.dataset.rmin||0;el.hidden=st.id<mn||st.id>mx||round<rm});
+ const g=document.getElementById('helpGrade');if(g)g.textContent='Round '+round+' · '+st.name;
+ const desc={nonstop:'fastest',express:'fast',local:'slower',goods:'slowest'};
+ const where=k=>k==='nonstop'?'through line':S.lanes.filter(l=>l.enabled&&!l.thru&&l.ok.includes(k)).map(l=>l.name).join(' or ');
+ const lg=document.getElementById('legend');
+ if(lg)lg.innerHTML=st.types.map(k=>'<span><i style="background:'+TT[k].col+'"></i>'+TT[k].label+': '+desc[k]+', '+where(k)+'</span>').join('');
+}
+/* Highlights. Nothing is drawn for a platform or loop that is not there yet. When the player qualifies for something, it lights up:
+   - after a round that opened a new platform / loop / through line, the new piece pulses with a NEW tag for HI_SECS seconds. */
+const HI_SECS=10; // an upgrade indication and animation shows only for 10 seconds of a round, then stops cleanly
+const pulse=()=>.5+.5*Math.sin(performance.now()/180);
+function reset(round,score){
+ round=round||1;score=score||0;const Q=quotaFor(round),st=stageFor(round);const prev=S;
+ S={t:0,spawnT:1.2,num:101,trains:[],claims:{E:[],W:[]},score:score,roundStart:score,round:round,quota:Q,remaining:{...Q},completed:{local:0,express:0,goods:0,nonstop:0},total:Object.values(Q).reduce((a,b)=>a+b,0),over:false,done:0,held:0,pops:[],flash:null,log:[],lossHeld:0,bestAtStart:best,stage:st,maint:null,satSum:0,satN:0,effSum:0,effN:0,effIdle:0,effBlock:0,brSeen:0,brGiven:0,vipWarned:false,vipDone:false,
+    particles:[],
+    closeT:st.maint?rnd(maintOf(st).first[0],maintOf(st).first[1]):1e9,
+    vipAt:(round>=6&&totalFor(round)>=4&&Math.random()<.7)?rnd(25,55):-1,
+    lanes:LANES.map((l,i)=>({...l,idx:i,x0:(W-l.len)/2,busy:null,crowd:Math.floor(rnd(3,8)),glow:0,enabled:st.lanes.includes(i),closed:false,closedT:0,warnT:0,maintKind:null}))};
+ S.sched=buildSchedule();planPlatforms();
+ S.loopCount=loopKs().length;
+ // What opened since the previous round (nothing on the very first load, or when a round is simply replayed)?
+ S.newLanes=prev&&prev.lanes?S.lanes.filter((l,i)=>l.enabled&&!prev.lanes[i].enabled).map(l=>l.idx):[];
+ S.newLoops=[];if(prev&&prev.loopCount!==undefined)for(let k=prev.loopCount+1;k<=S.loopCount;k++)S.newLoops.push(k);
+ S.hiT=(S.newLanes.length||S.newLoops.length)?HI_SECS:0;
+ sel={train:null,target:null};say('');
+ applyStageInfo(st,round);
+ // First round of a new grade: announce what is new.
+ if(round===st.from&&round>1)say('Round '+round+' · '+st.name+'. '+st.news.join(' '),'good');
+ else if(st.branchRound&&round===st.branchRound.E)say('Round '+round+': a second branch line opens on the west side. Some trains from the east are bound for it: use the new branch signal.','good');
+ const re=document.getElementById('roundEnd');if(re)re.hidden=true;
+}
+let sayTimer=0;
+function say(t,kind){clearTimeout(sayTimer);if(t&&kind==='bad')sfx('red');capEl.textContent=t;capEl.className='toast'+(kind?' '+kind:'')+(t?' show':'');if(t)sayTimer=setTimeout(()=>capEl.classList.remove('show'),Math.min(9000,(kind==='bad'?3500:2500)+Math.max(0,t.length-60)*45))}
+let anncTimer=0;
+function announce(msg){const el=document.getElementById('annc');if(!el)return;el.textContent='📢 '+msg;el.classList.add('show');clearTimeout(anncTimer);anncTimer=setTimeout(()=>el.classList.remove('show'),6500);sfx('target')}
+function pop(x,y,text,good){S.pops.push({x,y,text,good,life:1.6})}
+/* Every score change is also written to a log so the end-of-round report can explain it. cat = match | quick | wait | late | gap | held */
+function note(cat,pts,text,tr){S.log.push({t:S.t,cat,pts:r0(pts),text,tr:tr?tr.num+' '+tr.type.label:''})}
+function addScore(p,x,y,why,tr,cat){S.score+=p;if(Math.abs(p)>=1&&why){pop(x,y,(p>0?'+':'')+r0(p)+' '+why,p>0);note(cat||'match',p,why,tr);if(p>=1)sfx('coin')}}
+
+/* ---------- junction routes ----------
+   Each junction end used to have one lock. Now a train claims its own route through the junction fan, and two routes
+   conflict only when they really clash:
+   - two trains entering at the same end (or two leaving at the same end) share a line, so they go one at a time;
+   - an entering and a leaving train may go together when their fan routes stay CLEAR units apart (a train is ~19 units wide). */
+const CLEAR=26; // a train is ~19 wide and neighbouring tracks are 32 apart, so routes 26+ apart are safe to run together
+function segDist(a,b,c,d){
+ const side=(p,q,r)=>(r[0]-p[0])*(q[1]-p[1])-(r[1]-p[1])*(q[0]-p[0]);
+ if(side(c,d,a)*side(c,d,b)<0&&side(a,b,c)*side(a,b,d)<0)return 0;
+ const ps=(p,s,e)=>{const dx=e[0]-s[0],dy=e[1]-s[1],t=Math.max(0,Math.min(1,((p[0]-s[0])*dx+(p[1]-s[1])*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p[0]-s[0]-t*dx,p[1]-s[1]-t*dy)};
+ return Math.min(ps(a,c,d),ps(b,c,d),ps(c,a,b),ps(d,a,b));
+}
+/* the diagonal a train follows between the main line and its platform end */
+/* The throat is a ladder: one trunk line (the approach line, or the exit line) continues, and each platform track peels off it at its own switch.
+   The farthest platform peels off first (furthest from the station), so the lines never cross. peelX gives that switch's position for a platform and a trunk at height lineY. */
+const PEEL_STEP=20;
+function peelX(lineY,lane){
+ if(lane.thru)return LH;
+ const d=LY(lane.idx)-lineY,up=d<0;let rank=0;
+ for(const o of S.lanes){if(o.thru||o===lane)continue;const od=LY(o.idx)-lineY;if((od<0)===up&&Math.abs(od)<Math.abs(d))rank++}
+ return LH+rank*PEEL_STEP;
+}
+function fanSeg(kind,end,lane){return kind==='entry'?[[X(end,peelX(INY[end],lane)),INY[end]],[X(end,LE),LY(lane.idx)]]:[[X(end,LE),LY(lane.idx)],[X(end,peelX(INY[other(end)],lane)),INY[other(end)]]]}
+function claimConflict(end,kind,seg){
+ for(const c of S.claims[end]){
+  if(c.kind===kind)return c;
+  if(seg&&c.seg&&segDist(seg[0],seg[1],c.seg[0],c.seg[1])<CLEAR)return c;
+ }
+ return null;
+}
+function conflictMsg(end,kind,c){
+ if(c.kind===kind)return 'Another train is '+(kind==='entry'?'entering':'leaving')+' through the '+SIDE[end]+' junction. Wait a moment.';
+ return 'This route would cross a train '+(kind==='entry'?'leaving':'entering')+' through the '+SIDE[end]+' junction. Wait a moment.';
+}
+function claim(end,t,kind,seg){S.claims[end].push({t,kind,seg})}
+function release(end,t,kind){const a=S.claims[end],i=a.findIndex(c=>c.t===t&&c.kind===kind);if(i>=0)a.splice(i,1)}
+function releaseAll(t){for(const e of ['E','W'])S.claims[e]=S.claims[e].filter(c=>c.t!==t)}
+
+/* ---------- minimum gap between trains on the same line ---------- */
+/* Penalties are 75% of their original size (PEN). r0 rounds away from zero so -37.5 shows as -38 everywhere. */
+const PEN=.75,r0=x=>Math.sign(x)*Math.round(Math.abs(x));
+const MINGAP=60,BRAKE=140,GAPPEN=-20*PEN,WRONGPLAT=-50*PEN,WAITRATE=3*PEN,LATERATE=2*PEN,HELDRATE=.5*PEN;
+const SATB_MIN=50,SATB_MAX=200,VIPBONUS=150,VIPLATE=-50*PEN; // satisfaction bonus points at 90% / 100%; VIP rewards
+const PROMPT=3; // share of trains running late / early; seconds that count as "promptly" when recovering a late train
+const EFF_FROM=80,EFFB_MIN=40,EFFB_MAX=150,EFF_GRACE=2.5,EFF_RATE=8; // efficiency: bonus from 80%; grace seconds before delay counts; points lost per second of avoidable delay
+/* Returns the speed limit a train must respect to stay MINGAP behind the train ahead on a shared stretch of line, and that leader.
+   Entry line: both trains are measured by distance travelled from the same start (s). Exit line: measured from the shared junction point (sClearOut). */
+function leaderCap(t){
+ let cap=Infinity,lead=null;
+ const consider=(o,gap)=>{const c=o.v+Math.sqrt(2*BRAKE*Math.max(0,gap-MINGAP));if(c<cap){cap=c;lead=o}};
+ if(t.exitSide&&t.sClearOut!==undefined&&(t.state==='exiting'||(t.mode==='lane'&&t.type.nonstop&&t.state==='go'))){
+  const uf=t.s-t.sClearOut;
+  for(const o of S.trains){
+   if(o===t||o.state!=='exiting'||o.exitSide!==t.exitSide||o.sClearOut===undefined)continue;
+   const uh=o.s-o.sClearOut;if(uh<=uf)continue;
+   consider(o,uh-o.L-uf);
+  }
+ }
+ if(t.state==='arriving'||t.state==='set'||t.state==='go'){
+  for(const o of S.trains){
+   if(o===t||o.side!==t.side||o.s<=t.s)continue;
+   if(o.state!=='arriving'&&o.state!=='outer'&&o.state!=='set'&&o.state!=='go')continue;
+   if(o.s-o.L>(o.mode==='loop'?204:469))continue; // leader already left the shared stretch
+   consider(o,o.s-o.L-t.s);
+  }
+ }
+ return{cap,lead};
+}
+
+/* ---------- spawning ---------- */
+function sideFree(sd){
+ return !S.trains.some(t=>{
+  if(t.side!==sd)return false;
+  if(t.state==='arriving'||t.state==='outer'||t.state==='set')return true;
+  if(t.state==='go'||t.state==='exiting'){const tx=at(t.path,t.s-t.L).x;return (sd==='E'?tx:W-tx)>1195}
+  return false;
+ });
+}
+/* ---------- the timetable ----------
+   Every round's arrivals are planned when the round starts (S.sched): when each train is due, which end it comes from, what it is and, from the Junction,
+   whether it is bound for the branch. The boards at both ends show what is coming, so the player can plan (for example park a slow train to let an express in).
+   A train whose end is still busy when it falls due is HELD outside: it costs points (more for high-priority trains) and arrives already late,
+   so its patience is already used up (an express, with the shortest patience, suffers most). */
+/* Planned platforms: every timetabled train has a platform on the boards (e.plat). Bringing it to that platform pays PLAN_B and lifts its passengers' satisfaction by PLAN_SAT.
+   Early on no two trains are planned for the same platform at overlapping times; from round SHARE_FROM two may share one, but only when one of them runs early or late.
+   If the player sends a train elsewhere, the board is updated and an announcement shows; maintenance re-plans trains automatically (no penalty either way). */
+const PLAN_SAT=5; // the bonus (LV.planB) and the first round in which a platform may be shared (LV.share) depend on the level
+const planWin=(e,when)=>{const T=TT[e.key];return[when+6,when+6+(T.dwell||0)+(T.buf||0)+8]};
+const overlap=(a,b)=>Math.max(0,Math.min(a[1],b[1])-Math.max(a[0],b[0]));
+function planLane(e,exclude){
+ const T=TT[e.key];
+ if(T.nonstop){const l=S.lanes.find(l=>l.thru&&l.enabled&&l.dirOnly===e.side);return l?l.idx:null}
+ const cands=S.lanes.filter(l=>l.enabled&&!l.thru&&!(exclude&&exclude.includes(l.idx))&&isRightLane({type:T,key:e.key},l));
+ let best=null,bc=1e9;
+ for(const l of cands){
+  let cost=l.ok.length*.2;
+  for(const o of S.sched){
+   if(o===e||o.arrived||o.plat!==l.idx)continue;
+   const oa=overlap(planWin(e,e.t),planWin(o,o.t)),os=overlap(planWin(e,e.sched),planWin(o,o.sched));
+   const shareOk=S.round>=LV.share&&(Math.abs(e.dev)>=2||Math.abs(o.dev)>=2);
+   cost+=os*10+(shareOk?oa*.5:oa*10);
+  }
+  if(cost<bc){bc=cost;best=l.idx}
+ }
+ return best;
+}
+function planPlatforms(){for(const e of S.sched){e.plat=planLane(e);e.plat0=e.plat}}
+function replanFor(lanes){
+ const ids=lanes.map(l=>l.idx);let n=0;
+ for(const e of S.sched){if(e.arrived||e.plat==null||!ids.includes(e.plat))continue;const p=planLane(e,ids);if(p!=null&&p!==e.plat){e.plat=e.plat0=p;e.chg=true;n++}}
+ if(n)announce('Platform change: '+lanes.map(l=>l.name).join(' and ')+' closing for maintenance. '+n+' train'+(n>1?'s':'')+' re-planned.');
+}
+const HELD_W={nonstop:1.5,express:1.3,local:1,goods:.6}; // how heavily a held train counts, by priority
+function buildSchedule(){
+ const keys=[];for(const k in S.quota)for(let i=0;i<S.quota[k];i++)keys.push(k);
+ for(let i=keys.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[keys[i],keys[j]]=[keys[j],keys[i]]}
+ // Some trains run late (4 to 14 s) or early (2 to 6 s) against the timetable: e.dev is that deviation and e.t is when it actually arrives.
+ const out=[];let tc=1.2;
+ keys.forEach((key,idx)=>{
+  const r=Math.random();let dev=0;
+  if(S.round>=LV.devFrom){if(r<LV.lateP)dev=Math.round(rnd(LV.late[0],LV.late[1]));else if(r<LV.lateP+LV.earlyP)dev=-Math.round(rnd(2,6))}
+  out.push({id:idx,t:Math.max(1.2,tc+dev),sched:tc,dev,side:Math.random()<.5?'E':'W',key,dest:'main',vip:false,spawned:false});
+  tc+=Math.max(5,10-tc/40)*rnd(.8,1.2)*LV.gap;
+ });
+ out.sort((a,b)=>a.t-b.t);
+ const eligible=out.filter(e=>branchOn(e.side)&&!TT[e.key].nonstop); // trains that could be bound for a branch
+ for(const e of eligible)if(Math.random()<LV.branchP)e.dest='branch';
+ for(const sd of ['W','E']){ // the round a branch opens, it always has a train bound for it
+  const el=eligible.filter(e=>e.side===sd);
+  if(el.length&&branchStarts(sd)&&!el.some(e=>e.dest==='branch'))el[Math.min(1,el.length-1)].dest='branch';
+ }
+ if(S.vipAt>0){const v=out.find(e=>e.t>=S.vipAt&&e.key!=='goods');if(v)v.vip=true} // one VIP train from round 6
+ return out;
+}
+function spawnEntry(e){
+ const sd=e.side,key=e.key;S.remaining[key]--;const type=TT[key],iy=INY[sd];
+ const t={key,type,num:'#'+(S.num++),side:sd,state:'arriving',s:0,v:90,L:type.cars*CAR,waitT:0,lane:null,loopK:0,iy,
+          path:mkPath(mir(sd,[[W+4,iy],[1130,iy]])),sWait:(W+4)-WAITX,entryLock:false,exitLock:false,lossWait:0,lossLate:0,vcap:Infinity,leader:null,gapHit:null,
+          pat:type.pat*LV.pat,buf:type.buf,satLoss:0,sat:100,vip:false};
+ // From round 6 one train per round may be a VIP: shorter patience, a bonus if it is cleared quickly and leaves on time.
+ t.sched=e;t.lateBy=Math.max(0,S.t-e.t);t.planSat=0; // how long it was held outside before it could come in
+ t.dev=e.dev||0;
+ if(t.dev<=-2)t.pat+=Math.min(6,-t.dev); // running early: it has time in hand, so it can wait
+ if(t.dev>=2){t.lateSat=Math.min(25,t.dev*2);t.satLoss+=t.lateSat} // running late: its passengers are already unhappy
+ if(e.vip){
+  t.vip=true;t.pat*=.6;if(t.buf)t.buf*=.7;S.vipDone=true;
+  say('★ VIP train '+t.num+' ("'+type.label+'") is on its way: clear it quickly for a bonus!','good');sfx('vip');
+ }
+ // Branch destinations: some trains from a side with a branch line are bound for it. In the first round with a branch, at least one is.
+ t.dest=e.dest;t.exitChoice=branchOn(sd)&&!type.nonstop;
+ e.spawned=true;S.trains.push(t);return t;
+}
+function spawnOn(sd){ // an unscheduled train (used by tests and helpers)
+ const pool=[];for(const k in S.remaining)for(let i=0;i<S.remaining[k];i++)pool.push(k);
+ if(!pool.length)return;
+ return spawnEntry({id:-1,t:S.t,side:sd,key:pick(pool),dest:'main',vip:false,spawned:false});
+}
+function spawnTick(dt){
+ // Bring in every train that is due, in timetable order, as soon as its end is free; the rest are held outside.
+ const blocked={};let held=0,heldW=0;
+ for(const e of S.sched){
+  if(e.spawned||e.t>S.t)continue;
+  if(!blocked[e.side]&&sideFree(e.side)){spawnEntry(e);continue}
+  blocked[e.side]=true;held++;heldW+=HELD_W[e.key]||1;
+ }
+ S.held=held;S.heldW=heldW;
+}
+
+/* ---------- branch lines ----------
+   From the Junction grade a branch line leaves the east side (the exit of trains that came in from the west). Some trains are bound for it (t.dest='branch').
+   The player picks the line (the main line or the branch) before clearing the exit signal; with Exit guidance on, the right line glows. The branch leaves the
+   main line AFTER the junction fan, so the junction safety rules are unchanged: only where the train goes, and the points it earns, differ. */
+const BR_WRONG=-40*PEN;
+let userGuide=true;try{userGuide=localStorage.getItem('sm_guide')!=='0'}catch(e){}
+let GUIDE=LV.guide===null?userGuide:LV.guide; // Easy always guides, Hard never does; Normal is the player's choice
+function applyGuide(){GUIDE=LV.guide===null?userGuide:LV.guide;const b=document.getElementById('guideToggle');if(b){b.textContent='Exit guidance: '+(GUIDE?'On':'Off')+(LV.guide===null?'':' (set by level)');b.disabled=LV.guide!==null}}
+applyGuide();
+let BOARD=true;try{BOARD=localStorage.getItem('sm_board')!=='0'}catch(e){}
+function applyBoard(){document.body.classList.toggle('noboard',!BOARD);const b=document.getElementById('boardToggle');if(b)b.textContent='Timetable: '+(BOARD?'On':'Off')}
+applyBoard();
+const branchOn=sd=>!!(S.stage&&S.stage.branches&&S.stage.branches.includes(sd)&&S.round>=((S.stage.branchRound&&S.stage.branchRound[sd])||0)); // branchRound: a branch that opens later than its grade (the second one, from round 13)
+const branchStarts=(sd)=>S.round===((S.stage.branchRound&&S.stage.branchRound[sd])||S.stage.from); // does the exit of trains that came in from side sd have a branch?
+const exitChoice=t=>branchOn(t.side)&&!t.type.nonstop; // the player must pick a line for this train
+const destName=t=>t.dest==='branch'?'branch':'main line';
+function readyMsg(t){ // what to tell the player about a train that has finished boarding
+ return exitChoice(t)
+  ?t.num+' '+t.type.label+' is ready to leave'+(GUIDE?': tap its flashing exit signal. The glowing line is its way out.':'. Choose its way out: the platform signal for the main line, or the branch signal.')
+  :t.num+' '+t.type.label+' is ready to leave. Click its flashing exit signal.';
+}
+function tailLocal(side,i,key){ // the route after the junction fan, in the entering side's local coordinates (mir flips it for the west side)
+ if(key==='branch'){const dy=side==='W'?-1:1;return [[380,i],[270,i+dy*48],[-730,i+dy*484]]}
+ return [[-700,i]];
+}
+function exitLineAbs(t,key){return mir(t.side,[[W-(t.lane?peelX(t.iy,t.lane):LH),t.iy],...tailLocal(t.side,t.iy,key)])} // absolute points of an exit line, from the end of the junction fan
+function branchSig(sd){ // the branch signal stands just after the fork, beside the branch track; one signal serves every platform
+ const i=INY[sd],dy=sd==='W'?-1:1,p=mir(sd,[[380,i],[270,i+dy*48]]),f=.4;
+ return{x:p[0][0]+(p[1][0]-p[0][0])*f,y:p[0][1]+(p[1][1]-p[0][1])*f+dy*14,a:Math.atan2(p[1][1]-p[0][1],p[1][0]-p[0][0])};
+}
+function drawBranches(){
+ for(const sd of ['W','E']){
+  if(!branchOn(sd))continue;
+  const i=INY[sd],p=mir(sd,[[W-LH,i],...tailLocal(sd,i,'branch')]); // p[1] is the fork, p[2] the first bend, p[3] far off the screen
+  track(p[1][0],p[1][1],p[2][0],p[2][1]);track(p[2][0],p[2][1],p[3][0],p[3][1]);
+  // direction chevrons along the branch
+  const dx=p[3][0]-p[2][0],dy=p[3][1]-p[2][1],len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len;
+  ctx.save();ctx.strokeStyle='#d9eef2';ctx.lineWidth=2;
+  for(let d=70;d<len&&p[2][0]+ux*d<W-10&&p[2][0]+ux*d>10;d+=70){const cx=p[2][0]+ux*d,cy=p[2][1]+uy*d;ctx.beginPath();ctx.moveTo(cx-6*ux-5*uy,cy-6*uy+5*ux);ctx.lineTo(cx+2*ux,cy+2*uy);ctx.lineTo(cx-6*ux+5*uy,cy-6*uy-5*ux);ctx.stroke()}
+  ctx.restore(); // no permanent labels: the branch is the line that leaves the main line; a bound train says "→ Branch"
+ }
+}
+
+/* ---------- routes ---------- */
+function stopXFor(l,t){return l.x0+(l.len-t.L)/2}
+function buildPath(t,tg,tailKey,rebuild){ // rebuild: used at the exit, when the player sends a train a different way than the one it was built for
+ const i=t.iy,rp0={},tail=tailLocal(t.side,i,tailKey||t.dest||'main'),fromOuter=rebuild?!t.fromLoop:t.state==='outer',lk=rebuild?t.loopFrom:t.loopK;
+ if(tg.kind==='loop'){
+  const iy=i+ldy(t.side,tg.k);
+  const orig=mir(t.side,[[W+4,i],[1200,i],[1170,iy],[LHOLD,iy]]);
+  const rp=roundPath(orig,16);
+  return{path:mkPath(rp.pts),orig,clearIn:1,stop:3,rp,mode:'loop',routeFrom:1,routeTo:3,sClearIn:null};
+ }
+ const l=tg.lane,ly=LY(l.idx),sx=stopXFor(l,t),px=peelX(i,l); // px: where this platform peels off the approach (and, at the far end, the exit) line
+ let orig,ci,si,fi,co,rs,re;
+ if(fromOuter){orig=mir(t.side,[[W+4,i],[px,i],[LE,ly],[sx,ly],[LW,ly],[W-px,i],...tail]);ci=2;si=3;fi=4;co=5;rs=1;re=3} // ci=2: entry lock is released when the tail has left the junction fan (reached the platform end), not when it enters it
+ else{const iy=i+ldy(t.side,lk);orig=mir(t.side,[[W+4,i],[1200,i],[1170,iy],[1000,iy],[peelX(iy,l),iy],[LE,ly],[sx,ly],[LW,ly],[W-px,i],...tail]);ci=5;si=6;fi=7;co=8;rs=3;re=6} // from a siding the train runs straight on into the platform beside it: it does not rejoin the approach line
+ const rp=roundPath(orig,18),path=mkPath(rp.pts);
+ return{path,orig,rp,mode:'lane',clearIn:ci,stop:si,free:fi,clearOut:co,routeFrom:rs,routeTo:re};
+}
+/* ---------- sidings ----------
+   A siding leaves the approach line, holds one waiting train, and then runs straight into the platforms beside it (its island, or the goods line).
+   So a parked train can be sent directly to one of those platforms while another train uses the approach line, and a priority train can pass it. */
+function sidingLanes(side,k){ // the platforms a siding leads straight to
+ const iy=INY[side]+ldy(side,k);let near=null,nd=1e9;
+ for(const l of S.lanes){if(!l.enabled||l.thru)continue;const d=Math.abs(LY(l.idx)-iy);if(d<nd){nd=d;near=l}}
+ if(!near)return[];
+ return S.lanes.filter(l=>l.enabled&&!l.thru&&(near.isl===undefined?l===near:l.isl===near.isl));
+}
+const isRightLane=(t,l)=>t.type.nonstop?!!l.thru:(!l.thru&&(l.kind==='Goods'?t.key==='goods':(t.key!=='goods'&&!!l.ok&&l.ok.includes(t.key))));
+function entrySeg(t,tg){ // the junction route an entering train claims: from the siding it waits in, or from the approach line
+ if(tg.kind!=='lane')return null;
+ if(t.state==='loop'){const lk=t.loopK||t.loopFrom;return[[X(t.side,peelX(t.iy+ldy(t.side,lk),tg.lane)),t.iy+ldy(t.side,lk)],[X(t.side,LE),LY(tg.lane.idx)]]}
+ return fanSeg('entry',t.side,tg.lane);
+}
+function checkEntry(t,tg){
+ if(t.state!=='outer'&&t.state!=='loop')return 'That train is already moving or at a platform.';
+ if(tg.kind==='loop'){
+  if(!S.stage.loops)return 'Sidings have not been built yet.';
+  if(t.state!=='outer')return 'Only a train at the outer signal can enter a siding.';
+  if(S.trains.some(q=>q.side===t.side&&q.loopK===tg.k&&q.state!=='gone'))return 'Siding '+tg.k+' is already occupied.';
+  if(t.type.nonstop)return 'Non-stop trains never stop, so they do not use sidings.';
+  {const sl=sidingLanes(t.side,tg.k);if(!sl.some(l=>isRightLane(t,l)))return 'Siding '+tg.k+' leads to '+(sl.map(l=>l.name).join(' and ')||'no platform')+', which this train cannot use.'}
+ } else {
+  const l=tg.lane;
+  if(t.state==='loop'){const sl=sidingLanes(t.side,t.loopK);if(!sl.includes(l))return 'Siding '+t.loopK+' only leads to '+(sl.map(x=>x.name).join(' and ')||'no platform')+'.'}
+  if(!l.enabled)return l.name+' is not in service yet (opens in round '+LANE_FROM[l.idx]+').';
+  if(l.closed)return l.name+' is closed for maintenance ('+Math.ceil(l.closedT)+' s left).';
+  if(l.warnT>0&&l.warnT<NOENTRY)return l.name+' closes for maintenance in '+Math.ceil(l.warnT)+' s: no new trains.';
+  if(l.thru){
+   if(!t.type.nonstop)return 'The through line has no platform. Only non-stop trains can use it.';
+   if(l.dirOnly!==t.side)return 'That through line is for non-stop trains from the '+SIDE[l.dirOnly]+'.';
+  }
+  if(l.busy)return l.name+' is occupied.';
+  // A non-stop train never stops, so it needs the far junction as well, whichever line it is sent to (commitEntry takes that lock for it).
+  if(t.type.nonstop&&claimConflict(other(t.side),'exit',fanSeg('exit',other(t.side),l)))return 'The '+SIDE[other(t.side)]+' junction is in use, so the train could not leave.';
+ }
+ {const c=claimConflict(t.side,'entry',entrySeg(t,tg));if(c)return conflictMsg(t.side,'entry',c)}
+ return '';
+}
+function checkExit(t){
+ if(t.state==='dwell')return 'Still boarding: it must stay '+Math.ceil(t.dwellT)+' more seconds.';
+ if(t.state!=='ready')return 'That train is not ready to leave.';
+ const es=other(t.side);
+ {const c=claimConflict(es,'exit',fanSeg('exit',es,t.lane));if(c)return conflictMsg(es,'exit',c)}
+ return '';
+}
+function commitEntry(t,tg){
+ const b=buildPath(t,tg);
+ t.path=b.path;t.sClearIn=b.path.cum[b.rp.map[b.clearIn]];t.sStop=b.path.cum[b.rp.map[b.stop]];
+ if(tg.kind==='lane'&&t.sched&&t.sched.plat!=null&&!t.type.nonstop&&t.sched.plat!==tg.lane.idx){
+  const was=S.lanes[t.sched.plat];t.sched.plat=tg.lane.idx;t.sched.chg=true;
+  announce('Platform change: '+t.num+' '+t.type.label+' now on '+tg.lane.name+(was?' (was '+was.name+')':''));
+ }
+ t.target=tg;t.mode=b.mode;t.fromLoop=t.state==='loop';t.loopFrom=t.loopK;
+ if(b.mode==='lane'){t.sFree=b.path.cum[b.rp.map[b.free]];t.sClearOut=b.path.cum[b.rp.map[b.clearOut]];t.lane=tg.lane;tg.lane.busy=t;tg.lane.glow=1.2;t.loopK=0}
+ else t.loopK=tg.k;
+ claim(t.side,t,'entry',entrySeg(t,tg));t.entryLock=true;
+ if(t.mode==='lane'&&t.type.nonstop){claim(other(t.side),t,'exit',fanSeg('exit',other(t.side),tg.lane));t.exitLock=true;t.exitSide=other(t.side)}
+ t.state='set';t.setT=.9;
+ // quick dispatch bonus
+ const bonus=Math.max(0,30-t.waitT*3);
+ if(bonus>=1&&tg.kind==='lane'&&!t.type.nonstop)addScore(bonus,X(t.side,WAITX),t.iy-12,'quick',t,'quick');
+ t.entryWait=t.waitT;
+}
+function commitExit(t,key){
+ const es=other(t.side);t.exitKey=key||'main';
+ // A train that arrived late and is dealt with promptly (within PROMPT s at the signal, and within PROMPT s of being ready to leave) recovers:
+ // its passengers are happy again, it earns a bonus, and its efficiency gets a lift.
+ if(t.dev>=2&&!(exitChoice(t)&&key&&key!==t.dest)&&((t.entryWait||0)-(t.lateBy||0))<=PROMPT&&(t.readyT||0)<=PROMPT){
+  t.recovered=true;t.satLoss=Math.max(0,t.satLoss-(t.lateSat||0));
+  addScore(Math.min(40,Math.round(t.dev*3)),W/2,LY(t.lane.idx)-12,'late train recovered',t,'recover');
+  S.log[S.log.length-1].text=t.num+' '+t.type.label+' was running '+t.dev+' s late and was sent in and out promptly';
+ }
+ if(exitChoice(t)&&key&&key!==t.dest){ // wrong line: the train goes where it was sent, and the player pays for it
+  const b=buildPath(t,t.target,key,true);
+  t.path=b.path;t.sFree=b.path.cum[b.rp.map[b.free]];t.sClearOut=b.path.cum[b.rp.map[b.clearOut]];
+  t.satLoss+=40;t.wrongExit=true;
+  addScore(BR_WRONG,W/2,LY(t.lane.idx)-12,'wrong line',t,'exit');
+  S.log[S.log.length-1].text=t.num+' '+t.type.label+' was sent '+(key==='branch'?'up the branch':'along the main line')+' but was bound for the '+destName(t);
+  say(t.num+' was bound for the '+destName(t)+' but went the other way ('+r0(BR_WRONG)+').','bad');
+ }
+ claim(es,t,'exit',fanSeg('exit',es,t.lane));t.exitLock=true;t.exitSide=es;t.state='exiting';t.v=8;
+}
+// A short celebration for a good round (skipped for players who prefer reduced motion).
+function confetti(n,id){
+ const el=document.getElementById(id||'confetti');if(!el)return;
+ if(reduce||!n){el.innerHTML='';return}
+ const cols=['#ffc23d','#2cf5a0','#4dc3ff','#ff4d6d','#9b6bff'];let h='';
+ for(let i=0;i<n;i++)h+='<i style="--x:'+Math.round(Math.random()*100)+'%;--c:'+cols[i%5]+';--d:'+(2.2+Math.random()*1.8).toFixed(2)+'s;--dl:'+(Math.random()*.9).toFixed(2)+'s;--r:'+Math.round(240+Math.random()*480)+'deg"></i>';
+ el.innerHTML=h;
+}
+/* ---------- the finale: shown after round MAX_ROUND is passed ---------- */
+const TRAINS_TOTAL=(()=>{let n=0;for(let r=1;r<=MAX_ROUND;r++)n+=totalFor(r);return n})();
+const SHARE_URL='https://adhicalling-tech.github.io/station-master/'; // the web version (GitHub Pages); replace with the Google Play link once the app is published. It is added to the shared message
+function rankFor(score){let k=RANKS[0];for(const r of RANKS)if(score>=rankMin(r))k=r;return k}
+const rankMin=r=>Math.round(r.f*LV.ceil/100)*100; // a rank's threshold on the current level
+function finalSummary(){
+ const v=Object.values(RUN),avg=f=>v.length?v.reduce((a,x)=>a+(x[f]||0),0)/v.length:0;
+ const score=Math.round(S.score),rk=rankFor(score);
+ return{score,lvl:LEVEL,rank:rk.name,tier:rk.tier,desc:rk.desc,sat:Math.round(avg('sat')),eff:Math.round(avg('eff')),trains:TRAINS_TOTAL};
+}
+function saveFinal(){ // the journey is complete: remember the result and start fresh next time
+ if(DEMO)return;
+ try{localStorage.setItem(K('sm_final'),JSON.stringify(finalSummary()));localStorage.removeItem(K('sm_round'));localStorage.removeItem(K('sm_score'))}catch(e){}
+}
+let FIN=null;
+const LV_EMOJI={easy:'🔵★',normal:'🟢★★',hard:'🔴★★★'};
+function shareMessage(f){return 'I finished Station Master '+(LV_EMOJI[f.lvl]||'')+' as '+f.rank+' with '+f.score.toLocaleString('en-US')+' points ('+f.sat+'% passenger satisfaction, '+f.eff+'% efficiency). Can you beat my score?'+(SHARE_URL?' '+SHARE_URL:'')}
+function showFinale(){
+ const f=FIN=finalSummary(),$=id=>document.getElementById(id);
+ $('roundEnd').hidden=true;
+ $('fRank').textContent=f.rank;
+ {const L=LEVELS[f.lvl]||LV,fb=$('fbanner');fb.style.setProperty('--lc',L.col);fb.style.setProperty('--lc2',L.lite);fb.style.setProperty('--lc3',L.dark);
+  $('fLv').textContent='★'.repeat(L.stars);$('fLv').setAttribute('aria-label',L.stars+' star'+(L.stars>1?'s':'')+' level');
+  $('fStars').innerHTML=RANKS.map((r,i)=>'<i'+(i<f.tier?' class="on"':'')+'></i>').join('');$('fStars').setAttribute('aria-label','Rank '+f.tier+' of '+RANKS.length)}
+ $('fDesc').textContent=f.desc;
+ $('fScore').textContent=f.score.toLocaleString('en-US');
+ $('fSat').textContent=f.sat+'%';$('fEff').textContent=f.eff+'%';$('fTrains').textContent=f.trains;$('fBest').textContent=Math.max(best,f.score).toLocaleString('en-US');
+ $('fNote').textContent='';
+ $('finale').hidden=false;
+ confetti(60,'confetti2');jingle('upgrade');
+}
+function doShare(){
+ if(!FIN)return;const text=shareMessage(FIN),note=document.getElementById('fNote');
+ try{
+  if(window.StationMasterShare&&typeof window.StationMasterShare.share==='function'){window.StationMasterShare.share(text);return} // Android share sheet
+  if(navigator.share){navigator.share({text}).catch(()=>{});return}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>{note.textContent='Copied to the clipboard. Paste it to a friend!'},()=>{note.textContent=text});return}
+ }catch(e){}
+ note.textContent=text; // last resort: show the message so it can be copied by hand
+}
+function endRound(){
+ S.over=true;
+ const pts=S.score-S.roundStart,avg=pts/S.total;
+ const stars=avg>=85?3:avg>=55?2:avg>=20?1:0;
+ S.stars=stars;
+ document.getElementById('reTitle').textContent=stars?'Round '+S.round+' complete':'Round '+S.round+' not passed';
+ {const rs=document.getElementById('reStars');rs.setAttribute('role','img');rs.setAttribute('aria-label',stars+' of 3 stars');
+  rs.innerHTML=[0,1,2].map(i=>'<span class="st'+(i<stars?' on':'')+'" style="--i:'+i+'">'+(i<stars?'★':'☆')+'</span>').join('');
+  document.getElementById('reTitle').className=stars?'pass':'fail'}
+ // Satisfaction bonus: passing with >= 90% satisfaction pays SATB_MIN bonus points, rising to SATB_MAX at 100%. It is added after the pass check, so it never changes whether a round is passed.
+ let bonus=0;
+ {const sat=satNow(),sp=Math.round(sat*10)/10;
+  S.satPct=sat;bonus=stars?satBonusFor(sat):0;S.bonus=bonus;
+  if(bonus>0){S.score+=bonus;note('sat',bonus,'Satisfaction bonus at '+sp+'%')}
+  const rule=SATB_MIN+' points at 90%, rising to '+SATB_MAX+' at 100%';
+  const msg=!stars?'Pass the round to earn the satisfaction bonus.':sat>=90?'+'+bonus+' bonus points ('+rule+')':'Below 90%: no bonus this time ('+rule+')';
+  document.getElementById('reSat').innerHTML='<h3>Passenger satisfaction</h3><div class="satbar"><i style="width:'+Math.min(100,sp)+'%"></i><span></span></div><div class="satline"><b class="'+(sat>=90?'pos':'neg')+'">'+sp+'%</b> '+esc(msg)+'</div>';}
+ // Efficiency bonus: from EFF_FROM% efficiency, EFFB_MIN points rising to EFFB_MAX at 100%. Also added after the pass check.
+ let effBonus=0;
+ {const ef=effNow(),ep=Math.round(ef*10)/10;
+  S.effPct=ef;effBonus=stars?effBonusFor(ef):0;S.effBonus=effBonus;
+  if(effBonus>0){S.score+=effBonus;note('eff',effBonus,'Efficiency bonus at '+ep+'%')}
+  const rule=EFFB_MIN+' points at '+EFF_FROM+'%, rising to '+EFFB_MAX+' at 100%';
+  const msg=!stars?'Pass the round to earn the efficiency bonus.':ef>=EFF_FROM?'+'+effBonus+' bonus points ('+rule+')':'Below '+EFF_FROM+'%: no bonus this time ('+rule+')';
+  const why=(S.effIdle>=.5||S.effBlock>=.5)?' Avoidable delays: '+S.effIdle.toFixed(1)+' s of trains waiting while a right platform was free, '+S.effBlock.toFixed(1)+' s of finished trains blocking a platform.':'';
+  document.getElementById('reEff').innerHTML='<h3>Operating efficiency</h3><div class="satbar effbar"><i style="width:'+Math.min(100,ep)+'%"></i><span></span></div><div class="satline"><b class="'+(ef>=EFF_FROM?'pos':'neg')+'">'+ep+'%</b> '+esc(msg)+esc(why)+'</div>';}
+ const bonusAll=bonus+effBonus;
+ document.getElementById('reText').textContent=S.total+' trains handled, '+Math.round(pts+bonusAll)+' points this round'+(bonusAll>0?' (including '+bonusAll+' bonus points)':'')+(stars?'':'. Score at least 20 points per train on average to pass.');
+ noteBest();saveBest();
+ if(S.score>0&&Math.round(S.score)>S.bestAtStart)document.getElementById('reText').textContent+='  ★ New best score: '+best+'!';
+ document.getElementById('reBtn').textContent=stars?(S.round>=MAX_ROUND?'See final results':'Next round'):'Retry round';
+ if(S.lossHeld>=1)note('held',-S.lossHeld,'Trains left waiting outside the station cost points while they queued');
+ renderReport();
+ // Passing the round may promote the station to the next grade: announce what is being built.
+ {const up=document.getElementById('reUp'),nxt=stageFor(S.round+1);
+  if(stars&&nxt.id!==S.stage.id){up.hidden=false;up.innerHTML='<h4>STATION UPGRADE · '+esc(nxt.name)+'</h4><ul>'+nxt.news.map(n=>'<li>'+esc(n)+'</li>').join('')+'</ul>'}
+  else{up.hidden=true;up.innerHTML=''}
+  if(stars){RUN[S.round]={sat:S.satPct,eff:S.effPct};saveRun();if(S.round>=MAX_ROUND)saveFinal();else saveProgress(S.round+1,S.score)}
+  jingle(!stars?'lose':(nxt.id!==S.stage.id?'upgrade':'win'));}
+ document.getElementById('roundEnd').hidden=false;
+ confetti(stars===3?40:stars===2?16:0);
+ say('Round '+S.round+' finished: '+'★'.repeat(stars)+'☆'.repeat(3-stars),stars?'good':'bad');
+}
+/* ---------- end-of-round score report ---------- */
+const CATS=[
+ ['match','Passenger Fares & Freight Tariffs','+100 standard platform tariff, +40 secondary passenger platform, up to +160 non-stop express line, '+r0(WRONGPLAT)+' demurrage for mixing goods and passenger lines'],
+ ['quick','Punctual Quick-Dispatch Incentive','Up to +30 operating bonus for clearing an arriving train immediately'],
+ ['wait','Outer Approach Demurrage','-'+WAITRATE+' per second once a train has waited longer than scheduled patience'],
+ ['late','Platform Overstay Delay Fine','-'+LATERATE+' per second once a train stays past its departure buffer'],
+ ['gap','Safety Headway Braking Penalty',r0(GAPPEN)+' safety citation each time a train was routed too close behind another ('+MINGAP+' px headway)'],
+ ['sat','Passenger Satisfaction Bonus','+'+SATB_MIN+' at 90% average satisfaction, rising to +'+SATB_MAX+' at 100% (only when the round is passed)'],
+ ['eff','Operating Efficiency Bonus','+'+EFFB_MIN+' at '+EFF_FROM+'% efficiency, rising to +'+EFFB_MAX+' at 100% (only when the round is passed)'],
+ ['plan','Planned Platform Bonus','Bonus points (Easy +'+LEVELS.easy.planB+', Normal +'+LEVELS.normal.planB+', Hard +'+LEVELS.hard.planB+') when a train is brought to the platform shown for it on the timetable board; its passengers are also '+PLAN_SAT+'% happier'],
+ ['recover','Late-Train Recovery Bonus','Up to +40 for a train that arrived late and was sent in and out again promptly (within '+PROMPT+' s each way); it also restores that train\'s passenger satisfaction'],
+ ['exit','Misrouted Departure Penalty',r0(BR_WRONG)+' each time a train is sent out along the wrong line (main line or branch)'],
+ ['vip','VIP Royal Train Protocol','+'+VIPBONUS+' prestige revenue for punctual clearance; '+r0(VIPLATE)+' penalty if delayed'],
+ ['held','Approach Congestion Demurrage','-'+(+HELDRATE.toFixed(2))+' per second for congested queues held outside the station']
+];
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function fmtT(t){const m=Math.floor(t/60),s=Math.floor(t%60);return m+':'+(s<10?'0':'')+s}
+function sgn(p){return(p>0?'+':p<0?'−':'')+Math.abs(p)}
+function logText(e){return e.cat==='quick'?e.tr+': cleared quickly':(e.cat==='match'?e.tr+': '+e.text:e.text)}
+function renderReport(){
+ const log=S.log,tot={};for(const e of log)tot[e.cat]=(tot[e.cat]||0)+e.pts;
+ let b='';
+ for(const [k,label,how] of CATS){if(tot[k]===undefined)continue;const n=log.filter(e=>e.cat===k).length;
+  b+='<div class="rrow"><div><b>'+label+'</b> <span class="rn">×'+n+'</span><div class="rhow">'+how+'</div></div><b class="'+(tot[k]<0?'neg':'pos')+'">'+sgn(tot[k])+'</b></div>'}
+ if(!b)b='<div class="rhow">No scoring events.</div>';
+ document.getElementById('reBreak').innerHTML=b;
+ const bad=log.filter(e=>e.pts<0);
+ document.getElementById('reMist').innerHTML=bad.length?bad.map(e=>'<li><span class="rt">'+fmtT(e.t)+'</span> '+esc(logText(e))+' <b class="neg">'+sgn(e.pts)+'</b></li>').join(''):'<li class="pos">No mistakes this round. Well done!</li>';
+ document.getElementById('reLog').innerHTML=log.map(e=>'<li><span class="rt">'+fmtT(e.t)+'</span> '+esc(logText(e))+' <b class="'+(e.pts<0?'neg':'pos')+'">'+sgn(e.pts)+'</b></li>').join('');
+}
+// p = points, sat = how much this choice costs the passengers' satisfaction (out of 100)
+function matchScore(t,l){
+ if(t.type.nonstop)return l.thru?{p:Math.max(40,Math.round(160-20*(t.entryWait||0))),why:'through, waited '+(t.entryWait||0).toFixed(1)+'s',sat:0}:{p:20,why:'had to stop',sat:15};
+ if(l.kind==='Goods')return t.key==='goods'?{p:100,why:'right platform',sat:0}:{p:WRONGPLAT,why:'passenger on goods line',sat:50};
+ if(t.key==='goods')return{p:WRONGPLAT,why:'goods on passenger platform',sat:50};
+ return l.ok.includes(t.key)?{p:100,why:'right platform',sat:0}:{p:40,why:'other platform',sat:10};
+}
+
+/* ---------- satisfaction bonus ----------
+   Each train ends with a satisfaction out of 100: it loses points for a wrong platform, for waiting longer than its
+   patience, for staying past its departure buffer and for a too-close clearance. A round's satisfaction is the average.
+   Passing a round with at least 90% pays bonus points: SATB_MIN at 90%, rising steadily to SATB_MAX at 100%. */
+const satBonusFor=sat=>sat<90?0:Math.round(SATB_MIN+(Math.min(100,sat)-90)/10*(SATB_MAX-SATB_MIN));
+const satNow=()=>S.satN?S.satSum/S.satN:100;
+/* ---------- efficiency ----------
+   How well the player used the station's resources. A train loses efficiency for avoidable delay, counted after EFF_GRACE seconds (a normal reaction time):
+   - IDLE platform: it waited outside (or in a loop) while a right platform, and a safe route to it, was free;
+   - BLOCKED platform: it sat at the platform after boarding was done.
+   A round's efficiency is the average over its trains. From EFF_FROM% it pays bonus points (only when the round is passed). */
+const effNow=()=>Math.min(100,S.effN?S.effSum/S.effN:100);
+const effBonusFor=e=>e<EFF_FROM?0:Math.round(EFFB_MIN+(Math.min(100,e)-EFF_FROM)/(100-EFF_FROM)*(EFFB_MAX-EFFB_MIN));
+function freeRightPlatform(t){
+ for(const l of S.lanes){
+  if(!l.enabled)continue;
+  if(isRightLane(t,l)&&!checkEntry(t,{kind:'lane',lane:l}))return true; // checkEntry is a pure check: '' means the train could be sent there right now
+ }
+ return false;
+}
+function finishTrain(t){
+ const over=t.lossWait/WAITRATE,late=t.lossLate/LATERATE;
+ t.sat=Math.min(100,Math.max(0,100-t.satLoss-Math.min(30,over*5)-Math.min(25,late*5)+(t.planSat||0)));
+ S.satSum+=t.sat;S.satN++;
+ {const idle=Math.max(0,(t.idleFree||0)-EFF_GRACE),block=Math.max(0,(t.readyT||0)-EFF_GRACE);
+  t.eff=Math.max(0,100-EFF_RATE*(idle+block));if(t.recovered)t.eff=Math.min(110,t.eff+Math.min(15,t.dev*1.5)); /* recovering a late train lifts its efficiency */ S.effSum+=t.eff;S.effN++;S.effIdle+=idle;S.effBlock+=block}
+ if(t.vip){ // the VIP train: a bonus for being cleared quickly and leaving on time
+  if(t.lossWait<1&&t.lossLate<1){sfx('vip');addScore(VIPBONUS,W/2,70,'VIP on time',t,'vip');say('★ VIP '+t.num+' was on time: +'+VIPBONUS+' points!','good')}
+  else addScore(VIPLATE,W/2,70,'VIP delayed',t,'vip');
+ }
+}
+
+/* ---------- update ---------- */
+/* Maintenance (from round 5). Two kinds, one at a time:
+   - TRACK maintenance: one passenger track closes (the platform stays usable from its other side);
+   - PLATFORM maintenance (from the Junction grade): a whole island platform closes, both of its tracks.
+   It is announced WARN seconds ahead (WARN_ISLAND for a platform). In the last NOENTRY seconds of the warning no new train may be sent
+   there, so none gets stranded, and the closure itself waits until everything on it has left.
+   Never closed: the through lines, the goods line, or the last open passenger track. */
+const WARN=20,WARN_ISLAND=25,NOENTRY=6;
+function tickMaintenance(dt){
+ const m=maintOf(S.stage),M=S.maint;
+ if(M){
+  if(M.phase==='warn'){
+   M.warnT-=dt;
+   if(M.warnT<=0){
+    if(M.lanes.some(l=>l.busy)){M.warnT=.5;for(const l of M.lanes)l.warnT=.5} // still in use: wait until it has emptied
+    else{M.phase='closed';M.closedT=m.dur;for(const l of M.lanes){l.warnT=0;l.closed=true;l.closedT=m.dur}say(M.name+' is now closed for maintenance for '+m.dur+' seconds.','bad')}
+   }else for(const l of M.lanes)l.warnT=M.warnT;
+  }else{
+   M.closedT-=dt;
+   if(M.closedT<=0){for(const l of M.lanes){l.closed=false;l.closedT=0;l.maintKind=null}say(M.name+' has reopened.','good');sfx('arrive');S.maint=null}
+   else for(const l of M.lanes)l.closedT=M.closedT;
+  }
+ }
+ S.closeT-=dt;
+ if(S.closeT<=0){S.closeT=rnd(m.every[0],m.every[1]);if(!S.maint)startMaintenance()}
+}
+function startMaintenance(){
+ const cand=l=>l.enabled&&!l.thru&&l.kind!=='Goods';
+ const open=S.lanes.filter(cand);
+ let lanes=null,name='';
+ if(S.stage.id>=4&&Math.random()<.35){ // a whole platform, if both its faces are built and another passenger track stays open
+  const ok=ISLANDS.filter(d=>cand(S.lanes[d.top])&&cand(S.lanes[d.bottom])&&open.some(l=>l.idx!==d.top&&l.idx!==d.bottom));
+  if(ok.length){const d=pick(ok);lanes=[S.lanes[d.top],S.lanes[d.bottom]];name=d.name+' ('+lanes[0].name+' and '+lanes[1].name+')'}
+ }
+ if(!lanes&&open.length>1){const l=pick(open);lanes=[l];name=l.name} // a single track, never the last open one
+ if(!lanes)return;
+ const kind=lanes.length>1?'island':'track',secs=kind==='island'?WARN_ISLAND:WARN;
+ S.maint={lanes,name,kind,phase:'warn',warnT:secs,closedT:0};
+ replanFor(lanes);
+ for(const l of lanes){l.warnT=secs;l.maintKind=kind}
+ say((kind==='island'?'Platform maintenance: ':'Track maintenance: ')+name+' will close in '+secs+' seconds. Finish with it soon!','bad');
+}
+function update(dt){
+ S.t+=dt;spawnTick(dt);
+ if(S.hiT>0)S.hiT-=dt;
+ if(S.stage.maint)tickMaintenance(dt);
+ if(S.vipAt>0&&!S.vipWarned&&S.t>=S.vipAt-15){S.vipWarned=true;say('★ A VIP train is due in about 15 seconds: keep a platform free!','good');sfx('vip')}
+ // particles update & emission
+ if(!S.particles)S.particles=[];
+ for(let i=S.particles.length-1;i>=0;i--){
+  const pt=S.particles[i];
+  pt.life-=dt;
+  if(pt.life<=0){S.particles.splice(i,1);continue}
+  pt.x+=pt.vx*dt;pt.y+=pt.vy*dt;
+  pt.size+=pt.growth*dt;
+ }
+ if(!reduce){
+  for(const t of S.trains){
+   if(t.v>10&&t.state!=='outer'&&t.state!=='dwell'&&t.state!=='loop'){
+    t.partT=(t.partT||0)-dt;
+    if(t.partT<=0&&S.particles.length<60){
+     const isGoods=t.key==='goods';
+     t.partT=isGoods?0.08:0.14;
+     const h=at(t.path,t.s-CAR/2);
+     const backA=h.a+Math.PI;
+     const dSpd=t.v*.22;
+     S.particles.push({
+      x:h.x+Math.cos(backA)*(CAR/2),
+      y:h.y+Math.sin(backA)*(CAR/2),
+      vx:Math.cos(backA)*dSpd+(Math.random()-.5)*8,
+      vy:Math.sin(backA)*dSpd-(isGoods?12:6)+(Math.random()-.5)*6,
+      size:isGoods?2.6:2.0,growth:isGoods?7:4,
+      life:isGoods?.65:.45,maxLife:isGoods?.65:.45,
+      col:isGoods?'rgba(145,138,130,0.55)':(t.vip?'rgba(255,225,140,0.5)':'rgba(220,240,255,0.45)')
+     });
+    }
+   }
+  }
+ }
+ S.score-=(S.heldW||0)*HELDRATE*dt;S.lossHeld+=(S.heldW||0)*HELDRATE*dt; // trains held outside cost points, more for higher priority
+ for(const t of S.trains){
+  const vmax=t.type.vmax;
+  // Keep the minimum gap: slow down for the train ahead. If a train the player cleared has to slow down, that was a planning mistake.
+  {const lc=leaderCap(t);t.vcap=lc.cap;t.leader=lc.lead;
+   if(lc.lead&&lc.cap<vmax-2&&(t.state==='go'||t.state==='exiting')&&t.gapHit!==lc.lead){
+    t.gapHit=lc.lead;t.satLoss+=15;
+    addScore(GAPPEN,Math.max(10,Math.min(W-10,at(t.path,t.s).x)),at(t.path,t.s).y-30,'too close',t,'gap');
+    S.log[S.log.length-1].text=t.num+' '+t.type.label+' was cleared too close behind '+lc.lead.num+' '+lc.lead.type.label+' and had to slow down to keep a safe gap';
+    say(t.num+' is too close behind '+lc.lead.num+': keep a gap when you clear trains ('+r0(GAPPEN)+').','bad');
+   }}
+  if(t.state==='arriving'){t.v=Math.min(vmax,(t.sWait-t.s)*2.2+8,t.vcap);t.s+=t.v*dt;if(t.s>=t.sWait-.5){t.s=t.sWait;t.state='outer';t.v=0;t.waitT=t.lateBy||0;sfx('horn') /* a train that was held outside arrives already late */}}
+  else if(t.state==='outer'||t.state==='loop'){t.waitT+=dt;
+   t.effChk=(t.effChk||0)-dt;if(t.effChk<=0){t.effChk=.1;if(freeRightPlatform(t))t.idleFree=(t.idleFree||0)+.1} // efficiency: a right platform sat free while this train waited
+   if(t.waitT>t.pat){S.score-=WAITRATE*dt;t.lossWait+=WAITRATE*dt}}
+  else if(t.state==='set'){t.setT-=dt;if(t.setT<=0){t.state='go';t.v=10}}
+  else if(t.state==='go'){
+   const dist=t.sStop-t.s;
+   if(t.mode==='lane'&&t.type.nonstop){t.v=Math.min(t.v+vmax*.9*dt,vmax,t.vcap);t.s+=t.v*dt;if(t.s>=t.sStop){t.state='exiting';if(t.sched)t.sched.arrived=true;{const m=matchScore(t,t.lane);t.satLoss+=m.sat;sfx('pass');addScore(m.p,W/2,LY(t.lane.idx)-8,m.why,t,'match');say(t.num+' Non-stop passed through: '+m.why+' (+'+m.p+').','good')}}}
+   else{
+    t.v=Math.min(t.v+vmax*1.1*dt,Math.max(8,Math.min(vmax,dist*2.2)),t.vcap);t.s+=t.v*dt;
+    if(dist<=.6){
+     t.s=t.sStop;t.v=0;
+     if(t.mode==='loop'){t.state='loop';say(t.num+' '+t.type.label+' is held in siding '+t.loopK+'. Click it again when a platform is free.')}
+     else{t.state='dwell';t.dwellT=t.type.dwell;t.readyT=0;const m=matchScore(t,t.lane);t.satLoss+=m.sat;
+      if(t.sched){if(t.sched.plat0===t.lane.idx){t.planSat=PLAN_SAT;addScore(LV.planB,X(t.side,WAITX),LY(t.lane.idx)-30,'planned platform',t,'plan')}t.sched.arrived=true}
+     if(m.p>=0)sfx('arrive');addScore(m.p,W/2,LY(t.lane.idx)-12,m.why,t,'match');if(m.p<0)say(t.num+' '+t.type.label+' is on '+t.lane.name+': '+m.why+' ('+r0(m.p)+').','bad');else say(t.num+' '+t.type.label+' reached '+t.lane.name+': '+m.why+' (+'+m.p+').','good')}
+    }
+   }
+  } else if(t.state==='dwell'){t.dwellT-=dt;t.lane.crowd=Math.max(0,t.lane.crowd-dt*2.5);if(t.dwellT<=0)t.state='ready'}
+  else if(t.state==='ready'){t.readyT+=dt;if(t.readyT>t.buf){S.score-=LATERATE*dt;t.lossLate+=LATERATE*dt}}
+  else if(t.state==='exiting'){t.v=Math.min(t.v+vmax*1.1*dt,vmax,t.vcap);t.s+=t.v*dt}
+  if(t.entryLock&&t.s-t.L>t.sClearIn){release(t.side,t,'entry');t.entryLock=false}
+  if(t.exitLock&&t.s-t.L>t.sClearOut){release(t.exitSide,t,'exit');t.exitLock=false}
+  if(t.lane&&t.lane.busy===t&&t.state==='exiting'&&t.s-t.L>t.sFree)t.lane.busy=null;
+  if(t.state==='exiting'){const tx=at(t.path,t.s-t.L).x;if(t.side==='E'?tx<-30:tx>W+30){t.state='gone';S.done++;S.completed[t.key]++;if(t.lane&&t.lane.busy===t)t.lane.busy=null;
+   if(t.lossWait>=1)note('wait',-t.lossWait,t.num+' '+t.type.label+' waited outside longer than its patience ('+Math.round(t.pat*10)/10+' s)',t);
+   if(t.lossLate>=1)note('late',-t.lossLate,t.num+' '+t.type.label+' was kept at the platform past its departure buffer ('+Math.round(t.buf*10)/10+' s)',t);
+   finishTrain(t)}}
+ }
+ for(const t of S.trains)if(t.state==='gone')releaseAll(t);
+ S.trains=S.trains.filter(t=>t.state!=='gone');
+ if(!S.over&&S.done>=S.total)endRound();
+ if(sel.train&&!S.trains.includes(sel.train)){sel={train:null,target:null}}
+ for(const l of S.lanes){l.glow=Math.max(0,l.glow-dt);if(!l.thru&&!l.busy&&l.kind!=='Goods')l.crowd=Math.min(12,l.crowd+dt*.6)}
+ for(const p of S.pops){p.life-=dt;p.y-=14*dt}
+ S.pops=S.pops.filter(p=>p.life>0);
+ if(S.flash){S.flash.life-=dt;if(S.flash.life<=0)S.flash=null}
+}
+
+/* ---------- geometry for clicks ---------- */
+function outerSig(sd){return{x:X(sd,1222),y:INY[sd]-30}}
+const loopKs=()=>S.stage.loops?(S.stage.loop3?[1,2,3]:[1,2]):[]; // loops that exist right now
+function loopSig(sd,k){const d=ldy(sd,k);return{x:X(sd,992),y:INY[sd]+d+(d<0?-20:24)}}
+function exitSig(l,exitSide){return{x:exitSide==='W'?LW+16:LE-16,y:LY(l.idx)+13}}
+function trainHit(x,y){
+ let best=null,bd=22;
+ for(const t of S.trains){for(let k=0;k<t.type.cars;k++){const p=at(t.path,t.s-k*CAR-CAR/2);const d=Math.hypot(p.x-x,p.y-y);if(d<bd){bd=d;best=t}}}
+ return best;
+}
+function targetAt(x,y){
+ const t=sel.train;if(!t)return null;
+ // Platforms: a tap anywhere over the platform area picks the nearest platform (forgiving of slightly-off taps).
+ if(x>=LW-40&&x<=LE+40){
+  let best=null,bd=40;
+  for(const l of S.lanes){if(!l.enabled)continue;const d=Math.abs(y-tapY(l));if(d<bd){bd=d;best=l}} // only tracks that have been built
+  if(best)return{kind:'lane',lane:best};
+ }
+ if(t.state==='outer')for(const k of loopKs()){const iy=t.iy+ldy(t.side,k);const x0=X(t.side,1170),x1=X(t.side,LHOLD);if(x>=Math.min(x0,x1)-20&&x<=Math.max(x0,x1)+20&&Math.abs(y-iy)<=30)return{kind:'loop',k}}
+ return null;
+}
+function signalHit(x,y){
+ const t=sel.train;if(!t)return null;
+ // Tap radius is about 30 screen pixels (never less than 34 or more than 46 canvas units, so neighbouring signals do not overlap).
+ // It is centred on the visible signal (lamp plus pole), which sits a little below the lamp position.
+ const R=Math.max(34,Math.min(46,30*pxUnit));
+ const near=(p,r)=>Math.hypot(p.x-x,p.y+3-y)<=(r||R);
+ // The signal this train actually needs gets the generous radius. Other (wrong) signals keep a small one, so a tap meant for a platform or train is not mistaken for a wrong-signal tap.
+ if(t.state==='outer'&&near(outerSig(t.side)))return{kind:'entry'};
+ if(t.state==='loop'&&near(loopSig(t.side,t.loopK)))return{kind:'entry'};
+ if(t.state==='ready'||t.state==='dwell'){const es=other(t.side);if(near(exitSig(t.lane,es)))return{kind:'exit'}}
+ if(t.state==='ready'&&exitChoice(t)&&near(branchSig(t.side)))return{kind:'exitBranch'}
+ // wrong signals: any outer/loop/exit signal gives a hint
+ for(const sd of ['E','W']){if(near(outerSig(sd),26))return{kind:'wrong'};for(const k of loopKs())if(near(loopSig(sd,k),26))return{kind:'wrong'}}
+ for(const l of S.lanes)if(!l.thru&&l.enabled)for(const es of ['E','W'])if(near(exitSig(l,es),26))return{kind:'wrong'};
+ for(const sd of ['W','E'])if(branchOn(sd)&&near(branchSig(sd),26))return{kind:'wrong'};
+ return null;
+}
+function click(x,y){
+ const sg=signalHit(x,y);
+ if(sg){
+  const t=sel.train;
+  if(sg.kind==='entry'){
+   if(!sel.target){say('Click a platform or a siding first, then the signal.','bad');return}
+   const why=checkEntry(t,sel.target);
+   if(why){S.flash={x:0,y:0,life:.5};say('Signal stays red: '+why,'bad');return}
+   commitEntry(t,sel.target);sel.target=null;sfx('go'); // signal cleared
+   say(t.mode==='loop'?t.num+' '+t.type.label+' goes into siding '+t.loopK+'.':t.num+' '+t.type.label+' is cleared to '+t.lane.name+'. Plan its exit when boarding ends.');
+  } else if(sg.kind==='exit'||sg.kind==='exitBranch'){
+   // The platform's own exit signal sends a train along the main line; the branch signal sends it up the branch.
+   const key=sg.kind==='exitBranch'?'branch':'main';
+   if(exitChoice(t)&&GUIDE&&key!==t.dest){ // Exit guidance: a wrong signal is refused with a hint, not punished
+    say(t.dest==='branch'?'This train goes to the branch: use the branch signal.':'This train stays on the main line: use the platform exit signal.','bad');return}
+   const why=checkExit(t);
+   if(why){say('Exit signal stays red: '+why,'bad');return}
+   commitExit(t,key);sel={train:null,target:null};sfx('go'); // exit signal cleared
+   say(t.num+' '+t.type.label+' is cleared to leave.','good');
+  } else say('That is not the signal for this train. Look for the flashing one.','bad');
+  return;
+ }
+ const th=trainHit(x,y);
+ if(th){
+  // Tapping the selected train again deselects it; tapping another train switches to it.
+  if(th===sel.train){
+   // A train that is boarding or ready stays selected: deselecting it would switch its exit signal off.
+   if(th.state==='ready'||th.state==='dwell'){say(th.state==='ready'?readyMsg(th):th.num+' '+th.type.label+' is still boarding. It stays selected so you can send it as soon as it is ready.');return}
+   sel={train:null,target:null};say('Selection cleared.')
+  }else selectTrain(th);
+  return;
+ }
+ if(sel.train){
+  const tg=targetAt(x,y);
+  if(tg&&(sel.train.state==='outer'||sel.train.state==='loop')){
+   sel.target=tg;const why=checkEntry(sel.train,tg);
+   if(why)say(why,'bad');else{sfx('target');say('Route ready. Now click the flashing signal to clear it.')}
+   return;
+  }
+  // A tap that misses everything keeps the train selected, so a slightly-off tap is not punished.
+  say('Tap a platform or siding. Tap the train again to deselect it.');
+  return;
+ }
+ say('Click a train to select it.');
+}
+function selectTrain(t){
+ sfx('select');
+ sel={train:t,target:null};
+ if(t.state==='outer')say(t.num+' '+t.type.label+' selected. Click a platform, or a siding to hold it.');
+ else if(t.state==='loop')say(t.num+' '+t.type.label+' selected. Click a platform for it.');
+ else if(t.state==='ready')say(readyMsg(t));
+ else if(t.state==='dwell')say(t.num+' '+t.type.label+' is still boarding.');
+ else say(t.num+' '+t.type.label+' is moving. You can plan it once it stops.');
+}
+
+/* ---------- drawing ---------- */
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h)}
+function track(x1,y1,x2,y2,col,w){
+ ctx.lineCap='round';
+ ctx.strokeStyle=col||'#c3e4ec';
+ ctx.lineWidth=w||3;
+ ctx.beginPath();
+ ctx.moveTo(x1,y1);
+ ctx.lineTo(x2,y2);
+ ctx.stroke();
+}
+function signal(x,y,green,pulse){
+ ctx.save();ctx.translate(x,y);ctx.scale(1.5,1.5);ctx.translate(-x,-y);
+ // 3D drop shadow of post and signal head
+ ctx.fillStyle='rgba(3,10,14,0.45)';
+ ctx.fillRect(x+1,y+2,3,15);
+ rr(x-4,y-8,14,14,5);ctx.fill();
+
+ // Signal Mast (gradient metallic post)
+ const mg=ctx.createLinearGradient(x-1.5,0,x+1.5,0);
+ mg.addColorStop(0,'#4a545c');mg.addColorStop(0.5,'#8b99a6');mg.addColorStop(1,'#2c3238');
+ ctx.fillStyle=mg;ctx.fillRect(x-1.5,y,3,15);
+ // Signal base mounting bolt
+ ctx.fillStyle='#1c2226';ctx.fillRect(x-3.5,y+13,7,2.5);
+
+ // Signal Housing (chamfered box with 3D rim)
+ const hg=ctx.createLinearGradient(x-7,y-11,x+7,y+3);
+ hg.addColorStop(0,'#2a333a');hg.addColorStop(0.5,'#131a1e');hg.addColorStop(1,'#090d10');
+ ctx.fillStyle=hg;rr(x-6.5,y-10.5,13,13,5);ctx.fill();
+ ctx.strokeStyle='#3e4b54';ctx.lineWidth=0.8;ctx.stroke();
+
+ // Circular sun visor / cowl ring
+ ctx.fillStyle='#090d10';ctx.beginPath();ctx.arc(x,y-4,5.2,0,7);ctx.fill();
+ ctx.strokeStyle='#4f5e6b';ctx.lineWidth=0.9;ctx.stroke();
+
+ // 3D Fresnel Lens & Glow
+ ctx.save();
+ ctx.shadowColor=green?'#2cf5a0':'#ff4d6d';
+ ctx.shadowBlur=green?12:10;
+ const lg=ctx.createRadialGradient(x-1,y-5,0.8,x,y-4,4.2);
+ if(green){
+  lg.addColorStop(0,'#ffffff');lg.addColorStop(0.4,'#5effb6');lg.addColorStop(0.85,'#2cf5a0');lg.addColorStop(1,'#0d7a4c');
+ }else{
+  lg.addColorStop(0,'#ffffff');lg.addColorStop(0.4,'#ff7b92');lg.addColorStop(0.85,'#ff4d6d');lg.addColorStop(1,'#8c162b');
+ }
+ ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x,y-4,4,0,7);ctx.fill();
+ ctx.restore();
+
+ // Colour-blind symbol on the lens: bar = stop (red), ring = go (green)
+ if(CB){ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;ctx.beginPath();if(green)ctx.arc(x,y-4,2,0,7);else{ctx.moveTo(x-2.6,y-4);ctx.lineTo(x+2.6,y-4)}ctx.stroke()}
+ // Specular glint on glass lens
+ ctx.fillStyle='rgba(255,255,255,0.75)';
+ ctx.beginPath();ctx.arc(x-1.2,y-5.2,1.2,0,7);ctx.fill();
+
+ if(pulse){
+  const a=.5+.5*Math.sin(performance.now()/140);
+  ctx.strokeStyle='rgba(255,194,61,'+(.35+.65*a)+')';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.arc(x,y-4,12+a*3,0,7);ctx.stroke();
+ }
+ ctx.restore();
+}
+function drawTrain(t){
+ const isSel=sel.train===t;
+ for(let k=t.type.cars-1;k>=0;k--){
+  const p=at(t.path,t.s-k*CAR-CAR/2);
+  if(p.x>W+24||p.x<-30)continue;
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
+
+  // 1. 3D Cast Shadow onto the track below
+  ctx.fillStyle='rgba(4,14,18,0.55)';
+  rr(-CAR/2+2,-7.5,CAR,19,4);ctx.fill();
+
+  // Selection highlight halo
+  if(isSel){
+   ctx.strokeStyle='#ffffff';ctx.lineWidth=2.6;
+   ctx.shadowColor='rgba(255,255,255,0.8)';ctx.shadowBlur=8;
+   rr(-CAR/2-.5,-11.5,CAR+1,23,4);ctx.stroke();
+   ctx.shadowBlur=0;
+  }
+
+  // 2. Carriage Main Body with 3D Bevel Gradient
+  const cg=ctx.createLinearGradient(0,-10,0,10);
+  cg.addColorStop(0,'rgba(255,255,255,0.4)');
+  cg.addColorStop(0.18,t.type.col);
+  cg.addColorStop(0.65,t.type.col);
+  cg.addColorStop(1,'rgba(0,0,0,0.45)');
+  ctx.fillStyle=t.type.col;
+  rr(-CAR/2+1,-9.5,CAR-2,19,3.5);ctx.fill();
+  ctx.fillStyle=cg;
+  rr(-CAR/2+1,-9.5,CAR-2,19,3.5);ctx.fill();
+
+  // livery stripe and bogies
+  ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(-CAR/2+1,3.2,CAR-2,1.6);
+  ctx.fillStyle='rgba(6,18,22,.7)';ctx.fillRect(-CAR/2+3,-10.6,4,1.4);ctx.fillRect(CAR/2-7,-10.6,4,1.4);ctx.fillRect(-CAR/2+3,9.2,4,1.4);ctx.fillRect(CAR/2-7,9.2,4,1.4);
+  // Colour-blind pattern per train type: express = diagonal stripes, non-stop = dark edge bands (local plain, goods has container wells)
+  if(CB){
+   ctx.save();rr(-CAR/2+1,-9.5,CAR-2,19,3.5);ctx.clip();
+   if(t.key==='express'){ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=2;ctx.beginPath();for(let x=-CAR;x<CAR;x+=6){ctx.moveTo(x,-10);ctx.lineTo(x+10,10)}ctx.stroke()}
+   else if(t.key==='nonstop'){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(-CAR/2,-9.5,CAR,3);ctx.fillRect(-CAR/2,6.5,CAR,3)}
+   ctx.restore();
+  }
+
+  // 3. 3D Carriage Details
+  if(t.key==='goods'&&k>0){
+   // Cargo container / coal hopper well with recessed depth
+   ctx.fillStyle='rgba(10,18,22,0.65)';ctx.fillRect(-7,-6,14,12);
+   ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(-6,-5,12,10);
+   // Lateral cargo container ribs
+   ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1;
+   ctx.beginPath();ctx.moveTo(-3,-5);ctx.lineTo(-3,5);ctx.moveTo(2,-5);ctx.lineTo(2,5);ctx.stroke();
+  }else{
+   // Passenger Carriage: 3D Raised Curved Roof Plate
+   const rg=ctx.createLinearGradient(0,-3.5,0,3.5);
+   rg.addColorStop(0,'rgba(255,255,255,0.6)');rg.addColorStop(0.5,'rgba(255,255,255,0.85)');rg.addColorStop(1,'rgba(210,225,235,0.4)');
+   ctx.fillStyle=rg;ctx.fillRect(-7,-3,14,6);
+   // Roof ventilator ribs
+   ctx.fillStyle='rgba(0,0,0,0.25)';ctx.fillRect(-6,-1,12,2);
+
+   // Side illuminated carriage windows with 3D glass sheen
+   if(k>0){
+    ctx.fillStyle='rgba(255,248,220,0.9)';
+    ctx.shadowColor='rgba(255,235,160,0.6)';ctx.shadowBlur=4;
+    // Top row windows
+    ctx.fillRect(-6,-7.5,3.2,2.4);ctx.fillRect(-1,-7.5,3.2,2.4);ctx.fillRect(4,-7.5,3.2,2.4);
+    // Bottom row windows
+    ctx.fillRect(-6,5.1,3.2,2.4);ctx.fillRect(-1,5.1,3.2,2.4);ctx.fillRect(4,5.1,3.2,2.4);
+    ctx.shadowBlur=0;
+   }
+  }
+
+  // 4. Locomotive Nose, Headlight Cone & 3D Cab
+  if(k===0){
+   // Sloped aerodynamical locomotive windshield
+   const wg=ctx.createLinearGradient(CAR/2-4,0,CAR/2,0);
+   wg.addColorStop(0,'#1b2d35');wg.addColorStop(0.5,'#76c5db');wg.addColorStop(1,'#d9f3f9');
+   ctx.fillStyle=wg;ctx.fillRect(CAR/2-3.5,-5.5,3.5,11);
+
+   // Locomotive forward headlight beam cone
+   const moving=t.state==='go'||t.state==='exiting'||t.state==='arriving';
+   const bLen=t.vip?95:(t.type.nonstop?90:70);
+   const bAlpha=moving?0.38:0.18;
+   const g=ctx.createLinearGradient(CAR/2,0,CAR/2+bLen,0);
+   g.addColorStop(0,t.vip?'rgba(255,225,120,'+bAlpha+')':'rgba(255,248,210,'+bAlpha+')');
+   g.addColorStop(1,'rgba(255,248,210,0)');
+   ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(CAR/2,-4);ctx.lineTo(CAR/2+bLen,-18);ctx.lineTo(CAR/2+bLen,18);ctx.lineTo(CAR/2,4);ctx.closePath();ctx.fill();
+
+   // Twin 3D Locomotive Front Lanterns
+   ctx.save();
+   ctx.shadowColor=t.vip?'#ffc23d':'#ffeaa7';ctx.shadowBlur=moving?12:6;
+   ctx.fillStyle='#ffffff';
+   ctx.beginPath();ctx.arc(CAR/2-0.5,-3.5,2.4,0,7);ctx.arc(CAR/2-0.5,3.5,2.4,0,7);ctx.fill();
+   ctx.fillStyle=t.vip?'#ffc23d':'#ffeaa7';
+   ctx.beginPath();ctx.arc(CAR/2-0.5,-3.5,1.5,0,7);ctx.arc(CAR/2-0.5,3.5,1.5,0,7);ctx.fill();
+   ctx.restore();
+
+   // VIP Royal Roof Dome Beacon
+   if(t.vip){
+    ctx.save();const pv=.7+.3*Math.sin(performance.now()/150);
+    ctx.shadowColor='#ffd36b';ctx.shadowBlur=10;ctx.fillStyle='#ffc23d';
+    ctx.beginPath();ctx.arc(0,0,5*pv,0,7);ctx.fill();
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(-1,-1,1.8,0,7);ctx.fill();
+    ctx.restore();
+   }
+  }
+  ctx.restore();
+ }
+ const h=at(t.path,t.s);
+ if(h.x>0&&h.x<W-6){
+  const lx=t.side==='E'?Math.max(2,h.x):Math.min(W-170,h.x-110);
+  ctx.fillStyle='#ffffff';ctx.font='700 17px "Chakra Petch",sans-serif';
+  let tag='';if(t.state==='ready')tag=t.readyT>t.buf?' · overdue, losing points':' · ready, leave within '+Math.ceil(t.buf-t.readyT)+'s';else if(t.state==='dwell')tag=' · boarding '+Math.ceil(t.dwellT)+'s';else if(t.leader&&t.vcap<t.type.vmax-2&&(t.state==='go'||t.state==='exiting'||t.state==='arriving'))tag=' · keeping gap';
+  ctx.fillText((t.vip?'★ ':'')+t.num+' '+t.type.label+(t.exitChoice&&t.dest==='branch'?' → Branch':'')+(t.dev>=2?' · late '+t.dev+'s':t.dev<=-2?' · early '+(-t.dev)+'s':'')+tag,lx,h.y-26);
+  if(t.state==='dwell'||t.state==='ready'){
+   let f,col;
+   if(t.state==='dwell'){f=1-t.dwellT/t.type.dwell;col=CB?'#bbbbbb':'#5fb0ff'}
+   else if(t.readyT<=t.buf){f=1-t.readyT/t.buf;col=barGood()}
+   else{f=1;col=barBad()}
+   ctx.fillStyle='#0b1015';ctx.fillRect(lx,h.y-21,80,6);ctx.fillStyle=col;ctx.fillRect(lx,h.y-21,80*Math.max(0,Math.min(1,f)),6);
+  }
+  if(t.state==='outer'||t.state==='loop'){const f=Math.max(0,1-t.waitT/t.pat);ctx.fillStyle='#0b1015';ctx.fillRect(lx,h.y-21,60,6);ctx.fillStyle=f>.5?barGood():f>.2?barMid():barBad();ctx.fillRect(lx,h.y-21,60*f,6)}
+ }
+}
+function routePoints(t,tg){const b=buildPath(t,tg);return b.orig.slice(b.routeFrom,b.routeTo+1)}
+/* Island platforms: one raised platform between two tracks, with a face (PF n) on each side. */
+function drawIslands(){
+ for(const d of ISLANDS){
+  const a=S.lanes[d.top],b=S.lanes[d.bottom];
+  // If neither platform face on this island is enabled, do not draw the island at all!
+  if(!a.enabled&&!b.enabled)continue;
+  const top=LY(a.idx)+11,bot=LY(b.idx)-11,h=bot-top,mid=(top+bot)/2,x0=a.x0+6,w=a.len-12;
+  const halfH=h/2;
+  const fs=Math.min(22,Math.max(17,Math.round(h*0.28))),subFs=Math.min(16,Math.max(13,Math.round(fs*0.8)));
+  ctx.fillStyle='#2a6272';ctx.fillRect(x0,top,w,h); // the platform is drawn only when at least one face is active
+  for(const l of [a,b]){
+   const isTop=l.face==='top',edge=isTop?top:bot;
+   const faceMid=isTop?top+halfH/2:mid+halfH/2;
+   const ty=Math.round(faceMid+fs*0.35);
+   if(l.enabled){
+    ctx.fillStyle=KC[l.kind];ctx.fillRect(x0,isTop?edge:edge-3,w,3); // coloured edge strip
+    ctx.fillStyle='#e8c547';ctx.fillRect(x0,isTop?edge-2:edge,w,2); // yellow safety line next to the track
+    if(l.glow>0){ctx.fillStyle='rgba(255,181,71,'+Math.min(1,l.glow)*.3+')';ctx.fillRect(x0,isTop?edge:mid,w,halfH)}
+    ctx.fillStyle=l.busy?'#ff7a59':'#3ddc84';ctx.fillRect(x0+6,faceMid-fs/2,4,fs); // free / busy light
+    ctx.fillStyle='#ffffff';ctx.font='700 '+fs+'px "Chakra Petch",sans-serif';ctx.textAlign='left';ctx.fillText(l.name,x0+16,ty);
+    const badgeText=l.kind.toUpperCase()+(l.ok.length>1?' ('+l.ok.join('/')+')':'');
+    ctx.fillStyle=KC[l.kind]||'#ffd36b';ctx.font='700 '+subFs+'px "Chakra Petch",sans-serif';ctx.textAlign='right';
+    ctx.fillText(badgeText,x0+w-12,ty);ctx.textAlign='left';
+   } // a face that is not built yet is not drawn at all
+  }
+  // Subtle center line dividing the two platform faces
+  ctx.fillStyle='rgba(12,34,42,0.35)';ctx.fillRect(x0+30,mid-1,w-60,2);
+  // Platform lamps grow with the station (none at the halt, 3 per platform from the Small station, 6 from the Growing station) and glow at dusk and night.
+  {const nl=S.stage.id>=3?6:S.stage.id>=2?3:0,ph=((S.round||1)-1)%4,lvl=ph===3?1:ph===2?.55:0;
+   for(let i=0;i<nl;i++){const lx=x0+30+(w-60)*(i+.5)/nl;
+    if(lvl>0){ctx.save();ctx.globalCompositeOperation='lighter';const gr=ctx.createRadialGradient(lx,mid,0,lx,mid,24);gr.addColorStop(0,'rgba(255,214,130,'+(.4*lvl)+')');gr.addColorStop(1,'rgba(255,214,130,0)');ctx.fillStyle=gr;ctx.fillRect(lx-24,mid-24,48,48);ctx.restore()}
+    ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(lx,mid,2.1,0,7);ctx.fill();ctx.strokeStyle='rgba(12,34,42,.55)';ctx.lineWidth=.8;ctx.stroke()}}
+  // maintenance: a flashing outline during the warning, hatching while closed (one track, or the whole platform)
+  const fl=.5+.5*Math.sin(performance.now()/160);
+  const hatch=(y0,y1,txt)=>{ctx.save();ctx.beginPath();ctx.rect(LW-4,y0,LE-LW+8,y1-y0);ctx.clip();ctx.fillStyle='rgba(8,20,26,.72)';ctx.fillRect(LW-4,y0,LE-LW+8,y1-y0);
+   ctx.strokeStyle='rgba(255,194,61,.8)';ctx.lineWidth=5;ctx.beginPath();for(let hx=LW-40;hx<LE+10;hx+=24){ctx.moveTo(hx,y1);ctx.lineTo(hx+(y1-y0),y0)}ctx.stroke();ctx.restore();
+   if(txt){ctx.fillStyle='#0b1015';ctx.fillRect(W/2-150,(y0+y1)/2-12,300,24);ctx.fillStyle='#ffc23d';ctx.font='700 16px "Chakra Petch",sans-serif';ctx.textAlign='center';ctx.fillText(txt,W/2,(y0+y1)/2+6);ctx.textAlign='left'}};
+  const M=S.maint;
+  if(M&&M.lanes.includes(a)||M&&M.lanes.includes(b)){
+   const whole=M.kind==='island';
+   if(M.phase==='warn'){
+    ctx.save();ctx.strokeStyle='rgba(255,194,61,'+(.35+.65*fl)+')';ctx.lineWidth=3;
+    for(const l of M.lanes)if(l.idx===a.idx||l.idx===b.idx){const bx=laneBox(l);ctx.strokeRect(LW-4,bx[0],LE-LW+8,bx[1]-bx[0])}
+    ctx.fillStyle='#ffc23d';ctx.font='700 15px "Chakra Petch",sans-serif';ctx.textAlign='center';
+    ctx.fillStyle='#0b1015';ctx.fillRect(W/2-190,mid-11,380,22);ctx.fillStyle='#ffc23d'; // dark strip so the warning is readable over the platform labels
+    ctx.fillText((whole?'PLATFORM':'TRACK')+' MAINTENANCE IN '+Math.ceil(M.warnT)+'s',W/2,mid+5);ctx.restore();
+   }else{
+    for(const l of M.lanes)if(l.idx===a.idx||l.idx===b.idx){const bx=laneBox(l);hatch(bx[0],bx[1],whole?null:'TRACK CLOSED · maintenance '+Math.ceil(M.closedT)+'s')}
+    if(whole){ctx.fillStyle='#0b1015';ctx.fillRect(W/2-170,mid-12,340,24);ctx.fillStyle='#ffc23d';ctx.font='700 16px "Chakra Petch",sans-serif';ctx.textAlign='center';ctx.fillText('PLATFORM CLOSED · maintenance '+Math.ceil(M.closedT)+'s',W/2,mid+6);ctx.textAlign='left'}
+   }
+  }
+ }
+}
+/* A platform face or track that opened since the last round: a pulsing outline and a NEW tag for a few seconds. */
+function drawNewTags(){
+ if(!(S.hiT>0)||!S.newLanes.length)return;
+ const a=.35+.65*pulse();
+ for(const i of S.newLanes){
+  const l=S.lanes[i];if(!l.enabled)continue;
+  const bx=laneBox(l),cx=l.x0+l.len-34,cy=l.thru?LY(i)-24:(bx[0]+bx[1])/2;
+  ctx.save();ctx.strokeStyle='rgba(255,194,61,'+a+')';ctx.lineWidth=3;ctx.strokeRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0]);
+  ctx.fillStyle='#0b1015';ctx.fillRect(cx-26,cy-10,52,20);ctx.fillStyle='#ffc23d';ctx.font='700 13px "Chakra Petch",sans-serif';ctx.textAlign='center';ctx.fillText('NEW',cx,cy+5);ctx.restore();
+ }
+}
+/* ---------- scenery ----------
+   The ground, gravel beds with sleepers, trees, the station building and the goods yard are painted once into an off-screen canvas
+   and only rebuilt when the layout changes (window size, tracks opened or bought). Each frame just copies it. */
+let scn=null,scnKey='';
+function buildScenery(){
+ const c=document.createElement('canvas');c.width=Math.round(W*DPR);c.height=Math.round(H*DPR);
+ const g=c.getContext('2d');g.setTransform(DPR,0,0,DPR,0,0);
+ let seed=20241;const rand=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
+ // ground
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#1d5660');bg.addColorStop(.5,'#174850');bg.addColorStop(1,'#12383f');g.fillStyle=bg;g.fillRect(0,0,W,H);
+ for(let i=0;i<28;i++){g.fillStyle='rgba(52,130,98,'+(.06+rand()*.07)+')';g.beginPath();g.ellipse(rand()*W,rand()*H,40+rand()*110,14+rand()*34,0,0,7);g.fill()}
+ for(let i=0;i<900;i++){g.fillStyle=rand()<.5?'rgba(190,235,225,.07)':'rgba(5,25,30,.2)';const s=1+rand()*1.6;g.fillRect(rand()*W,rand()*H,s,s)}
+ // gravel bed + sleepers under every straight stretch of track
+ const bed=(x0,x1,y)=>{
+  g.fillStyle='rgba(168,186,178,.13)';g.fillRect(x0,y-10,x1-x0,20);
+  g.fillStyle='rgba(8,24,28,.45)';for(let x=Math.ceil(x0/12)*12;x<x1;x+=12)g.fillRect(x,y-8,3,16);
+ };
+ bed(0,W,INY.W);bed(0,W,INY.E);
+ for(const l of S.lanes)if(!l.thru&&l.enabled)bed(LW,LE,LY(l.idx));
+ for(const sd of ['E','W'])for(const k of loopKs()){const y=INY[sd]+ldy(sd,k),a=X(sd,1170),b=X(sd,LH);bed(Math.min(a,b),Math.max(a,b),y)}
+ // branch lines (they run off across the edge zones): keep trees and containers clear of them
+ const brSegs=[];for(const sd of ['W','E'])if(branchOn(sd)){const i=INY[sd],p=mir(sd,[[W-LH,i],...tailLocal(sd,i,'branch')]);brSegs.push([p[1],p[2]],[p[2],p[3]])}
+ const nearBr=(x,y,m)=>brSegs.some(([a,b])=>{const dx=b[0]-a[0],dy=b[1]-a[1],u=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));return Math.hypot(x-(a[0]+dx*u),y-(a[1]+dy*u))<m});
+ // edge zones above and below the station
+ const topZ=Y0-10,botY=Y0+472;
+ const trees=[];
+ const addTree=(x,y,r)=>trees.push({x,y,r});
+ // The station building grows with the grade: a halt shelter, a ticket hall, a hall with a clock tower, then wings, then a grand central station.
+ const sid=S.stage.id,spec=[null,{bw:120,h:38,wings:0,tower:0,sign:'HALT',win:2},{bw:240,h:44,wings:0,tower:0,sign:'STATION',win:5},{bw:360,h:52,wings:0,tower:1,sign:'STATION',win:8},{bw:420,h:60,wings:60,tower:1,sign:'JUNCTION',win:10},{bw:500,h:68,wings:80,tower:2,sign:'CENTRAL',win:12}][sid]||{bw:240,h:44,wings:0,tower:0,sign:'STATION',win:5};
+ const b0=W/2-spec.bw/2,b1=W/2+spec.bw/2,span=spec.bw+2*spec.wings,hasBld=topZ>=44,wins=[];
+ if(topZ>=26)for(let i=0;i<52;i++){const r=8+rand()*10,x=rand()*W,y=14+r+rand()*Math.max(0,topZ-30-r);if(hasBld&&x>W/2-span/2-24&&x<W/2+span/2+24)continue;
+  if(topZ>=64&&((sid>=3&&((x>95&&x<215)||(x>1175&&x<1295)))||(sid>=4&&((x>245&&x<315)||(x>1095&&x<1150)))))continue; // keep trees off the side sheds, signal box and water tower
+  if(y+r<topZ&&!nearBr(x,y,r+18))addTree(x,y,r)}
+ const yardL=[70,420],yardR=[980,1330],hasYard=H-botY>=40;
+ if(H-botY>=24)for(let i=0;i<52;i++){const r=7+rand()*9,x=rand()*W,y=botY+r+4+rand()*Math.max(0,H-botY-r*2-10);if(hasYard&&((x>yardL[0]-20&&x<yardL[1]+20)||(x>yardR[0]-20&&x<yardR[1]+20)))continue;if(y+r<H-4&&!nearBr(x,y,r+18))addTree(x,y,r)}
+ trees.sort((a,b)=>a.y-b.y);
+ const tree=t=>{g.fillStyle='rgba(2,14,18,.35)';g.beginPath();g.ellipse(t.x+t.r*.4,t.y+t.r*.8,t.r,t.r*.4,0,0,7);g.fill();
+  g.fillStyle='#4a3a2a';g.fillRect(t.x-1.5,t.y+t.r*.3,3,t.r*.7);
+  g.fillStyle='#1b5f4c';g.beginPath();g.arc(t.x,t.y,t.r,0,7);g.fill();
+  g.fillStyle='#24785f';g.beginPath();g.arc(t.x-t.r*.35,t.y-t.r*.2,t.r*.7,0,7);g.fill();
+  g.fillStyle='#34966f';g.beginPath();g.arc(t.x+t.r*.3,t.y-t.r*.35,t.r*.5,0,7);g.fill()};
+ // station building behind island platform 1
+ if(hasBld){
+  const bh=Math.min(spec.h,topZ-14),by=topZ-bh;
+  g.fillStyle='rgba(2,14,18,.4)';g.fillRect(b0+6,by+6,b1-b0,bh);
+  g.fillStyle='#2f6577';g.fillRect(b0,by,b1-b0,bh);
+  if(spec.wings){const wh=Math.max(20,bh-14);for(const [wx0,wx1] of [[b0-spec.wings,b0],[b1,b1+spec.wings]]){
+   g.fillStyle='rgba(2,14,18,.4)';g.fillRect(wx0+5,by+bh-wh+5,wx1-wx0,wh);
+   g.fillStyle='#2a5868';g.fillRect(wx0,by+bh-wh,wx1-wx0,wh);
+   g.fillStyle='#6e4034';g.fillRect(wx0-4,by+bh-wh-6,wx1-wx0+8,8);
+   for(const wx of [wx0+14,wx0+(wx1-wx0)/2+6]){g.fillStyle='rgba(255,210,122,.88)';g.fillRect(wx,by+bh-wh+8,12,Math.min(14,wh-16));wins.push([wx+6,by+bh-wh+14])}}}
+  g.fillStyle='#8a4b3a';g.fillRect(b0-8,by-8,b1-b0+16,12);g.fillStyle='rgba(255,255,255,.14)';g.fillRect(b0-8,by-8,b1-b0+16,3);
+  {const sp=(b1-b0-40)/spec.win;for(let i=0;i<spec.win;i++){const x=b0+20+i*sp;if(Math.abs(x+8-W/2)<22)continue;g.fillStyle='rgba(255,210,122,.88)';g.fillRect(x,by+14,16,Math.min(18,bh-26));wins.push([x+8,by+14+Math.min(18,bh-26)/2])}}
+  g.fillStyle='#14343e';g.fillRect(W/2-12,by+bh-26,24,26);
+  if(sid>=5){g.fillStyle='rgba(150,220,235,.25)';g.fillRect(b0-8,by+bh-9,b1-b0+16,9);g.fillStyle='rgba(255,255,255,.3)';g.fillRect(b0-8,by+bh-9,b1-b0+16,1.5)} // glass canopy along the front
+  {const sw=Math.min(104,spec.bw-20);g.fillStyle='#0d242c';g.fillRect(W/2-sw/2,by+4,sw,14);g.fillStyle='#ffc23d';g.font='700 12px "Chakra Petch",sans-serif';g.textAlign='center';g.fillText(spec.sign,W/2,by+15);g.textAlign='left'}
+  if(spec.tower){const th=Math.min(spec.tower===2?34:24,by-14);if(th>=12){ // clock tower rising above the roof
+   const tx=W/2-17,ty=by-8-th;g.fillStyle='rgba(2,14,18,.4)';g.fillRect(tx+4,ty+4,34,th);g.fillStyle='#34707f';g.fillRect(tx,ty,34,th);
+   g.fillStyle='#8a4b3a';g.beginPath();g.moveTo(tx-3,ty);g.lineTo(tx+17,ty-(spec.tower===2?18:11));g.lineTo(tx+37,ty);g.closePath();g.fill();
+   const cy=ty+Math.min(14,th/2);g.fillStyle='#f4efe2';g.beginPath();g.arc(tx+17,cy,7,0,7);g.fill();g.strokeStyle='#1a2b31';g.lineWidth=1.2;g.beginPath();g.moveTo(tx+17,cy);g.lineTo(tx+17,cy-5);g.moveTo(tx+17,cy);g.lineTo(tx+21,cy+1.5);g.stroke()}}
+  if(topZ>=64&&sid>=3)for(const sx of [110,1190]){g.fillStyle='rgba(2,14,18,.35)';g.fillRect(sx+4,topZ-34,92,30);g.fillStyle='#2a5868';g.fillRect(sx,topZ-38,92,34);g.fillStyle='#6e4034';g.fillRect(sx-5,topZ-44,102,8)}
+  if(topZ>=64&&sid>=4){ // signal box and a water tower appear at the Junction
+   g.fillStyle='rgba(2,14,18,.35)';g.fillRect(264,topZ-44,40,36);g.fillStyle='#355f6c';g.fillRect(260,topZ-48,40,36);g.fillStyle='#6e4034';g.fillRect(256,topZ-54,48,8);g.fillStyle='rgba(255,210,122,.88)';g.fillRect(266,topZ-40,28,9);wins.push([280,topZ-35]);
+   g.fillStyle='#4a3a2a';g.fillRect(1108,topZ-34,4,28);g.fillRect(1132,topZ-34,4,28);g.fillStyle='#41707c';g.beginPath();g.ellipse(1122,topZ-42,20,12,0,0,7);g.fill();g.fillStyle='rgba(255,255,255,.18)';g.fillRect(1104,topZ-46,34,3)}
+ }
+ // goods yard: stacked containers beside the goods line
+ if(hasYard){
+  const cols=['#b5533c','#3e7aa0','#c9a23a','#5a8a5a','#8a5a9a'];
+  for(const [xa,xb] of [yardL,yardR])for(let x=xa;x<xb;x+=46){if(rand()<[.8,.55,.35,.25,.15][sid-1])continue; // the goods yard fills up as traffic grows
+
+   const rows=(H-botY>=62&&rand()<[.15,.3,.5,.6,.7][sid-1])?2:1;
+   for(let r=0;r<rows;r++){const y=botY+10-r*17,col=cols[Math.floor(rand()*cols.length)];if(nearBr(x+20,y+8,36))continue;g.fillStyle='rgba(2,14,18,.35)';g.fillRect(x+3,y+3,40,16);g.fillStyle=col;g.fillRect(x,y,40,16);
+    g.fillStyle='rgba(0,0,0,.22)';for(let rx=x+5;rx<x+38;rx+=6)g.fillRect(rx,y+2,1.5,12);g.fillStyle='rgba(255,255,255,.2)';g.fillRect(x,y,40,2)}}
+ }
+ for(const t of trees)tree(t);
+ // soft vignette so the eye stays on the tracks
+ const vg=g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,Math.max(W,H)*.62);vg.addColorStop(0,'rgba(2,12,16,0)');vg.addColorStop(1,'rgba(2,12,16,.38)');g.fillStyle=vg;g.fillRect(0,0,W,H);
+ c.win=wins; // lit window positions, for the night glow
+ return c;
+}
+function drawScenery(){
+ const key=S.stage.id+'|'+H+'|'+Y0+'|'+(S.stage.loops?1:0)+(S.stage.loop3?1:0)+'|'+(branchOn('W')?1:0)+(branchOn('E')?1:0)+'|'+S.lanes.map(l=>l.enabled?1:0).join('');
+ if(!scn||key!==scnKey){scn=buildScenery();scnKey=key}
+ ctx.drawImage(scn,0,0,W,H);
+ // Time of day follows the round: two day rounds, then dusk, then night, repeating. Only the ground is tinted, so trains, labels and signals stay fully readable.
+ {const ph=((S.round||1)-1)%4;
+  if(ph===2){ctx.fillStyle='rgba(255,128,56,.12)';ctx.fillRect(0,0,W,H)}
+  else if(ph===3){ctx.fillStyle='rgba(8,18,60,.32)';ctx.fillRect(0,0,W,H)}
+  // the station's lit windows glow at dusk and night
+  const lvl=ph===3?1:ph===2?.55:0;
+  if(lvl>0&&scn.win&&scn.win.length){ctx.save();ctx.globalCompositeOperation='lighter';
+   for(const [wx,wy] of scn.win){const gr=ctx.createRadialGradient(wx,wy,0,wx,wy,26);gr.addColorStop(0,'rgba(255,200,110,'+(.34*lvl)+')');gr.addColorStop(1,'rgba(255,200,110,0)');ctx.fillStyle=gr;ctx.fillRect(wx-26,wy-26,52,52)}
+   ctx.restore()}}
+ if(!reduce){ // slow drifting cloud shadows
+  const tt=performance.now()/1000;
+  for(const [sp,off,yy] of [[9,0,.3],[6,700,.74]]){const cx=((tt*sp+off)%(W+800))-400,cy=H*yy;const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,200);cg.addColorStop(0,'rgba(0,10,14,.09)');cg.addColorStop(1,'rgba(0,10,14,0)');ctx.fillStyle=cg;ctx.fillRect(cx-200,cy-200,400,400)}
+ }
+}
+function draw(){
+ drawScenery();
+ ctx.font='700 19px "Chakra Petch",sans-serif';ctx.fillStyle='#c9d2f2';
+ for(const side of ['E','W']){
+  const IN=INY[side],OUT=INY[other(side)];
+  track(X(side,LH),IN,X(side,W+4),IN);track(X(side,LH),OUT,X(side,W+4),OUT);
+  for(const k of [1,2,3]){
+   const built=S.stage.loops&&(k<3||!!S.stage.loop3);
+   if(!built)continue; // a loop that is not there is not drawn at all
+   const y=IN+ldy(side,k),isNew=built&&S.hiT>0&&S.newLoops.includes(k);
+   const sl=sidingLanes(side,k);
+   if(isNew){const gc='rgba(255,194,61,'+(.25+.5*pulse())+')';track(X(side,1200),IN,X(side,1170),y,gc,10);track(X(side,1170),y,X(side,LH),y,gc,10);for(const l of sl)track(X(side,LH),y,X(side,LE),LY(l.idx),gc,10)} // glow behind a newly opened siding
+   track(X(side,1200),IN,X(side,1170),y);track(X(side,1170),y,X(side,LH),y);
+   for(const l of sl)track(X(side,peelX(y,l)),y,X(side,LE),LY(l.idx),'rgba(195,228,236,.6)',2.4); // the siding runs straight into the platforms beside it
+  }
+  for(const l of S.lanes){
+   if(l.thru){track(X(side,LE),LY(l.idx),X(side,LH),LY(l.idx));continue} // a through line connects straight to its own main line, always
+   if(!l.enabled)continue;
+   track(X(side,LE),LY(l.idx),X(side,peelX(IN,l)),IN,'rgba(195,228,236,.72)',2.4);track(X(side,LE),LY(l.idx),X(side,peelX(OUT,l)),OUT,'rgba(195,228,236,.72)',2.4)} // throat tracks are drawn a little thinner and softer so the platforms and trains stand out
+  ctx.fillStyle='#aab5da';ctx.font='700 17px "Chakra Petch",sans-serif';
+  for(const k of [1,2,3]){
+   const built=S.stage.loops&&(k<3||!!S.stage.loop3);
+   if(!built)continue;
+   const d=ldy(side,k),isNew=built&&S.hiT>0&&S.newLoops.includes(k);
+   if(isNew)ctx.fillStyle='#ffc23d';
+   ctx.fillText('SIDING '+k+(isNew?' · NEW':''),side==='E'?X(side,1170)-4:X(side,1170)+10,IN+d+(d<0?-22:30)); // inside the loop's span so it clears the neighbouring loop's diagonal
+   ctx.globalAlpha=1;ctx.fillStyle='#aab5da'}
+  ctx.fillStyle='#c9d2f2';ctx.font='700 19px "Chakra Petch",sans-serif';ctx.textAlign='left';
+ }
+ drawBranches();
+ // direction arrows on the two running lines
+ ctx.strokeStyle='#d9eef2';ctx.lineWidth=2;
+ for(const [y,dir] of [[INY.W,1],[INY.E,-1]]){
+  for(const xs of [[40,420],[1020,1380]]){
+   for(let x=xs[0];x<=xs[1];x+=70){ctx.beginPath();ctx.moveTo(x-4*dir,y-6);ctx.lineTo(x+4*dir,y);ctx.lineTo(x-4*dir,y+6);ctx.stroke()}
+  }
+ }
+ for(const l of S.lanes){
+  const ly=LY(l.idx);
+  // Everything is physically there from the first round. A track that is not in service yet is drawn dimmed (its plinth label says when it opens);
+  // the through lines are always solid: they are the main lines, and non-stop trains use them from the Junction grade.
+  if(!l.enabled&&!l.thru)continue; // not built yet: nothing is drawn
+  track(LW,ly,LE,ly);
+  if(l.thru){
+   ctx.fillStyle=l.enabled?'#aab5da':'#7f94a3';ctx.font='700 13px "Chakra Petch",sans-serif';ctx.textAlign='center';
+   if(l.enabled)ctx.fillText(l.label,W/2,ly-11); // no label until non-stop trains actually use the line
+   ctx.textAlign='left';
+   continue;
+  }
+  if(l.isl!==undefined)continue; // island faces are drawn with their platform (drawIslands)
+  // the goods platform: a strip below the track (there is no passenger platform between goods and the through line)
+  ctx.fillStyle='#2a6272';ctx.fillRect(l.x0+8,ly+10,l.len-16,36);
+  ctx.fillStyle=KC[l.kind];ctx.fillRect(l.x0+8,ly+43,l.len-16,3);
+  if(l.glow>0){ctx.fillStyle='rgba(255,181,71,'+Math.min(1,l.glow)*.3+')';ctx.fillRect(l.x0+8,ly+10,l.len-16,36)}
+  ctx.fillStyle='#e8c547';ctx.fillRect(l.x0+8,ly+8,l.len-16,2);
+  ctx.fillStyle=l.busy?'#ff7a59':'#3ddc84';ctx.fillRect(l.x0+13,ly+16,4,24);
+  ctx.fillStyle='#ffffff';ctx.font='700 24px "Chakra Petch",sans-serif';ctx.fillText(l.name,l.x0+24,ly+35);
+  const gbText='GOODS ONLY';
+  ctx.font='700 18px "Chakra Petch",sans-serif';ctx.textAlign='right';
+  const gbw=ctx.measureText(gbText).width;
+  ctx.fillStyle='rgba(11,27,34,0.78)';ctx.fillRect(l.x0+l.len-gbw-24,ly+16,gbw+12,24);
+  ctx.fillStyle=KC[l.kind];ctx.fillText(gbText,l.x0+l.len-18,ly+34);ctx.textAlign='left';
+  if(l.warnT>0){ // closing soon: flashing amber outline with a countdown
+   const fl=.5+.5*Math.sin(performance.now()/160);
+   ctx.save();ctx.strokeStyle='rgba(255,194,61,'+(.35+.65*fl)+')';ctx.lineWidth=3;ctx.strokeRect(l.x0-3,ly-39,l.len+6,32);
+   ctx.fillStyle='#ffc23d';ctx.font='700 15px "Chakra Petch",sans-serif';ctx.textAlign='center';ctx.fillText('MAINTENANCE IN '+Math.ceil(l.warnT)+'s',W/2,ly-43);ctx.restore();
+  }
+  if(l.closed){ // closed for maintenance: hatched overlay with a countdown
+   ctx.save();ctx.beginPath();ctx.rect(l.x0,ly-36,l.len,26);ctx.clip();
+   ctx.fillStyle='rgba(8,20,26,.78)';ctx.fillRect(l.x0,ly-36,l.len,26);
+   ctx.strokeStyle='rgba(255,194,61,.85)';ctx.lineWidth=5;ctx.beginPath();for(let hx=l.x0-30;hx<l.x0+l.len;hx+=24){ctx.moveTo(hx,ly-10);ctx.lineTo(hx+26,ly-36)}ctx.stroke();ctx.restore();
+   ctx.fillStyle='#0b1015';ctx.fillRect(W/2-120,ly-34,240,22);ctx.fillStyle='#ffc23d';ctx.font='700 16px "Chakra Petch",sans-serif';ctx.textAlign='center';ctx.fillText('CLOSED · maintenance '+Math.ceil(l.closedT)+'s',W/2,ly-17);ctx.textAlign='left';
+  }
+ }
+ drawIslands();
+ drawNewTags();
+ // selected train: highlights and route preview
+ const t=sel.train;
+ let hintSig=null;
+ if(t){
+  if((t.state==='outer'||t.state==='loop')){
+   // clickable targets glow
+   if(sel.target){
+    const why=checkEntry(t,sel.target);const col=why?'rgba(255,90,90,.95)':'rgba(61,220,132,.95)';
+    const pts=routePoints(t,sel.target);ctx.strokeStyle=col;ctx.lineWidth=4;ctx.setLineDash([10,6]);ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();ctx.setLineDash([]);
+    if(!why)hintSig=t.state==='outer'?outerSig(t.side):loopSig(t.side,t.loopK);
+    if(sel.target.kind==='lane'){const bx=laneBox(sel.target.lane);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0])}
+   }
+  } else if(t.state==='ready'){
+   const why=checkExit(t),ly=LY(t.lane.idx),es=other(t.side),need=exitChoice(t);
+   if(need&&GUIDE){ // Exit guidance: the line this train is bound for glows, with its name
+    const gp=exitLineAbs(t,t.dest),a=.3+.45*pulse(),fork=exitLineAbs(t,'branch')[1];
+    ctx.save();ctx.strokeStyle='rgba(255,194,61,'+a+')';ctx.lineWidth=12;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(gp[0][0],gp[0][1]);for(let j=1;j<gp.length;j++)ctx.lineTo(gp[j][0],gp[j][1]);ctx.stroke();
+    ctx.restore(); // no text tag: the flashing signal and the train's own label already say where it goes
+   }
+   if(!need||GUIDE){ // route preview along the way out (with guidance off on a two-exit train there is nothing to preview: the player chooses)
+    const pick=need?t.dest:'main';
+    ctx.strokeStyle=why?'rgba(255,90,90,.95)':'rgba(61,220,132,.95)';ctx.lineWidth=4;ctx.setLineDash([10,6]);
+    ctx.beginPath();ctx.moveTo(X(t.side,LW),ly);for(const q of exitLineAbs(t,pick))ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.setLineDash([]);
+    if(!why)hintSig=(need&&t.dest==='branch')?branchSig(t.side):exitSig(t.lane,es); // the right exit signal flashes
+   }
+  }
+ }
+ // exhaust & steam particles
+ if(S.particles&&S.particles.length){
+  for(const pt of S.particles){
+   ctx.save();
+   ctx.globalAlpha=Math.max(0,Math.min(1,pt.life/pt.maxLife));
+   ctx.fillStyle=pt.col;
+   ctx.beginPath();ctx.arc(pt.x,pt.y,pt.size,0,7);ctx.fill();
+   ctx.restore();
+  }
+ }
+ for(const tr of S.trains)drawTrain(tr);
+ // signals
+ for(const side of ['E','W']){
+  const g=S.trains.some(q=>q.side===side&&q.entryLock&&!q.fromLoop&&q.state==='go'&&q.mode&&true);
+  const os=outerSig(side);signal(os.x,os.y,g,hintSig&&hintSig.x===os.x&&hintSig.y===os.y);
+  for(const k of loopKs()){const ls=loopSig(side,k);const gl=S.trains.some(q=>q.side===side&&q.fromLoop&&q.loopFrom===k&&q.entryLock&&q.state==='go');signal(ls.x,ls.y,gl,hintSig&&hintSig.x===ls.x&&hintSig.y===ls.y)}
+ }
+ for(const l of S.lanes)if(!l.thru&&l.enabled)for(const es of ['E','W']){
+  const sg=exitSig(l,es);const g=l.busy&&l.busy.state==='exiting'&&l.busy.exitSide===es;
+  signal(sg.x,sg.y,!!g,hintSig&&hintSig.x===sg.x&&hintSig.y===sg.y);
+ }
+ // the branch signal: clears a train for the branch (one signal serves every platform); a small amber arrow marks it
+ for(const sd of ['W','E'])if(branchOn(sd)){
+  const bs=branchSig(sd);
+  const g=S.trains.some(q=>q.side===sd&&q.state==='exiting'&&q.exitKey==='branch'&&(sd==='W'?at(q.path,q.s-q.L).x<=bs.x:at(q.path,q.s-q.L).x>=bs.x));
+  signal(bs.x,bs.y,g,hintSig&&hintSig.x===bs.x&&hintSig.y===bs.y);
+  ctx.save();ctx.translate(bs.x+(sd==='W'?21:-21),bs.y-8);ctx.rotate(bs.a);ctx.fillStyle='#ffc23d';ctx.strokeStyle='rgba(7,28,35,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-6,-5);ctx.lineTo(7,0);ctx.lineTo(-6,5);ctx.closePath();ctx.stroke();ctx.fill();ctx.restore();
+ }
+ // popups
+ for(const p of S.pops){const sc=1+Math.max(0,p.life-1.3)*1.6;ctx.globalAlpha=Math.min(1,p.life);ctx.font='700 '+Math.round(22*sc)+'px "Chakra Petch",sans-serif';ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=5;ctx.strokeStyle='rgba(5,18,23,.85)';ctx.strokeText(p.text,p.x,p.y);ctx.fillStyle=p.good?barGood():barBad();ctx.fillText(p.text,p.x,p.y);ctx.textAlign='left';ctx.globalAlpha=1}
+}
+function updatePis(){}
+/* ---------- timetable boards ---------- */
+const boardCache={W:'',E:''};
+function boardHtml(end){
+ const other=end==='W'?'E':'W';
+ // a table of three columns: train, platform, time
+ const row=(k,txt,plat,time,cls,hl)=>'<div class="br'+(hl?' hl':'')+'"><span class="bt"><i style="background:'+TT[k].col+'"></i><span>'+txt+'</span></span><span class="bp">'+(plat||'–')+'</span><b class="'+(cls||'')+'">'+time+'</b></div>';
+ const selT=sel.train;
+ const pn=n=>n==='THROUGH'?'THRU':n.replace(' ','');
+ const pt=e=>{if(!e||e.plat==null||!S.lanes[e.plat])return '';return '<u'+(e.chg?' class="chg"':'')+'>'+pn(S.lanes[e.plat].name)+'</u>'};
+ const dtag=d=>d==='branch'?' <em>→ Branch</em>':'';
+ const compact=document.body.classList.contains('bcompact'),nA=compact?2:3,nD=compact?1:3;
+ const dv=d=>d>=2?' <em class="late">'+(compact?'+'+d:'late '+d+'s')+'</em>':d<=-2?' <em class="early">'+(compact?'−'+(-d):'early '+(-d)+'s')+'</em>':'';
+ const arr=[];
+ const cur=[]; // trains already here, the selected one first so it can be found
+ for(const t of S.trains){
+  if(t.side!==end||!['arriving','outer','loop','set','go'].includes(t.state))continue;
+  const tm=t.state==='arriving'?'now':t.state==='outer'?'wait':t.state==='loop'?'siding':'in';
+  cur.push([t===selT?0:1,row(t.key,(t.vip?'★ ':'')+TT[t.key].label+dtag(t.dest)+dv(t.dev),pt(t.sched),tm,'now',t===selT)]);
+ }
+ cur.sort((a,b)=>a[0]-b[0]);for(const c of cur)arr.push(c[1]);
+ for(const e of S.sched){if(arr.length>=nA)break;if(e.spawned||e.side!==end)continue;const eta=e.t-S.t;arr.push(row(e.key,(e.vip?'★ ':'')+TT[e.key].label+dtag(e.dest)+dv(e.dev),pt(e),eta<=0?'held':Math.ceil(eta)+'s',eta<=0?'now':''))}
+ const dep=[]; // trains that came in from the other end leave through this one
+ for(const t of S.trains){
+  if(t.side!==other)continue;
+  if(t.state==='ready')dep.push([-1,row(t.key,TT[t.key].label+dtag(t.dest)+dv(t.dev),'<u>'+pn(t.lane.name)+'</u>','READY','now',t===selT)]);
+  else if(t.state==='dwell')dep.push([t.dwellT,row(t.key,TT[t.key].label+dtag(t.dest)+dv(t.dev),'<u>'+pn(t.lane.name)+'</u>',Math.ceil(t.dwellT)+'s','',t===selT)]);
+  else if(t.type.nonstop&&t.state==='go')dep.push([-.5,row(t.key,TT[t.key].label,'<u>THRU</u>','passing','',t===selT)]);
+ }
+ dep.sort((a,b)=>a[0]-b[0]);
+ return '<div class="bh">'+(compact?(end==='W'?'West':'East'):(end==='W'?'West':'East')+' end')+'</div><div class="br bth"><span class="bt">Train</span><span class="bp">Plat.</span><b>Time</b></div><div class="bs" data-s="▸">Arrivals</div>'+(arr.slice(0,nA).join('')||'<div class="br bnone"><span>none due</span></div>')+'<div class="bs" data-s="◂">Departures</div>'+(dep.slice(0,nD).map(x=>x[1]).join('')||'<div class="br bnone"><span>none</span></div>');
+}
+function updateBoards(){
+ if(!BOARD)return;
+ {const c=window.innerHeight<520||window.innerWidth<1000;if(document.body.classList.contains('bcompact')!==c){document.body.classList.toggle('bcompact',c);boardCache.W=boardCache.E=''}}
+ for(const end of ['W','E']){const el=document.getElementById('board'+end);if(!el)continue;const h=boardHtml(end);if(h!==boardCache[end]){boardCache[end]=h;el.innerHTML=h}}
+ // sit just below the top bar, even when the stats wrap onto a second row on a narrow screen
+ const sg=document.querySelector('.seg'),st=document.querySelector('.stats');
+ if(sg&&st){const y=Math.round(Math.max(sg.getBoundingClientRect().bottom,st.getBoundingClientRect().bottom)+4);for(const end of ['W','E']){const el=document.getElementById('board'+end);if(el&&el.dataset.y!==String(y)){el.dataset.y=String(y);el.style.top=y+'px'}}}
+}
+function hud(){
+ updateBoards();
+ document.getElementById('sScore').textContent=Math.round(S.score);
+ document.getElementById('sSat').textContent=Math.round(satNow())+'%';
+ document.getElementById('sEff').textContent=Math.round(effNow())+'%';
+ document.getElementById('sHeld').textContent=S.held;
+ noteBest();
+ document.getElementById('quota').innerHTML='<div class="q rnd">Round '+S.round+'/'+MAX_ROUND+' <span class="lvb" style="color:'+LV.lite+'" title="'+LV.name+' level">'+'★'.repeat(LV.stars)+'</span></div>'+Object.keys(S.quota).map(k=>{const d=S.completed[k],n=S.quota[k];return '<div class="q'+(d>=n?' done':'')+'"><i style="background:'+TT[k].col+'"></i>'+TT[k].label+' '+d+'/'+n+'</div>'}).join('')+'<div class="q best" title="Highest score ever reached">★ Best <b>'+best+'</b></div>';
+}
+let last=performance.now(),hudT=0;
+function frame(now){
+ let dt=Math.min(.05,(now-last)/1000);last=now;
+ if(!paused){dt*=speed*LV.speed;const n=speed>1?2:1;for(let k=0;k<n;k++)update(dt/n)}
+ draw();
+ hudT-=dt;if(hudT<=0){hudT=.1;hud()}
+ requestAnimationFrame(frame);
+}
+let pxUnit=1; // canvas units per screen pixel; lets tap areas stay finger-sized at any zoom or screen size
+function pos(e){const r=cv.getBoundingClientRect();pxUnit=W/r.width;return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]}
+/* A tap = finger down and up in nearly the same place. If the finger drags, the browser scrolls the track instead (pointercancel) and nothing is clicked. */
+let down=null;
+cv.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,t:performance.now()}});
+cv.addEventListener('pointerup',e=>{
+ if(!down)return;const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y),dur=performance.now()-down.t;down=null;
+ if(moved<=16&&dur<900){const[x,y]=pos(e);click(x,y)}
+});
+cv.addEventListener('pointercancel',()=>{down=null});
+addEventListener('keydown',e=>{if(e.key==='Escape'){sel={train:null,target:null};say('Selection cleared.')}});
+const pb=document.getElementById('pause');
+function syncPauseBtn(){
+ pb.textContent=paused?'Play':'Pause';
+ if(paused)pb.classList.add('is-paused');
+ else pb.classList.remove('is-paused');
+ if(window.__smAudio&&window.__smAudio.sync)window.__smAudio.sync();
+}
+pb.addEventListener('click',()=>{paused=!paused;syncPauseBtn()});
+syncPauseBtn();
+{const bt=document.getElementById('boardToggle');if(bt)bt.addEventListener('click',()=>{BOARD=!BOARD;try{localStorage.setItem('sm_board',BOARD?'1':'0')}catch(e){}applyBoard();if(BOARD){boardCache.W=boardCache.E='';updateBoards()}})}
+{const gb=document.getElementById('guideToggle');if(gb)gb.addEventListener('click',()=>{if(LV.guide!==null)return;userGuide=!userGuide;try{localStorage.setItem('sm_guide',userGuide?'1':'0')}catch(e){}applyGuide()})}
+{const cb=document.getElementById('cbToggle');if(cb)cb.addEventListener('click',()=>{CB=!CB;try{localStorage.setItem('sm_cb',CB?'1':'0')}catch(e){}applyCB();if(S)applyStageInfo(S.stage,S.round)})}
+document.getElementById('speed').addEventListener('click',e=>{speed=speed===1?2:1;e.currentTarget.textContent='Speed '+speed+'x'});
+// Restart replays the current round (your score goes back to where it was when the round began). "Start over" on the Info page begins again at round 1.
+document.getElementById('restart').addEventListener('click',()=>reset(S.round,S.roundStart));
+{const rp=document.getElementById('resetProg');let armed=false,tm=0;
+ const disarm=()=>{armed=false;rp.classList.remove('armed');rp.textContent='Start over from round 1'};
+ rp.addEventListener('click',()=>{
+  if(!armed){armed=true;rp.classList.add('armed');rp.textContent='Tap again to erase your progress';clearTimeout(tm);tm=setTimeout(disarm,4000)}
+  else{clearTimeout(tm);disarm();clearProgress();reset(1,0);document.getElementById('helpClose').click()}
+ });}
+document.getElementById('reBtn').addEventListener('click',()=>{if(S.stars&&S.round>=MAX_ROUND){showFinale();return}if(S.stars)reset(S.round+1,S.score);else reset(S.round,S.roundStart)});
+document.getElementById('fShare').addEventListener('click',doShare);
+document.getElementById('fAgain').addEventListener('click',()=>{clearProgress();document.getElementById('finale').hidden=true;confetti(0,'confetti2');reset(1,0)});
+document.body.dataset.level=LEVEL;applyGuide();
+{const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset();} // the Welcome page tells the player where they are resuming
+hud();
+addEventListener('pagehide',()=>{noteBest();saveBest()});
+if(document.addEventListener)document.addEventListener('visibilitychange',()=>{if(document.hidden){noteBest();saveBest()}});
+let demoPrev=null;
+window.__sm={MAX_ROUND,get H(){return H},get Y0(){return Y0},adaptCanvas,tapY,other,bodyPos:t=>at(t.path,t.s-CAR/2),
+ demoStart(r){demoPrev=LEVEL;applyLevel('normal',true);DEMO=true;reset(r||1,0)}, // the demo always runs on Normal
+ demoEnd(){DEMO=false;if(demoPrev)applyLevel(demoPrev,true);demoPrev=null;const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset()},
+ level:()=>LEVEL,
+ setLevel(id){if(!LEVELS[id])return;applyLevel(id);const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset(1,0)},
+ levels(){return Object.keys(LEVELS).map(id=>{const g=(b)=>{try{return localStorage.getItem(Kof(b,id))}catch(e){return null}};let fin=null;try{fin=JSON.parse(g('sm_final')||'null')}catch(e){}const r=parseInt(g('sm_round'),10);return{id,name:LEVELS[id].name,stars:LEVELS[id].stars,round:r>=1?Math.min(r,MAX_ROUND):0,score:Math.round(parseFloat(g('sm_score'))||0),fin,best:parseInt(g('sm_best'),10)||0}})},
+spawnOn:(sd)=>{spawnOn(sd);const t=S.trains[S.trains.length-1];t.key="nonstop";t.type=TT.nonstop;t.L=t.type.cars*CAR;return t},S:()=>S,sel:()=>sel,click,outerSig,loopSig,exitSig,trainPos:t=>at(t.path,t.s),LY,W,LW,LE};
+requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* Size the track: zoom 1 fits it entirely in view; higher zooms make it bigger and the stage scrolls (drag to pan). */
+(function(){
+ const stage=document.querySelector('.stage'),sc=document.getElementById('scroller'),cv=document.getElementById('cv'),zb=document.getElementById('zoom'),fitBtn=document.getElementById('fitScreen'),exitBtn=document.getElementById('exitClean');
+ const LEVELS=[1,1.25,1.5,2]; // 1.25x is the phone default: the compact station then fits the view with room around it
+ // Large screens (PC) start with the whole track in view; phones start zoomed in.
+ let zi=Math.max(screen.width,screen.height)>=1100?0:1;try{const s=parseInt(localStorage.getItem('sm_zoom2'),10);if(s>=0&&s<LEVELS.length)zi=s}catch(e){}
+ function fit(keepCenter){
+  const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;
+  if(window.__sm&&window.__sm.adaptCanvas)window.__sm.adaptCanvas(w,h);
+  const zoom=LEVELS[zi];
+  // Keep the canvas's true aspect (1400 x H). H is clamped to 500..840, so on very wide or tall desktop windows
+  // stretching to 100% x 100% distorts the game; letterbox it instead.
+  const cH=(window.__sm&&window.__sm.H)||h*1400/w, asp=1400/cH;
+  let bw=w,bh=w/asp;if(bh>h){bh=h;bw=h*asp}
+  if(zoom===1){
+   cv.style.width=Math.round(bw)+'px';
+   cv.style.height=Math.round(bh)+'px';
+   cv.style.margin=Math.max(0,Math.round((h-bh)/2))+'px '+Math.max(0,Math.round((w-bw)/2))+'px';
+   sc.scrollLeft=0;
+   sc.scrollTop=0;
+  }else{
+   let fx=.5,fy=.5;
+   if(keepCenter&&sc.scrollWidth>0){
+    fx=(sc.scrollLeft+sc.clientWidth/2)/sc.scrollWidth;
+    fy=(sc.scrollTop+sc.clientHeight/2)/sc.scrollHeight;
+   }else if(window.__sm&&window.__sm.H){
+    fy=(window.__sm.Y0+224)/window.__sm.H;
+   }
+   const cw=Math.round(bw*zoom);
+   const ch=Math.round(bh*zoom);
+   cv.style.width=cw+'px';
+   cv.style.height=ch+'px';
+   cv.style.margin=Math.max(0,Math.round((h-ch)/2))+'px '+Math.max(0,Math.round((w-cw)/2))+'px';
+   sc.scrollLeft=fx*sc.scrollWidth-sc.clientWidth/2;
+   sc.scrollTop=fy*sc.scrollHeight-sc.clientHeight/2;
+  }
+  zb.textContent=zoom===1?'Zoom: Fit':'Zoom '+zoom+'x';
+ }
+ window.__smFit=fit;
+ zb.addEventListener('click',()=>{zi=(zi+1)%LEVELS.length;try{localStorage.setItem('sm_zoom2',String(zi))}catch(e){}fit(true)});
+
+ const hudBtn=document.getElementById('hudToggle');
+ function toggleCleanFit(){
+  const isClean=document.body.classList.toggle('clean-mode');
+  if(isClean){
+   zi=0; // Fit entire track cleanly into screen view
+   try{localStorage.setItem('sm_zoom2','0')}catch(e){}
+   fit(false);
+  }else{
+   fit(true);
+  }
+  sfx('select');
+ }
+ if(hudBtn)hudBtn.addEventListener('click',toggleCleanFit);
+
+ addEventListener('resize',()=>fit(true));
+ if(window.ResizeObserver)new ResizeObserver(()=>fit(true)).observe(stage);
+ fit(false);
+})();
+/* Info screen: shown on first launch, reopened with the Info button. Game is paused while it is open. */
+(function(){
+ const help=document.getElementById('help'),pause=document.getElementById('pause'),welcome=document.getElementById('welcome');
+ let weWerePlaying=false;
+ function seen(){try{return localStorage.getItem('sm_help_seen')==='1'}catch(e){return false}}
+ function open(){
+  if(!help.hidden)return;
+  weWerePlaying=pause.textContent==='Pause';
+  if(weWerePlaying)pause.click();
+  help.hidden=false;help.scrollTop=0;
+  document.getElementById('helpClose').textContent=!welcome.hidden?'Back':(seen()?'Back to game':'Start playing');
+  // Give the Info screen a history entry so the Back button / gesture closes it instead of leaving the app.
+  try{history.pushState({sm:'help'},'')}catch(e){}
+ }
+ function close(){
+  if(help.hidden)return;
+  help.hidden=true;
+  try{localStorage.setItem('sm_help_seen','1')}catch(e){}
+  if(weWerePlaying&&pause.textContent==='Play')pause.click();
+  try{if(history.state&&history.state.sm==='help')history.back()}catch(e){}
+  if(window.__smFit)window.__smFit(false);
+  if(!welcome.hidden)refreshWelcome(); // e.g. after "Start over" was used from the Info page
+ }
+ addEventListener('popstate',()=>{if(!help.hidden)close()});
+ document.getElementById('info').addEventListener('click',open);
+ document.getElementById('helpClose').addEventListener('click',close);
+ addEventListener('keydown',e=>{if(e.key==='Escape'&&!help.hidden)close()});
+
+ /* Welcome page: shown every time the app opens, with the game paused behind it.
+    Play / Continue starts the game; the first time ever, the how-to-play intro follows. */
+ function refreshWelcome(){
+  const smx=window.__sm;if(!smx||!smx.levels)return;
+  const lvs=smx.levels(),cur=smx.level(),c=lvs.find(x=>x.id===cur),saved=c.round>0,fin=c.fin;
+  document.querySelectorAll('#wLevels .wlv').forEach(b=>{
+   const l=lvs.find(x=>x.id===b.dataset.lv),on=l.id===cur;
+   b.classList.toggle('sel',on);b.setAttribute('aria-checked',on?'true':'false');
+   b.querySelector('small').textContent=l.round?'Round '+l.round+' of '+smx.MAX_ROUND:(l.fin?'Complete':'New');
+  });
+  document.getElementById('wStatus').textContent=saved?'Round '+c.round+' of '+smx.MAX_ROUND+' · score '+c.score.toLocaleString('en-US'):(fin?'Journey complete · '+fin.rank+' · '+fin.score.toLocaleString('en-US')+' points':'A new station is waiting for its first train.');
+  document.getElementById('wPlay').textContent=saved?'Continue':(fin?'Play again':'Play');
+  const bs=c.best;
+  const wb=document.getElementById('wBest');wb.hidden=!(bs>0);wb.innerHTML='★ Best score <b>'+bs.toLocaleString('en-US')+'</b>';
+ }
+ function showWelcome(){refreshWelcome();welcome.hidden=false;if(pause.textContent==='Pause')pause.click()}
+ function startGame(){welcome.hidden=true;if(pause.textContent==='Play')pause.click();if(window.__smFit)window.__smFit(false);if(!seen())open()}
+ document.querySelectorAll('#wLevels .wlv').forEach(b=>b.addEventListener('click',()=>{window.__sm.setLevel(b.dataset.lv);refreshWelcome()}));
+ document.getElementById('wPlay').addEventListener('click',startGame);
+ document.getElementById('wInfo').addEventListener('click',open);
+ showWelcome();
+ window.__smWelcome=showWelcome;
+
+ /* PC extras: full-screen button (hidden inside the Android app, which is already full screen) and keyboard shortcuts. */
+ const full=document.getElementById('full'),root=document.documentElement;
+ const inApp=/; wv\)|Version\/[\d.]+ Chrome/.test(navigator.userAgent)&&/Android/.test(navigator.userAgent);
+ function toggleFull(){
+  if(document.fullscreenElement){document.exitFullscreen()}
+  else if(root.requestFullscreen){root.requestFullscreen().catch(()=>{})}
+ }
+ if(document.fullscreenEnabled&&!inApp){full.hidden=false;full.addEventListener('click',toggleFull);
+  document.addEventListener('fullscreenchange',()=>{full.textContent=document.fullscreenElement?'Exit full screen':'Full screen'})}
+ addEventListener('keyup',e=>{if(e.key===' '&&e.target&&e.target.tagName==='BUTTON')e.preventDefault()});
+ addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  if(!help.hidden){if(k===' '||k==='enter'){e.preventDefault();close()}return}
+  if(!welcome.hidden){if(k===' '||k==='enter'){e.preventDefault();startGame()}else if(k==='i')open();return}
+  if(k===' '){e.preventDefault();pause.click()}
+  else if(k==='f'&&!full.hidden)toggleFull();
+  else if(k==='i')document.getElementById('info').click();
+  else if(k==='z')document.getElementById('zoom').click();
+ });
+})();
+</script>
+<script>
+/* ---------- Sound ----------
+   All music and effects are generated in code with the Web Audio API (no audio files).
+   Music follows the screen: calm menu tune (Welcome, Info, round report), a steady train-rhythm tune while playing
+   that gets fuller as the station is upgraded, and short jingles for round win / upgrade / fail.
+   Effects: signal-cleared chime, select, platform pick, red-signal buzz, arrival bell, horn, coin ping.
+   The sound button cycles All -> Effects only -> Off and is remembered on the device. */
+(function(){
+ const AC=window.AudioContext||window.webkitAudioContext;
+ const api=window.__audio={sfx(){},jingle(){},toggle(){},stats(){return{state:'unsupported'}}};
+ const btns=[document.getElementById('sound'),document.getElementById('wSound')].filter(Boolean);
+ if(!AC){btns.forEach(b=>b.hidden=true);return}
+ let ctx=null,master=null,musicBus=null,sfxBus=null,noiseBuf=null,cur=null,holdUntil=0,notes=0,started=false;
+ let snd='all';try{snd=localStorage.getItem('sm_sound')||'all'}catch(e){}
+ if(snd!=='all'&&snd!=='fx'&&snd!=='off')snd='all';
+ const MUSIC_BASE=.2,SFX_BASE=.55;
+ // Player volume levels (0 to 1), kept on the device; they scale the base loudness and work together with the sound button.
+ const lvl=k=>{try{const v=parseFloat(localStorage.getItem(k));return v>=0&&v<=1?v:1}catch(e){return 1}};
+ let vm=lvl('sm_vol_music'),vs=lvl('sm_vol_sfx');
+ const musicVol=()=>MUSIC_BASE*vm,sfxVol=()=>SFX_BASE*vs;
+ const mtof=n=>440*Math.pow(2,(n-69)/12);
+ const ready=()=>!!ctx&&ctx.state==='running';
+
+ function ensure(){
+  if(ctx)return true;
+  try{ctx=new AC()}catch(e){return false}
+  const comp=ctx.createDynamicsCompressor();
+  master=ctx.createGain();master.gain.value=.9;
+  musicBus=ctx.createGain();musicBus.gain.value=snd==='all'?musicVol():0;
+  sfxBus=ctx.createGain();sfxBus.gain.value=snd==='off'?0:sfxVol();
+  musicBus.connect(master);sfxBus.connect(master);master.connect(comp);comp.connect(ctx.destination);
+  noiseBuf=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);
+  const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  return true;
+ }
+
+ /* one note: attack, optional sustain (fraction of the length), then an exponential fade */
+ function tone(bus,t,f,dur,o){
+  o=o||{};
+  const osc=ctx.createOscillator(),g=ctx.createGain();
+  osc.type=o.type||'sine';
+  osc.frequency.setValueAtTime(f,t);
+  if(o.to)osc.frequency.exponentialRampToValueAtTime(o.to,t+dur);
+  const a=Math.min(o.attack||.01,dur*.5),gain=o.gain||.2,end=t+dur;
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.linearRampToValueAtTime(gain,t+a);
+  if(o.sus)g.gain.setValueAtTime(gain,t+Math.max(a,dur*o.sus));
+  g.gain.exponentialRampToValueAtTime(.0001,end);
+  let out=osc;
+  if(o.lp){const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=o.lp;osc.connect(fl);out=fl}
+  out.connect(g);g.connect(bus);
+  osc.start(t);osc.stop(end+.05);notes++;
+ }
+ function bell(bus,t,f,dur,gain){ // a soft bell: fundamental plus two quieter overtones
+  tone(bus,t,f,dur,{gain:gain});tone(bus,t,f*2,dur*.7,{gain:gain*.35});tone(bus,t,f*3,dur*.4,{gain:gain*.12});
+ }
+ function hit(bus,t,dur,gain,freq,q,to){ // a burst of filtered noise (train 'chuff', whoosh)
+  const src=ctx.createBufferSource(),fl=ctx.createBiquadFilter(),g=ctx.createGain();
+  src.buffer=noiseBuf;fl.type='bandpass';fl.frequency.setValueAtTime(freq,t);fl.Q.value=q||1;
+  if(to)fl.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(gain,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  src.connect(fl);fl.connect(g);g.connect(bus);src.start(t,Math.random()*.5);src.stop(t+dur+.05);notes++;
+ }
+
+ /* ----- sound effects ----- */
+ const lastSfx={};
+ const FX={
+  select:t=>tone(sfxBus,t,880,.07,{gain:.22}),
+  target:t=>{tone(sfxBus,t,660,.07,{gain:.2});tone(sfxBus,t+.06,990,.08,{gain:.2})},
+  go:t=>{bell(sfxBus,t,784,.55,.3);bell(sfxBus,t+.14,1047,.8,.3)},        // signal cleared: rising two-tone chime
+  red:t=>{tone(sfxBus,t,150,.14,{type:'square',gain:.14,lp:700});tone(sfxBus,t+.18,130,.2,{type:'square',gain:.14,lp:700})},
+  arrive:t=>bell(sfxBus,t,659,.7,.22),
+  pass:t=>hit(sfxBus,t,.45,.2,400,1.2,1800),
+  horn:t=>{tone(sfxBus,t,233,.38,{type:'sawtooth',gain:.07,attack:.03,lp:900,sus:.6});tone(sfxBus,t,294,.38,{type:'sawtooth',gain:.07,attack:.03,lp:900,sus:.6})},
+  vip:t=>[784,988,1319].forEach((f,i)=>bell(sfxBus,t+i*.12,f,.7,.26)),   // VIP train: three rising bells
+  coin:t=>{tone(sfxBus,t,1319,.07,{type:'triangle',gain:.14});tone(sfxBus,t+.06,1760,.12,{type:'triangle',gain:.14})}
+ };
+ function sfx(name){
+  if(snd==='off'||!ready()||!FX[name])return;
+  const t=ctx.currentTime;
+  if(lastSfx[name]&&t-lastSfx[name]<.08)return;
+  lastSfx[name]=t;
+  try{FX[name](t+.005)}catch(e){}
+ }
+
+ /* ----- jingles (round win / upgrade / fail) ----- */
+ function jingle(kind){
+  if(snd==='off'||!ready())return;
+  const t=ctx.currentTime+.03;
+  try{
+   if(kind==='lose'){[[69,0],[65,.22],[62,.44]].forEach(n=>tone(sfxBus,t+n[1],mtof(n[0]),.7,{type:'triangle',gain:.2,attack:.02}));holdUntil=t+1.9}
+   else{
+    const seq=kind==='upgrade'?[[67,0],[72,.14],[76,.28],[79,.42],[84,.62]]:[[72,0],[76,.13],[79,.26],[84,.4]];
+    seq.forEach(n=>bell(sfxBus,t+n[1],mtof(n[0]),.9,.22));
+    const ct=t+(kind==='upgrade'?.85:.6);
+    [60,64,67,72].forEach(n=>tone(sfxBus,ct,mtof(n),1.4,{type:'triangle',gain:.1,attack:.05,sus:.5}));
+    holdUntil=t+(kind==='upgrade'?2.8:2.2);
+   }
+  }catch(e){}
+ }
+
+ /* ----- music ----- */
+ // Menu tune: C major, slow, warm pad + soft arpeggio (progression I - vi - IV - V)
+ const MENU_CH=[{pad:[48,52,55],bass:48,arp:[60,64,67,72]},{pad:[45,48,52],bass:45,arp:[57,60,64,69]},{pad:[53,57,60],bass:53,arp:[57,60,65,69]},{pad:[55,59,62],bass:55,arp:[59,62,67,71]}];
+ // Play tune: A minor, steady train rhythm (progression Am - F - C - G); gets fuller with the station grade (c.lv = 1..5)
+ const PLAY_CH=[{pad:[45,48,52],bass:45},{pad:[41,45,48],bass:53},{pad:[48,52,55],bass:48},{pad:[43,47,50],bass:55}];
+ const PENTA=[69,72,74,76,79];
+ const MOTIF=[[[0,4],[4,3],[8,2],[12,3]],[[0,2],[6,3],[8,4],[12,3]],[[0,3],[4,2],[8,1],[12,2]],[[0,1],[4,2],[8,3],[14,4]]]; // [step, pentatonic index] per bar
+ const TUNES={
+  menu:{bpm:76,len:64,step(c,i,t,s){
+   const ch=MENU_CH[Math.floor(i/16)];
+   if(i%16===0)ch.pad.forEach(n=>tone(c.bus,t,mtof(n),16*s,{type:'triangle',gain:.05,attack:.6,sus:.7}));
+   if(i%8===0)tone(c.bus,t,mtof(ch.bass),7*s,{gain:.12,attack:.03});
+   if(i%2===0){const seq=[0,1,2,3,2,1,2,1];tone(c.bus,t,mtof(ch.arp[seq[(i/2)%8]]),4*s,{gain:.055})}
+  }},
+  play:{bpm:100,len:64,step(c,i,t,s){
+   const ch=PLAY_CH[Math.floor(i/16)],lv=c.lv;
+   if(i%16===0)ch.pad.forEach(n=>tone(c.bus,t,mtof(n),16*s,{type:'triangle',gain:.045,attack:.4,sus:.7}));
+   if(i%4===0)tone(c.bus,t,mtof(ch.bass),3*s,{gain:.13,attack:.01});                       // wheel-beat pulse
+   if(lv<=2&&i%8===4)tone(c.bus,t,mtof(ch.pad[2]+12),5*s,{gain:.045,attack:.01});     // soft chime on the off-beats in the early, quiet grades
+   if(lv>=5&&i%4===2)tone(c.bus,t,mtof(ch.bass+12),2*s,{gain:.06,attack:.01});
+   if(lv>=2&&i%2===0)hit(c.bus,t,.07,i%4===2?.05:.032,2400,1.1);                          // chuff-a-chuff rhythm
+   if(lv>=3){const bar=Math.floor(i/16),pos=i%16;for(const m of MOTIF[bar])if(m[0]===pos)tone(c.bus,t,mtof(PENTA[m[1]]),3*s,{type:'triangle',gain:.06,attack:.01})}
+   if(lv>=4&&i%2===1)tone(c.bus,t,mtof(PENTA[(i*3)%5]+12),s,{gain:.022,attack:.005});     // sparkle
+  }}
+ };
+ function stopMusic(){
+  if(!cur)return;
+  clearInterval(cur.timer);
+  const old=cur;cur=null;
+  try{old.bus.gain.setTargetAtTime(0,ctx.currentTime,.15);setTimeout(()=>{try{old.bus.disconnect()}catch(e){}},1500)}catch(e){}
+ }
+ function pump(){
+  if(!cur||!ready())return;
+  const def=TUNES[cur.name],s=60/cur.bpm/4;
+  while(cur.next<ctx.currentTime+.3){def.step(cur,cur.step,cur.next,s);cur.step=(cur.step+1)%def.len;cur.next+=s}
+ }
+ function startMusic(name,lv){
+  stopMusic();
+  if(snd!=='all'||!ready())return;
+  const bus=ctx.createGain();bus.gain.value=0;bus.connect(musicBus);
+  bus.gain.setTargetAtTime(1,ctx.currentTime,.4);
+  cur={name,lv,bus,bpm:TUNES[name].bpm+(name==='play'&&lv>=4?8:0),step:0,next:ctx.currentTime+.08,timer:0,duck:1,key:name+lv};
+  cur.timer=setInterval(pump,60);
+  pump();
+ }
+
+ /* decide which music fits what is on screen; called a few times a second */
+ function sync(){
+  if(!ready())return;
+  if(snd!=='all'){stopMusic();return}
+  const el=id=>document.getElementById(id);
+  const menu=!el('welcome').hidden||!el('help').hidden||!el('roundEnd').hidden;
+  const sx=window.__sm&&window.__sm.S?window.__sm.S():null,lv=sx&&sx.stage?sx.stage.id:1;
+  const want=menu?'menu':'play',key=want+(want==='play'?lv:0);
+  const paused=el('pause').textContent==='Play';
+  if(want==='play'&&paused){
+   stopMusic();
+   return;
+  }
+  if(ctx.currentTime<holdUntil&&(!cur||cur.key!==key)){stopMusic();return} // let a jingle finish before the next tune starts
+  if(!cur||cur.key!==key)startMusic(want,lv);
+  const duck=1;
+  if(cur&&cur.duck!==duck){cur.duck=duck;cur.bus.gain.setTargetAtTime(duck,ctx.currentTime,.25)}
+ }
+ window.__smAudio={sync};
+
+ /* ----- sound button ----- */
+ const ICON={all:'🔊',fx:'🔔',off:'🔇'},TITLE={all:'Sound: music and effects',fx:'Sound: effects only',off:'Sound: off'};
+ function paint(){btns.forEach(b=>{b.textContent=ICON[snd];b.title=TITLE[snd];b.setAttribute('aria-label',TITLE[snd])})}
+ function toggle(){
+  snd=snd==='all'?'fx':snd==='fx'?'off':'all';
+  try{localStorage.setItem('sm_sound',snd)}catch(e){}
+  paint();
+  if(ensure()){
+   musicBus.gain.setTargetAtTime(snd==='all'?musicVol():0,ctx.currentTime,.1);
+   sfxBus.gain.setTargetAtTime(snd==='off'?0:sfxVol(),ctx.currentTime,.1);
+   if(ctx.state==='suspended'&&snd!=='off')ctx.resume();
+  }
+  if(snd!=='all')stopMusic();else sync();
+  sfx('select');
+ }
+ btns.forEach(b=>b.addEventListener('click',toggle));
+ paint();
+
+ /* ----- volume sliders (Info page) ----- */
+ const sm=document.getElementById('volMusic'),sx=document.getElementById('volSfx');
+ function applyVol(){if(!ctx)return;musicBus.gain.setTargetAtTime(snd==='all'?musicVol():0,ctx.currentTime,.05);sfxBus.gain.setTargetAtTime(snd==='off'?0:sfxVol(),ctx.currentTime,.05)}
+ function bindVol(el,key,set,preview){
+  if(!el)return;
+  el.value=String(Math.round((key==='sm_vol_music'?vm:vs)*100));
+  el.addEventListener('input',()=>{const v=Math.max(0,Math.min(1,(+el.value)/100));set(v);try{localStorage.setItem(key,String(v))}catch(e){}ensure();applyVol()});
+  el.addEventListener('change',preview);
+ }
+ bindVol(sm,'sm_vol_music',v=>{vm=v},()=>{});
+ bindVol(sx,'sm_vol_sfx',v=>{vs=v},()=>{if(snd!=='off')sfx('select')});
+
+ /* ----- start-up: browsers only allow sound after a first tap or key press (the Android app lifts that limit) ----- */
+ function unlock(){
+  if(!ensure())return;
+  const go=()=>{started=true;sync()};
+  if(ctx.state==='running')go();else ctx.resume().then(go).catch(()=>{});
+ }
+ ['pointerdown','keydown','touchend','click'].forEach(ev=>addEventListener(ev,unlock,{passive:true}));
+ document.addEventListener('visibilitychange',()=>{
+  if(!ctx)return;
+  if(document.hidden)ctx.suspend().catch(()=>{});
+  else if(snd!=='off')ctx.resume().catch(()=>{});
+ });
+ addEventListener('keydown',e=>{if(e.key&&e.key.toLowerCase()==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey)toggle()});
+ setInterval(sync,300);
+ unlock(); // works straight away where autoplay is allowed (the Android app)
+
+ api.sfx=sfx;api.jingle=jingle;api.toggle=toggle;
+ api.stats=()=>({state:ctx?ctx.state:'none',notes,mode:snd,music:cur?cur.name:null,level:cur?cur.lv:null,started});
+})();
+</script>
+<script>
+/* Guided tutorial: follows the player's real first train step by step (select, pick platform, clear signal, boarding, exit).
+   Shown once to new players; existing saves skip it; the Info page can replay it. */
+(function(){
+ const coach=document.getElementById('coach'),stepEl=document.getElementById('coachStep'),textEl=document.getElementById('coachText');
+ const welcome=document.getElementById('welcome'),help=document.getElementById('help'),pause=document.getElementById('pause');
+ const KEY='sm_tut';
+ const get=()=>{try{return localStorage.getItem(KEY)==='1'}catch(e){return false}};
+ const set=v=>{try{if(v)localStorage.setItem(KEY,'1');else localStorage.removeItem(KEY)}catch(e){}};
+ // Anyone who already has progress is not a new player.
+ try{if((localStorage.getItem('sm_round')||localStorage.getItem('sm_round_easy')||localStorage.getItem('sm_round_hard'))&&localStorage.getItem(KEY)===null)set(true)}catch(e){}
+ let done=get(),train=null,seenExit=false,finishUntil=0;
+ function show(n,txt){stepEl.textContent=n?('Step '+n+'/5'):'';textEl.textContent=txt;coach.hidden=false}
+ function finish(){done=true;set(true);train=null;coach.hidden=true}
+ document.getElementById('coachSkip').addEventListener('click',finish);
+ document.getElementById('replayTut').addEventListener('click',()=>{set(false);done=false;train=null;seenExit=false;finishUntil=0;document.getElementById('helpClose').click()});
+ function laneNames(t,S){const n=S.lanes.filter(l=>l.enabled&&!l.thru&&l.ok&&l.ok.includes(t.key)).map(l=>l.name);return n.length?n.join(' or '):'a platform'}
+ function tick(){
+  const api=window.__sm;if(!api||!api.S)return;
+  if(finishUntil){if(performance.now()>finishUntil)finish();return}
+  if(window.__smDemo){coach.hidden=true;return}
+  if(done||!welcome.hidden||!help.hidden||pause.textContent==='Play'){if(!done&&(!welcome.hidden||!help.hidden)){coach.hidden=true}return}
+  const S=api.S(),sel=api.sel();if(!S)return;
+  if(train&&!S.trains.includes(train)){
+   if(seenExit){ // the first train has left: tutorial complete
+    show(0,'Well done! Fill the quota at the bottom to finish the round. Tap Info any time for the full rules.');
+    finishUntil=performance.now()+8000;return;
+   }
+   train=null; // round was restarted
+  }
+  if(!train){
+   train=S.trains.find(t=>t.state==='outer')||null;seenExit=false;
+   if(!train){show(0,'A train is on its way. It will stop at the signal at the edge of the track.');return}
+  }
+  const t=train,mine=sel&&sel.train===t;
+  if(t.state==='outer'){
+   if(!mine)show(1,'Tap the waiting train '+t.num+' ('+t.type.label+') to select it.');
+   else if(!sel.target)show(2,'Now tap the platform it should use: '+laneNames(t,S)+'. Or tap a siding to hold it.');
+   else show(3,'Route ready. Tap the flashing signal to send the train in.');
+  }else if(t.state==='loop'){
+   show(2,'Held in a siding. Tap the train, then a platform, then the flashing signal.');
+  }else if(t.state==='arriving'||t.state==='set'||t.state==='go'){
+   show(4,'Cleared! The train is rolling in. Never let two trains meet.');
+  }else if(t.state==='dwell'){
+   show(4,'Passengers are boarding. Wait for the train to finish, and don\'t leave it too long.');
+  }else if(t.state==='ready'){
+   if(!mine)show(5,'Boarding done. Tap the train, then its flashing exit signal.');
+   else show(5,'Tap the flashing exit signal to send it on its way.');
+  }else if(t.state==='exiting'){
+   seenExit=true;show(5,'On its way out. Leave a gap before sending the next train.');
+  }
+ }
+ setInterval(tick,200);
+})();
+</script>
+<script>
+/* Demo: plays the first train of a fresh round 1 by itself, using the game's own click handling, with a finger and narration.
+   Nothing is saved while it runs, and the player's own game is restored afterwards. */
+(function(){
+ const body=document.body,wrap=document.querySelector('.wrap'),cv=document.getElementById('cv');
+ const finger=document.getElementById('finger'),bar=document.getElementById('demoBar'),stepEl=document.getElementById('demoStep'),textEl=document.getElementById('demoText');
+ const welcome=document.getElementById('welcome'),help=document.getElementById('help'),pause=document.getElementById('pause'),zoomBtn=document.getElementById('zoom');
+ let active=false,zoomClicks=0;
+ const api=()=>window.__sm;
+ const running=()=>welcome.hidden&&help.hidden&&pause.textContent==='Pause';
+ function say(n,txt){stepEl.textContent=n?('Demo '+n+'/5'):'Demo';textEl.textContent=txt;bar.hidden=false}
+ // Wait ms of real play time (does not count while the game is paused or the Info page is open); stops early if the demo is exited.
+ async function wait(ms){let left=ms;while(active&&left>0){await new Promise(r=>setTimeout(r,100));if(running())left-=100}return active}
+ async function until(cond,maxMs){let left=maxMs||60000;while(active&&left>0){if(cond())return true;await new Promise(r=>setTimeout(r,100));if(running())left-=100}return false}
+ const toClient=(x,y)=>{const r=cv.getBoundingClientRect(),a=api();return[r.left+x*r.width/a.W,r.top+y*r.height/a.H]};
+ function place(cx,cy){const w=wrap.getBoundingClientRect(),[px,py]=toClient(cx,cy);finger.style.left=(px-w.left)+'px';finger.style.top=(py-w.top)+'px'}
+ // Move the finger to a track position, tap, and send the click to the game.
+ async function tapAt(getPt){
+  let p=getPt();place(p.x,p.y);if(!await wait(1000))return false;
+  finger.classList.add('tap');if(!await wait(260))return false;
+  p=getPt();api().click(p.x,p.y);finger.classList.remove('tap');return await wait(500);
+ }
+ function stop(){
+  if(!active)return;active=false;window.__smDemo=false;body.classList.remove('demoOn');bar.hidden=true;finger.classList.remove('tap');
+  // put the zoom level back the way the player had it
+  for(let i=0;i<(4-zoomClicks%4)%4;i++)zoomBtn.click();zoomClicks=0;
+  api().demoEnd();window.__smWelcome&&window.__smWelcome();
+ }
+ async function play(){
+  const a=api();
+  say(0,'Watch how a train is handled. Trains wait at the signal at the edge of the track.');
+  let t;if(!await until(()=>(t=a.S().trains.find(x=>x.state==='outer')),40000)||!t){if(active)stop();return}
+  const side=t.side;
+  say(1,'A '+t.type.label+' train is waiting. Tap the train to select it.');
+  for(let i=0;i<3&&a.sel().train!==t;i++)if(!await tapAt(()=>a.bodyPos(t))){return}
+  const lane=a.S().lanes.find(l=>l.enabled&&!l.thru&&l.ok&&l.ok.includes(t.key));
+  if(!lane){stop();return}
+  say(2,'Tap the platform for this train type: '+lane.name+'.');
+  for(let i=0;i<3&&!a.sel().target;i++)if(!await tapAt(()=>({x:(a.LW+a.LE)/2,y:a.tapY(lane)}))){return}
+  say(3,'Then tap the flashing signal to send it in. The signal only clears if the route is safe.');
+  for(let i=0;i<4&&t.state==='outer';i++){
+   if(!await tapAt(()=>{const s=a.outerSig(side);return{x:s.x,y:s.y+3}}))return;
+   if(t.state==='outer'&&!await wait(1200))return;
+  }
+  if(t.state==='outer'){stop();return}
+  say(4,'The train rolls in and passengers board. Wait for the full boarding time, but do not leave it too long.');
+  if(!await until(()=>t.state==='ready'||!a.S().trains.includes(t),90000)||!a.S().trains.includes(t)){if(active)stop();return}
+  say(5,'Boarding is done. Tap the train, then its flashing exit signal.');
+  for(let i=0;i<3&&a.sel().train!==t;i++)if(!await tapAt(()=>a.bodyPos(t)))return;
+  for(let i=0;i<4&&t.state==='ready';i++){
+   if(!await tapAt(()=>{const s=a.exitSig(t.lane,a.other(side));return{x:s.x,y:s.y+3}}))return;
+   if(t.state==='ready'&&!await wait(1200))return;
+  }
+  finger.classList.remove('tap');
+  if(!await until(()=>!a.S().trains.includes(t),40000))return;
+  say(0,'That is a train handled! Score points for the right platform and a quick turnaround. Now it is your turn.');
+  await wait(6000);if(active)stop();
+ }
+ function start(){
+  if(active)return;
+  active=true;window.__smDemo=true;
+  // the demo needs the whole track in view: use the fit zoom, and restore the player's zoom afterwards
+  zoomClicks=0;while(zoomBtn.textContent!=='Zoom: Fit'&&zoomClicks<4){zoomBtn.click();zoomClicks++}
+  welcome.hidden=true;body.classList.add('demoOn');
+  api().demoStart();
+  if(pause.textContent==='Play')pause.click();
+  play().catch(()=>stop());
+ }
+ document.getElementById('wDemo').addEventListener('click',start);
+ document.getElementById('demoExit').addEventListener('click',stop);
+})();
+</script>

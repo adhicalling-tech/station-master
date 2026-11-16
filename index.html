@@ -57,7 +57,8 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .satbar span{position:absolute;left:90%;top:0;bottom:0;width:2px;background:#fff}
 .effbar span{left:80%}
 /* Narrow screens (phones): shorter stat labels and tighter spacing so four stats fit beside the buttons */
-@media (max-width:1000px){.stat{padding:0 5px}.stats{gap:3px}.stat b,.stat.score b{font-size:14px}.stat .lb{font-size:0;margin-left:2px}.stat .lb::after{content:attr(data-s);font-size:12px;font-family:var(--display);font-weight:600;letter-spacing:0;color:var(--muted)}}
+@media (max-width:1000px){.stat{padding:0 6px}.stats{gap:3px}.stat b,.stat.score b{font-size:15px}.stat .lb{font-size:0;margin-left:3px}.stat .lb::after{content:attr(data-s);font-size:15px;font-family:var(--display);font-weight:600;letter-spacing:.02em;color:var(--muted)}}
+@media (max-width:1000px){.bar{gap:6px 8px}.bar .seg{gap:2px}.bar .seg button{padding:6px 8px}.bar .stat{padding:0 6px}.bar .stats{gap:3px}} /* stats are the same size as the buttons (15px); the gaps are tight so everything stays on one row on a phone */
 .satline{margin-top:5px;font-size:14px}
 .q.best{margin-left:auto;border-color:var(--amber);color:var(--amber);font-weight:600}
 .q.best b{font-family:var(--display);color:#fff}
@@ -129,6 +130,8 @@ button{padding:6px 12px;font-size:15px}
 .q{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;height:28px;box-sizing:border-box;background:rgba(9,27,34,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(47,112,128,.6);border-radius:99px;padding:3px 12px 3px 8px;font-size:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 .q.best{margin-left:auto;border-color:var(--amber);color:var(--amber);font-weight:600;padding:3px 12px}
 .toast{font-size:16px;padding:6px 14px}
+/* Phones (landscape, short screens): the game messages sit in the bottom-left corner, above the round chips, as a compact box, so they never cover the goods platform or the tracks in the middle */
+@media (max-height:520px){.stage .toast{left:max(10px,env(safe-area-inset-left,0px));right:auto;transform:none;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 40px);max-width:min(262px,29vw);font-size:11.5px;line-height:1.25;padding:3px 9px;text-align:left;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}} /* two lines at most: that is the height of the empty ground beside the goods platform */
 .card ol,.card ul,.pts{font-size:16px}
 .card h3{font-size:14px}
 .legend{font-size:15px}
@@ -202,11 +205,11 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 .helpbtn{position:sticky;bottom:0;display:flex;justify-content:center;padding:14px 0 18px;background:linear-gradient(180deg,transparent,#09202a 40%)}
 .helpbtn button{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;padding:10px 28px;font-size:15px;box-shadow:0 0 18px rgba(255,194,61,.45)}
 /* Timetable boards: what is due at each end, and what is about to leave it. They never block taps. */
-.board{position:absolute;z-index:8;left:max(10px,env(safe-area-inset-left,0px));top:60px;width:182px;pointer-events:none;background:rgba(7,28,35,.74);border:1px solid rgba(47,112,128,.55);border-radius:8px;padding:4px 8px 5px;font-size:11.5px;line-height:1.32;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.board{--cp:44px;--ct:40px;position:absolute;z-index:8;left:max(10px,env(safe-area-inset-left,0px));top:60px;width:182px;pointer-events:none;background:rgba(7,28,35,.74);border:1px solid rgba(47,112,128,.55);border-radius:8px;padding:4px 8px 5px;font-size:11.5px;line-height:1.32;box-shadow:0 3px 10px rgba(0,0,0,.35)}
 .board.bR{left:auto;right:max(10px,env(safe-area-inset-right,0px))}
 .board .bh{font-family:var(--display);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-size:11px}
 .board .bs{font-family:var(--display);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:3px}
-.board .br{display:grid;grid-template-columns:minmax(0,1fr) 3.1em 3.6em;align-items:center;column-gap:4px;white-space:nowrap;overflow:hidden;padding:1px 0;border-bottom:1px solid rgba(47,112,128,.28)}
+.board .br{display:grid;grid-template-columns:minmax(0,1fr) var(--cp) var(--ct);align-items:center;column-gap:4px;white-space:nowrap;overflow:hidden;padding:1px 0;border-bottom:1px solid rgba(47,112,128,.28)}
 .board .br.bnone{display:block;border-bottom:0;color:var(--muted)}
 .board .br.bth{font-family:var(--display);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(47,112,128,.7);margin-top:2px}
 .board .br .bt{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden}
@@ -218,21 +221,27 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 .board .br b.now{color:var(--amber)}
 .board .br em{font-style:normal;color:#ffc23d}
 .board .br em.late{color:#ff9a6c}.board .br em.early{color:#7fd0ff}
+.board .br s{text-decoration:none;color:#b9d3da;margin-right:3px;font-size:1.05em}
 .board .br u{text-decoration:none;font-family:var(--display);font-weight:700;color:#9fe3b0;margin-right:1px}.board .br u.chg{color:#ffc23d}
 .board .br.hl{background:rgba(255,194,61,.24);box-shadow:0 0 0 1px rgba(255,194,61,.7);border-radius:3px}
-.annc{position:absolute;left:50%;top:8px;transform:translateX(-50%);max-width:90%;z-index:9;pointer-events:none;background:rgba(60,38,4,.95);border:1px solid #ffc23d;border-radius:8px;padding:6px 16px;font-size:14px;font-weight:700;color:#ffe29a;text-align:center;opacity:0;transition:opacity .25s}
+.menu{position:absolute;left:max(10px,env(safe-area-inset-left,0px));top:calc(max(8px,env(safe-area-inset-top,0px)) + 46px);z-index:12;display:flex;flex-direction:column;gap:4px;padding:6px;background:rgba(9,27,34,.94);border:1px solid rgba(47,112,128,.7);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.menu[hidden]{display:none}
+.menu button{text-align:left;white-space:nowrap}
+body.clean-mode .menu{display:none}
+.annc{position:absolute;left:50%;top:8px;transform:translateX(-50%);max-width:90%;z-index:14;pointer-events:none;background:rgba(60,38,4,.95);border:1px solid #ffc23d;border-radius:8px;padding:6px 16px;font-size:14px;font-weight:700;color:#ffe29a;text-align:center;opacity:0;transition:opacity .25s}
 .annc.show{opacity:1}
-.noboard .board,.clean-mode .board{display:none}
+.noboard .board{display:none} /* the boards stay in view in fit-to-window mode; only the Info-page switch hides them */
 /* Compact boards (phones: short or narrow screens): one slim line per end, so they never cover the track */
-.bcompact .board{display:flex;align-items:center;gap:7px;width:calc(50% - 14px);padding:2px 7px;font-size:10.5px;line-height:1.25;white-space:nowrap;overflow:hidden;background:rgba(7,28,35,.66)}
-.bcompact .board .bh{font-size:10px;letter-spacing:.1em;margin:0;flex:0 0 auto}
-.bcompact .board .bs{font-size:0;margin:0;flex:0 0 auto}
-.bcompact .board .bs::after{content:attr(data-s);font-size:11px;color:var(--muted)}
-.bcompact .board .br{display:flex;flex:0 0 auto;gap:3px;border-bottom:0;padding:0}
-.bcompact .board .br.bth{display:none}
-.bcompact .board .br .bp{text-align:left}
-.bcompact .board .br b{margin-left:2px;padding-left:0}
-@media (min-width:1100px){.board{width:228px;font-size:13.5px;padding:6px 10px 7px}.board .bh{font-size:12px}.board .bs{font-size:10.5px}}
+/* phones and small windows: the same three-column table, only smaller and narrower */
+.bcompact .board{width:164px;padding:2px 5px 3px;font-size:10px;line-height:1.22;background:rgba(7,28,35,.7)}
+.bcompact .board .bh{font-size:10px;letter-spacing:.12em}
+.bcompact .board .bs{font-size:8.5px;margin-top:2px}
+.bcompact .board{--cp:34px;--ct:39px}
+.bcompact .board .br{column-gap:3px;padding:0}
+.bcompact .board .br.bth{font-size:8px;margin-top:1px;letter-spacing:.04em}
+.bcompact .board .br .bt{gap:3px}
+.bcompact .board .br i{width:7px;height:6px}
+@media (min-width:1100px){.board{--cp:54px;--ct:46px;width:228px;font-size:13.5px;padding:6px 10px 7px}.board .bh{font-size:12px}.board .bs{font-size:10.5px}}
 /* Finale: final rank, score and a Share button */
 .finale{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(900px 500px at 50% 0,rgba(255,194,61,.18),transparent 60%),rgba(6,22,28,.94);padding:12px}
 .finale[hidden]{display:none}
@@ -321,7 +330,7 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 .wbtns .wprimary{animation:wglow 2.4s ease-in-out infinite alternate}
 @keyframes wglow{from{box-shadow:0 0 14px rgba(255,194,61,.35)}to{box-shadow:0 0 30px rgba(255,194,61,.7)}}
 @media (prefers-reduced-motion:reduce){.wstars,.wlogo,.wbtns .wprimary{animation:none}.wtrain.loc,.wtrain.gds{animation:none;transform:translateX(30vw)}}
-@media (max-height:420px){.wscene{height:26%}}
+@media (max-height:460px){.wscene{height:22%}.wlogo,.wtag{display:none}.wcard{gap:5px}.wcard h1{font-size:30px;margin:0}.wstatus{font-size:15px;min-height:0}.wbest{font-size:15px}.wbest b{font-size:18px}.wbtns{margin-top:4px}.wbtns button{font-size:16px;padding:7px 20px}}
 /* Demo: a finger plays the first train; the shield stops stray taps on the track while it runs */
 .demoShield{position:absolute;inset:0;z-index:9;display:none}
 .demoOn .demoShield{display:block}
@@ -340,15 +349,15 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 <div class="wrap">
   <button class="hud-toggle-btn" id="hudToggle" aria-label="Toggle full-screen track view"><svg class="ic-expand" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ic-compress" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"/></svg></button>
   <div class="bar">
-    <div class="seg"><button id="pause">Pause</button><button id="speed">Speed 1x</button><button id="restart">Restart</button><button id="zoom" aria-label="Zoom">Zoom</button><button id="sound" aria-label="Sound">🔊</button><button id="full" hidden aria-label="Full screen">Full screen</button><button id="info" aria-label="How to play">Info</button></div>
+    <div class="seg"><button id="pause">Pause</button><button id="speed">Speed 1x</button><button id="menuBtn" aria-label="Settings" aria-expanded="false" aria-controls="menu">⚙ Menu</button></div>
     <div class="stats">
       <div class="stat score"><b id="sScore">0</b><span class="lb" data-s="pts">points</span></div>
       <div class="stat"><b id="sSat">100%</b><span class="lb" data-s="happy">happy</span></div>
       <div class="stat" title="Efficiency: how well you use platforms and avoid avoidable delays"><b id="sEff">100%</b><span class="lb" data-s="eff">efficient</span></div>
-      <div class="stat"><b id="sHeld">0</b><span class="lb" data-s="wait">waiting</span></div>
     </div>
   </div>
 
+  <div class="menu" id="menu" hidden role="menu" aria-label="Settings"><button id="restart">Restart round</button><button id="zoom" data-keep="1" aria-label="Zoom">Zoom</button><button id="sound" data-keep="1" aria-label="Sound">🔊</button><button id="full" hidden aria-label="Full screen">Full screen</button><button id="info" aria-label="How to play">How to play</button></div>
   <div class="stage"><div class="annc" id="annc" aria-live="assertive"></div><div class="toast" id="cap" aria-live="polite"></div><div class="scroller" id="scroller"><canvas id="cv" width="1400" height="520" aria-label="Playable station: tap a train, then a platform or siding, then the signal. Drag to scroll."></canvas></div>
     <div class="roundend" id="roundEnd" hidden><div class="confetti" id="confetti" aria-hidden="true"></div><div class="rbox">
     <div class="rleft"><h2 id="reTitle">Round complete</h2><div class="stars" id="reStars"></div><span id="reText"></span><button id="reBtn">Next round</button></div>
@@ -390,7 +399,7 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
     <section class="card">
       <h3>How to play</h3>
       <ol>
-        <li>Tap a train waiting at the outer signal.</li>
+        <li>Tap a train waiting at the outer signal, or one still on its way: if you clear its signal early it runs straight through without stopping.</li>
         <li data-smax="2">Tap the platform it should use.</li>
         <li data-smin="3">Tap a platform, or a siding to hold it.</li>
         <li>Tap the flashing signal to send it in.</li>
@@ -537,7 +546,7 @@ const LANES=[
 /* Where to tap for a platform face, and the box to highlight. A face lives on the plinth between its track and the other face's track. */
 const otherFace=l=>l.isl===undefined?null:(l.face==='top'?ISLANDS[l.isl].bottom:ISLANDS[l.isl].top);
 function tapY(l){const y=LY(l.idx);if(l.isl===undefined)return l.thru?y:y+20;return l.face==='top'?y+24:y-24} // goods: its platform strip is below the track
-function laneBox(l){const y=LY(l.idx);if(l.thru)return[y-16,y+16];if(l.isl===undefined)return[y-16,y+42];const mid=(y+LY(otherFace(l)))/2;return l.face==='top'?[y-14,mid]:[mid,y+14]}
+function laneBox(l){const y=LY(l.idx);if(l.thru)return[y-16,y+16];if(l.isl===undefined)return[y-16,y+58];const mid=(y+LY(otherFace(l)))/2;return l.face==='top'?[y-14,mid]:[mid,y+14]}
 const TT={
  nonstop:{label:'Non-stop',col:'#e2b43d',cars:6,dwell:0,w:1,pat:3,vmax:170,nonstop:true},
  express:{label:'Express',col:'#d64541',cars:6,dwell:4,buf:3,w:2,pat:5,vmax:150},
@@ -569,43 +578,60 @@ const STAGES=[
   news:['Express trains now arrive: fast, with a short stop.','Platform 2 (main line) has been built for them.']},
  {id:3,from:5,name:'Growing station',types:['local','goods','express'],lanes:[1,2,3,4],loops:true,maint:{first:[40,60],every:[60,90],dur:20},weights:{local:3,goods:1.5,express:2},newTypes:[],
   news:['Platform 3 opens: local and express trains can both use it.','Sidings are built at both ends: park a train there to let another one pass, then send it straight into the platforms beside it. The timetable boards show what is coming.','Maintenance begins: a platform will now and then close for a short while, with a warning first.']},
- {id:4,from:7,name:'Junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5],loops:true,branches:['W'],maint:{first:[35,55],every:[55,80],dur:20},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:['nonstop'],
+ {id:4,from:7,name:'Junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5],loops:true,branches:['W','E'],maint:{first:[35,55],every:[55,80],dur:20},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:['nonstop'],
   news:['Non-stop trains now arrive. They never stop.','Two through lines are built so they can pass the station.','A branch line opens on the east side: some trains from the west are bound for it. Trains bound for it leave through the new branch signal, the one with the amber arrow.']},
- {id:5,from:10,name:'Major junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,branches:['W','E'],branchRound:{E:13},maint:{first:[30,50],every:[45,70],dur:25},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
+ {id:5,from:10,name:'Major junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,branches:['W','E'],bothFrom:13,maint:{first:[30,50],every:[45,70],dur:25},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
   news:['Full junction status: an extra platform (PF 4) is built.','Maintenance closures are now more frequent and last longer: plan around them.']}
 ];
 const stageFor=r=>{let s=STAGES[0];for(const st of STAGES)if(r>=st.from)s=st;return s};
 const LANE_FROM=LANES.map((l,i)=>Math.min(...STAGES.filter(s=>s.lanes.includes(i)).map(s=>s.from)));
 const LOOPS_FROM=Math.min(...STAGES.filter(s=>s.loops).map(s=>s.from));
 /* The journey ends at MAX_ROUND: the player gets a final rank and a score to share. A rank needs a fraction f of the level's ceiling (LV.ceil, a near-perfect run).
-   Calibrated with automatic players on every level (averages of 10 journeys, as a share of the ceiling): reacting instantly 100%, a good player (1 to 2.5 s reactions,
-   a few mistakes) about 88%, a sloppy one (2 to 4.5 s, many mistakes) about 73%, a novice (4 to 9 s, half the platforms wrong) about 51%.
+   Calibrated with automatic players on every level (averages of 10 journeys, as a share of the ceiling, with trains cleared early as soon as the bot reacts): reacting instantly 100%, a good player (1 to 2.5 s reactions,
+   a few mistakes) about 93%, a sloppy one (2 to 4.5 s, many mistakes) about 78%, a novice (4 to 9 s, half the platforms wrong) about 54%.
    So: a good player is a Divisional Controller, a sloppy one a Stationmaster, a novice a Signalman, and Chief Controller needs near-perfect play. */
 /* ---------- levels ----------
    Three levels, chosen on the welcome page and kept for the whole journey. Each has its own saved progress, best score and finale (storage keys get a suffix; Normal keeps the plain keys).
    They are shown by colour and stars: blue ★ Easy, green ★★ Normal, red ★★★ Hard. The rules are the same; these dials change how busy and how forgiving the station is:
    speed (the game's pace), gap (spacing of arrivals), pat (passenger patience), lateP/earlyP/late/devFrom (how many trains run off-schedule, how late, and from which round),
    maint (how often maintenance happens and how long it lasts), branchP (share of trains bound for a branch), guide (exit guidance: null = the player's choice),
-   planB (planned-platform bonus), share (first round in which two trains may be planned onto one platform),
+   planB (planned-platform bonus),
    ceil (the final score of a near-perfect journey on that level, measured with an automatic player that reacts instantly; the rank thresholds are fractions of it). */
 const LEVELS={
- easy:{id:'easy',name:'Easy',stars:1,col:'#4aa8ff',lite:'#8fcbff',dark:'#1d5a9e',speed:.6,gap:1.25,pat:1.3,lateP:.15,earlyP:.1,late:[3,8],devFrom:4,maint:{every:1.4,dur:.7},branchP:.25,guide:true,planB:20,share:7,ceil:31600},
- normal:{id:'normal',name:'Normal',stars:2,col:'#2fd08a',lite:'#86f0bd',dark:'#127a4d',speed:.75,gap:1,pat:1,lateP:.3,earlyP:.15,late:[4,14],devFrom:1,maint:{every:1,dur:1},branchP:.4,guide:null,planB:15,share:4,ceil:28300},
- hard:{id:'hard',name:'Hard',stars:3,col:'#ff4d6d',lite:'#ff95a8',dark:'#a3182f',speed:1,gap:.8,pat:.8,lateP:.4,earlyP:.2,late:[6,18],devFrom:1,maint:{every:.75,dur:1.2},branchP:.55,guide:false,planB:10,share:2,ceil:25600}
+ easy:{id:'easy',name:'Easy',stars:1,col:'#4aa8ff',lite:'#8fcbff',dark:'#1d5a9e',speed:.6,gap:1.25,pat:1.3,lateP:.15,earlyP:.1,late:[3,8],devFrom:4,maint:{every:1.4,dur:.7},branchP:.25,guide:true,planB:20,ceil:35200},
+ normal:{id:'normal',name:'Normal',stars:2,col:'#2fd08a',lite:'#86f0bd',dark:'#127a4d',speed:.75,gap:1,pat:1,lateP:.3,earlyP:.15,late:[4,14],devFrom:1,maint:{every:1,dur:1},branchP:.4,guide:null,planB:15,ceil:31900},
+ hard:{id:'hard',name:'Hard',stars:3,col:'#ff4d6d',lite:'#ff95a8',dark:'#a3182f',speed:1,gap:.8,pat:.8,lateP:.4,earlyP:.2,late:[6,18],devFrom:1,maint:{every:.75,dur:1.2},branchP:.55,guide:false,planB:10,ceil:28500}
 };
 let LEVEL='normal';try{const v=localStorage.getItem('sm_level');if(LEVELS[v])LEVEL=v}catch(e){}
 let LV=LEVELS[LEVEL];
 const Kof=(b,id)=>id==='normal'?b:b+'_'+id; // storage key of a level: Normal keeps the original keys, so earlier saves carry over
 const K=b=>Kof(b,LEVEL);
+/* Which side has the branch this round. The first branch round (7) has it on the east exit (trains from the west). Then, until both sides have one (bothFrom, round 13), it changes from round to round:
+   rounds 8 to 12 get a shuffled mix of east and west exits (3 of one, 2 of the other), the shuffle fixed for the whole journey by a seed saved with the level's progress, so replaying a round keeps its side. */
+let BSEED=0;
+function bseed(){
+ if(!BSEED){try{BSEED=parseInt(localStorage.getItem(K('sm_bseed')),10)||0}catch(e){}}
+ if(!BSEED){BSEED=1+Math.floor(Math.random()*2147483000);if(!DEMO)try{localStorage.setItem(K('sm_bseed'),String(BSEED))}catch(e){}}
+ return BSEED;
+}
+function branchSidesFor(r,st){
+ if(!st||!st.branches)return [];
+ if(st.bothFrom&&r>=st.bothFrom)return ['W','E'];
+ const first=STAGES.find(s=>s.branches).from;
+ if(r<=first)return ['W'];
+ let s=bseed();const rn=()=>{s=(s*16807)%2147483647;return s/2147483647};
+ const seq=['W','E','W','E','E'];for(let i=seq.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[seq[i],seq[j]]=[seq[j],seq[i]]}
+ return [seq[(r-first-1)%5]];
+}
 function maintOf(st){const m=st.maint;if(!m)return null;return{first:m.first.map(v=>v*LV.maint.every),every:m.every.map(v=>v*LV.maint.every),dur:Math.round(m.dur*LV.maint.dur)}}
 const MAX_ROUND=15;
 const RANKS=[
  {f:0,tier:1,name:'Platform Trainee',desc:'You made it all the way through. Every great stationmaster started here.'},
  {f:.25,tier:2,name:'Signalman',desc:'Steady hands on the signals. The trains mostly ran on time.'},
- {f:.55,tier:3,name:'Station Supervisor',desc:'A well-run station. Passengers noticed the difference.'},
- {f:.68,tier:4,name:'Stationmaster',desc:'Calm under pressure and efficient with every platform.'},
- {f:.84,tier:5,name:'Divisional Controller',desc:'Whole networks would run better with you in charge.'},
- {f:.96,tier:6,name:'Chief Controller',desc:'Flawless railway mastery. Very few ever get here.'}
+ {f:.60,tier:3,name:'Station Supervisor',desc:'A well-run station. Passengers noticed the difference.'},
+ {f:.70,tier:4,name:'Stationmaster',desc:'Calm under pressure and efficient with every platform.'},
+ {f:.86,tier:5,name:'Divisional Controller',desc:'Whole networks would run better with you in charge.'},
+ {f:.975,tier:6,name:'Chief Controller',desc:'Flawless railway mastery. Very few ever get here.'}
 ];
 /* Trains per round: grows steadily (3, 4, 6, 7, 9, 10, 12...). Each type in the grade gets at least one, a newly introduced type gets two in its first round, and the rest are shared by weight. */
 const totalFor=r=>3+(r-1)+Math.floor((r-1)/2);
@@ -686,7 +712,7 @@ function saveRun(){if(DEMO)return;try{localStorage.setItem(K('sm_run'),JSON.stri
 /* There is no coin economy: the station upgrades by itself as rounds are passed. Coin saves from older versions are cleaned up here.
    "Start over" clears the round and score; the best score is deliberately kept. */
 try{localStorage.removeItem('sm_coins');localStorage.removeItem('sm_buy')}catch(e){}
-function clearProgress(){try{for(const b of ['sm_round','sm_score','sm_run','sm_final'])localStorage.removeItem(K(b))}catch(e){}RUN={}} // clears the current level only
+function clearProgress(){try{for(const b of ['sm_round','sm_score','sm_run','sm_final','sm_bseed'])localStorage.removeItem(K(b))}catch(e){}RUN={};BSEED=0} // clears the current level only
 /* Best (highest) total score ever reached on this device. Updated live, saved at most every 1.5 s and whenever the page is hidden or a round ends. */
 let best=0,bestDirty=false,bestSavedAt=0;
 try{best=parseInt(localStorage.getItem(K('sm_best')),10)||0}catch(e){}
@@ -694,7 +720,7 @@ function saveBest(){if(DEMO||!bestDirty)return;bestDirty=false;bestSavedAt=perfo
 /* Switch level (from the welcome page, or temporarily to Normal for the demo): that level's best score and run history are loaded; its progress is loaded by the caller. */
 function applyLevel(id,temp){
  saveBest(); // flush the outgoing level's best score first
- LEVEL=id;LV=LEVELS[id];
+ LEVEL=id;LV=LEVELS[id];BSEED=0;
  if(!temp){try{localStorage.setItem('sm_level',id)}catch(e){}}
  try{RUN=JSON.parse(localStorage.getItem(K('sm_run'))||'{}')||{}}catch(e){RUN={}}
  best=0;try{best=parseInt(localStorage.getItem(K('sm_best')),10)||0}catch(e){}
@@ -717,11 +743,11 @@ const HI_SECS=10; // an upgrade indication and animation shows only for 10 secon
 const pulse=()=>.5+.5*Math.sin(performance.now()/180);
 function reset(round,score){
  round=round||1;score=score||0;const Q=quotaFor(round),st=stageFor(round);const prev=S;
- S={t:0,spawnT:1.2,num:101,trains:[],claims:{E:[],W:[]},score:score,roundStart:score,round:round,quota:Q,remaining:{...Q},completed:{local:0,express:0,goods:0,nonstop:0},total:Object.values(Q).reduce((a,b)=>a+b,0),over:false,done:0,held:0,pops:[],flash:null,log:[],lossHeld:0,bestAtStart:best,stage:st,maint:null,satSum:0,satN:0,effSum:0,effN:0,effIdle:0,effBlock:0,brSeen:0,brGiven:0,vipWarned:false,vipDone:false,
+ S={t:0,spawnT:1.2,num:101,trains:[],claims:{E:[],W:[]},score:score,roundStart:score,round:round,quota:Q,remaining:{...Q},completed:{local:0,express:0,goods:0,nonstop:0},total:Object.values(Q).reduce((a,b)=>a+b,0),over:false,done:0,held:0,pops:[],flash:null,log:[],lossHeld:0,bestAtStart:best,stage:st,branches:branchSidesFor(round,st),maint:null,satSum:0,satN:0,effSum:0,effN:0,effIdle:0,effBlock:0,brSeen:0,brGiven:0,vipWarned:false,vipDone:false,
     particles:[],
     closeT:st.maint?rnd(maintOf(st).first[0],maintOf(st).first[1]):1e9,
     vipAt:(round>=6&&totalFor(round)>=4&&Math.random()<.7)?rnd(25,55):-1,
-    lanes:LANES.map((l,i)=>({...l,idx:i,x0:(W-l.len)/2,busy:null,crowd:Math.floor(rnd(3,8)),glow:0,enabled:st.lanes.includes(i),closed:false,closedT:0,warnT:0,maintKind:null}))};
+    lanes:LANES.map((l,i)=>({...l,idx:i,x0:(W-l.len)/2,busy:null,crowd:Math.floor(rnd(3,8)),pax:[],glow:0,enabled:st.lanes.includes(i),closed:false,closedT:0,warnT:0,maintKind:null}))};
  S.sched=buildSchedule();planPlatforms();
  S.loopCount=loopKs().length;
  // What opened since the previous round (nothing on the very first load, or when a round is simply replayed)?
@@ -732,13 +758,20 @@ function reset(round,score){
  applyStageInfo(st,round);
  // First round of a new grade: announce what is new.
  if(round===st.from&&round>1)say('Round '+round+' · '+st.name+'. '+st.news.join(' '),'good');
- else if(st.branchRound&&round===st.branchRound.E)say('Round '+round+': a second branch line opens on the west side. Some trains from the east are bound for it: use the new branch signal.','good');
+ else if(S.branches.length>1)say('Round '+round+': there are branch lines on both sides now. Trains from either end may be bound for one: use the branch signal at the end they leave from.','good');
+ else if(S.branches.length)say('Round '+round+': this round the branch line leaves the '+(S.branches[0]==='W'?'east':'west')+' side.','good'); // the branch changes side from round to round
  const re=document.getElementById('roundEnd');if(re)re.hidden=true;
 }
 let sayTimer=0;
 function say(t,kind){clearTimeout(sayTimer);if(t&&kind==='bad')sfx('red');capEl.textContent=t;capEl.className='toast'+(kind?' '+kind:'')+(t?' show':'');if(t)sayTimer=setTimeout(()=>capEl.classList.remove('show'),Math.min(9000,(kind==='bad'?3500:2500)+Math.max(0,t.length-60)*45))}
 let anncTimer=0;
-function announce(msg){const el=document.getElementById('annc');if(!el)return;el.textContent='📢 '+msg;el.classList.add('show');clearTimeout(anncTimer);anncTimer=setTimeout(()=>el.classList.remove('show'),6500);sfx('target')}
+function announce(msg){const el=document.getElementById('annc');if(!el)return;el.textContent='📢 '+msg;
+ // sit in the free space of the top row, between the buttons and the score boxes, so nothing covers it and it covers nothing
+ {const sg=document.querySelector('.seg'),st=document.querySelector('.stats'),sr=el.parentElement.getBoundingClientRect();
+  if(sg&&st&&!document.body.classList.contains('clean-mode')){const a=sg.getBoundingClientRect(),b=st.getBoundingClientRect(),gap=b.left-a.right;
+   if(gap>150){el.style.left=((a.right+b.left)/2-sr.left)+'px';el.style.top=(a.top-sr.top)+'px';el.style.maxWidth=(gap-16)+'px'}
+   else{el.style.left=(sr.width/2)+'px';el.style.top=(Math.max(a.bottom,b.bottom)-sr.top+6)+'px';el.style.maxWidth='90%'}}
+  else{el.style.left='50%';el.style.top='8px';el.style.maxWidth='90%'}}el.classList.add('show');clearTimeout(anncTimer);anncTimer=setTimeout(()=>el.classList.remove('show'),6500);sfx('target')}
 function pop(x,y,text,good){S.pops.push({x,y,text,good,life:1.6})}
 /* Every score change is also written to a log so the end-of-round report can explain it. cat = match | quick | wait | late | gap | held */
 function note(cat,pts,text,tr){S.log.push({t:S.t,cat,pts:r0(pts),text,tr:tr?tr.num+' '+tr.type.label:''})}
@@ -828,32 +861,50 @@ function sideFree(sd){
    A train whose end is still busy when it falls due is HELD outside: it costs points (more for high-priority trains) and arrives already late,
    so its patience is already used up (an express, with the shortest patience, suffers most). */
 /* Planned platforms: every timetabled train has a platform on the boards (e.plat). Bringing it to that platform pays PLAN_B and lifts its passengers' satisfaction by PLAN_SAT.
-   Early on no two trains are planned for the same platform at overlapping times; from round SHARE_FROM two may share one, but only when one of them runs early or late.
-   If the player sends a train elsewhere, the board is updated and an announcement shows; maintenance re-plans trains automatically (no penalty either way). */
-const PLAN_SAT=5; // the bonus (LV.planB) and the first round in which a platform may be shared (LV.share) depend on the level
+   THE RULE: two trains are never planned onto the same platform at the same time unless one of them is running early or late. Trains that are both on time never overlap on a platform.
+   Trains may well arrive together (even in the first rounds), but then the timetable makes one of them early or late, so the player can see it and give priority accordingly.
+   (planPlatforms / assignPlat: if a train cannot get a free platform, on Normal and Hard it is made to run late; on Easy, in the rounds before off-schedule trains begin, the timetable slides it later.)
+   If the player sends a train elsewhere, the board is updated and an announcement shows; maintenance re-plans trains automatically with the same rule (no penalty either way). */
+const PLAN_SAT=5; // the planned-platform bonus (LV.planB) depends on the level
 const planWin=(e,when)=>{const T=TT[e.key];return[when+6,when+6+(T.dwell||0)+(T.buf||0)+8]};
 const overlap=(a,b)=>Math.max(0,Math.min(a[1],b[1])-Math.max(a[0],b[0]));
+const offSched=e=>Math.abs(e.dev)>=2; // early or late
+function hardConflicts(lane,e){ // trains booked on this platform at the same time as e where neither of the two is early or late
+ let n=0;
+ for(const o of S.sched){
+  if(o===e||o.arrived||o.plat!==lane.idx)continue;
+  if(offSched(e)||offSched(o))continue;
+  if(overlap(planWin(e,e.t),planWin(o,o.t))>0)n++;
+ }
+ return n;
+}
 function planLane(e,exclude){
  const T=TT[e.key];
  if(T.nonstop){const l=S.lanes.find(l=>l.thru&&l.enabled&&l.dirOnly===e.side);return l?l.idx:null}
  const cands=S.lanes.filter(l=>l.enabled&&!l.thru&&!(exclude&&exclude.includes(l.idx))&&isRightLane({type:T,key:e.key},l));
  let best=null,bc=1e9;
  for(const l of cands){
-  let cost=l.ok.length*.2;
-  for(const o of S.sched){
-   if(o===e||o.arrived||o.plat!==l.idx)continue;
-   const oa=overlap(planWin(e,e.t),planWin(o,o.t)),os=overlap(planWin(e,e.sched),planWin(o,o.sched));
-   const shareOk=S.round>=LV.share&&(Math.abs(e.dev)>=2||Math.abs(o.dev)>=2);
-   cost+=os*10+(shareOk?oa*.5:oa*10);
-  }
+  let cost=l.ok.length*.1+hardConflicts(l,e)*1000;
+  for(const o of S.sched){if(o===e||o.arrived||o.plat!==l.idx)continue;cost+=overlap(planWin(e,e.t),planWin(o,o.t))*.5+.7} // prefer the quieter platform, and spread the trains over all platforms (the flexible ones take the overflow of the dedicated ones)
   if(cost<bc){bc=cost;best=l.idx}
  }
  return best;
 }
-function planPlatforms(){for(const e of S.sched){e.plat=planLane(e);e.plat0=e.plat}}
+function assignPlat(e,exclude){ // a platform for e that breaks the rule; if none is free, e is made late (or, on Easy early on, moved later in the timetable)
+ let l=planLane(e,exclude);
+ if(l==null||TT[e.key].nonstop||e.spawned||hardConflicts(S.lanes[l],e)===0)return l;
+ if(S.round>=LV.devFrom&&!offSched(e)){const d=Math.round(rnd(LV.late[0],LV.late[1]));e.dev=d;e.t+=d;return planLane(e,exclude)} // running late: it may overlap, and the board says so
+ for(let k=0;k<400;k++){e.t+=1;e.sched+=1;l=planLane(e,exclude);if(l==null||hardConflicts(S.lanes[l],e)===0)return l}
+ return l;
+}
+function planPlatforms(){
+ for(const e of [...S.sched].sort((a,b)=>a.t-b.t)){e.plat=assignPlat(e);e.plat0=e.plat}
+ S.sched.sort((a,b)=>a.t-b.t);
+}
 function replanFor(lanes){
  const ids=lanes.map(l=>l.idx);let n=0;
- for(const e of S.sched){if(e.arrived||e.plat==null||!ids.includes(e.plat))continue;const p=planLane(e,ids);if(p!=null&&p!==e.plat){e.plat=e.plat0=p;e.chg=true;n++}}
+ for(const e of S.sched){if(e.arrived||e.plat==null||!ids.includes(e.plat))continue;const p=assignPlat(e,ids);if(p!=null&&p!==e.plat){e.plat=e.plat0=p;e.chg=true;n++}}
+ S.sched.sort((a,b)=>a.t-b.t);
  if(n)announce('Platform change: '+lanes.map(l=>l.name).join(' and ')+' closing for maintenance. '+n+' train'+(n>1?'s':'')+' re-planned.');
 }
 const HELD_W={nonstop:1.5,express:1.3,local:1,goods:.6}; // how heavily a held train counts, by priority
@@ -873,7 +924,7 @@ function buildSchedule(){
  for(const e of eligible)if(Math.random()<LV.branchP)e.dest='branch';
  for(const sd of ['W','E']){ // the round a branch opens, it always has a train bound for it
   const el=eligible.filter(e=>e.side===sd);
-  if(el.length&&branchStarts(sd)&&!el.some(e=>e.dest==='branch'))el[Math.min(1,el.length-1)].dest='branch';
+  if(el.length&&!el.some(e=>e.dest==='branch'))el[Math.min(1,el.length-1)].dest='branch';
  }
  if(S.vipAt>0){const v=out.find(e=>e.t>=S.vipAt&&e.key!=='goods');if(v)v.vip=true} // one VIP train from round 6
  return out;
@@ -894,12 +945,30 @@ function spawnEntry(e){
  }
  // Branch destinations: some trains from a side with a branch line are bound for it. In the first round with a branch, at least one is.
  t.dest=e.dest;t.exitChoice=branchOn(sd)&&!type.nonstop;
+ if(key==='goods'){t.gmode=S.gToggle?'load':'unload';S.gToggle=!S.gToggle} // goods trains alternate: unloaded, then loaded
  e.spawned=true;S.trains.push(t);return t;
 }
 function spawnOn(sd){ // an unscheduled train (used by tests and helpers)
  const pool=[];for(const k in S.remaining)for(let i=0;i<S.remaining[k];i++)pool.push(k);
  if(!pool.length)return;
  return spawnEntry({id:-1,t:S.t,side:sd,key:pick(pool),dest:'main',vip:false,spawned:false});
+}
+/* Trains keep coming until the round's target is met. The timetable is planned for the target trains, but as the round runs out of scheduled trains a new one is added behind them
+   (its type is chosen from what is still needed), so the station never falls quiet near the end. The round finishes the moment every type has reached its target (targetsMet),
+   whatever is still on the way. A stalled player does not get an endless queue: at most about twice the target number of trains is ever scheduled. */
+const targetsMet=()=>{for(const k in S.quota)if(S.completed[k]<S.quota[k])return false;return true};
+function topUp(){
+ if(S.over)return;
+ if(S.sched.reduce((n,e)=>n+(e.spawned?0:1),0)>=3||S.sched.length>=S.total*2+4)return;
+ const need={};let sum=0;for(const k in S.quota){const n=S.quota[k]-S.completed[k];if(n>0){need[k]=n;sum+=n}}
+ if(!sum)return;
+ let r=Math.random()*sum,key=null;for(const k in need){key=k;r-=need[k];if(r<=0)break}
+ const last=S.sched.reduce((m,e)=>Math.max(m,e.sched),0),tc=Math.max(last,S.t)+Math.max(5,10-last/40)*rnd(.8,1.2)*LV.gap;
+ let dev=0;const q=Math.random();
+ if(S.round>=LV.devFrom){if(q<LV.lateP)dev=Math.round(rnd(LV.late[0],LV.late[1]));else if(q<LV.lateP+LV.earlyP)dev=-Math.round(rnd(2,6))}
+ const e={id:S.sched.length,t:Math.max(S.t+1.5,tc+dev),sched:tc,dev,side:Math.random()<.5?'E':'W',key,dest:'main',vip:false,spawned:false};
+ if(branchOn(e.side)&&!TT[key].nonstop&&Math.random()<LV.branchP)e.dest='branch';
+ S.sched.push(e);e.plat=assignPlat(e);e.plat0=e.plat;S.sched.sort((a,b)=>a.t-b.t);
 }
 function spawnTick(dt){
  // Bring in every train that is due, in timetable order, as soon as its end is free; the rest are held outside.
@@ -924,8 +993,7 @@ applyGuide();
 let BOARD=true;try{BOARD=localStorage.getItem('sm_board')!=='0'}catch(e){}
 function applyBoard(){document.body.classList.toggle('noboard',!BOARD);const b=document.getElementById('boardToggle');if(b)b.textContent='Timetable: '+(BOARD?'On':'Off')}
 applyBoard();
-const branchOn=sd=>!!(S.stage&&S.stage.branches&&S.stage.branches.includes(sd)&&S.round>=((S.stage.branchRound&&S.stage.branchRound[sd])||0)); // branchRound: a branch that opens later than its grade (the second one, from round 13)
-const branchStarts=(sd)=>S.round===((S.stage.branchRound&&S.stage.branchRound[sd])||S.stage.from); // does the exit of trains that came in from side sd have a branch?
+const branchOn=sd=>!!(S&&S.branches&&S.branches.includes(sd)); // S.branches: the sides with a branch this round (see branchSidesFor) // does the exit of trains that came in from side sd have a branch?
 const exitChoice=t=>branchOn(t.side)&&!t.type.nonstop; // the player must pick a line for this train
 const destName=t=>t.dest==='branch'?'branch':'main line';
 function readyMsg(t){ // what to tell the player about a train that has finished boarding
@@ -958,7 +1026,7 @@ function drawBranches(){
 /* ---------- routes ---------- */
 function stopXFor(l,t){return l.x0+(l.len-t.L)/2}
 function buildPath(t,tg,tailKey,rebuild){ // rebuild: used at the exit, when the player sends a train a different way than the one it was built for
- const i=t.iy,rp0={},tail=tailLocal(t.side,i,tailKey||t.dest||'main'),fromOuter=rebuild?!t.fromLoop:t.state==='outer',lk=rebuild?t.loopFrom:t.loopK;
+ const i=t.iy,rp0={},tail=tailLocal(t.side,i,tailKey||t.dest||'main'),fromOuter=rebuild?!t.fromLoop:(t.state==='outer'||t.state==='arriving'),lk=rebuild?t.loopFrom:t.loopK;
  if(tg.kind==='loop'){
   const iy=i+ldy(t.side,tg.k);
   const orig=mir(t.side,[[W+4,i],[1200,i],[1170,iy],[LHOLD,iy]]);
@@ -988,10 +1056,12 @@ function entrySeg(t,tg){ // the junction route an entering train claims: from th
  return fanSeg('entry',t.side,tg.lane);
 }
 function checkEntry(t,tg){
- if(t.state!=='outer'&&t.state!=='loop')return 'That train is already moving or at a platform.';
+ if(t.state!=='outer'&&t.state!=='loop'&&t.state!=='arriving')return 'That train is already moving or at a platform.';
+ // A train still on its way to the signal can be cleared early and then runs through without stopping, but not past another train that is ahead of it on the approach line.
+ if(t.state==='arriving'&&S.trains.some(q=>q!==t&&q.side===t.side&&(q.state==='outer'||(q.state==='arriving'&&q.s>t.s))))return 'Another train is ahead of it on the approach line: clear that one first.';
  if(tg.kind==='loop'){
   if(!S.stage.loops)return 'Sidings have not been built yet.';
-  if(t.state!=='outer')return 'Only a train at the outer signal can enter a siding.';
+  if(t.state==='loop')return 'Only a train at the outer signal can enter a siding.';
   if(S.trains.some(q=>q.side===t.side&&q.loopK===tg.k&&q.state!=='gone'))return 'Siding '+tg.k+' is already occupied.';
   if(t.type.nonstop)return 'Non-stop trains never stop, so they do not use sidings.';
   {const sl=sidingLanes(t.side,tg.k);if(!sl.some(l=>isRightLane(t,l)))return 'Siding '+tg.k+' leads to '+(sl.map(l=>l.name).join(' and ')||'no platform')+', which this train cannot use.'}
@@ -1020,6 +1090,8 @@ function checkExit(t){
  return '';
 }
 function commitEntry(t,tg){
+ const early=t.state==='arriving'; // cleared before it has stopped: it does not stop at the signal
+ if(early)t.waitT=t.lateBy||0; // a train that was held outside is still late
  const b=buildPath(t,tg);
  t.path=b.path;t.sClearIn=b.path.cum[b.rp.map[b.clearIn]];t.sStop=b.path.cum[b.rp.map[b.stop]];
  if(tg.kind==='lane'&&t.sched&&t.sched.plat!=null&&!t.type.nonstop&&t.sched.plat!==tg.lane.idx){
@@ -1031,7 +1103,7 @@ function commitEntry(t,tg){
  else t.loopK=tg.k;
  claim(t.side,t,'entry',entrySeg(t,tg));t.entryLock=true;
  if(t.mode==='lane'&&t.type.nonstop){claim(other(t.side),t,'exit',fanSeg('exit',other(t.side),tg.lane));t.exitLock=true;t.exitSide=other(t.side)}
- t.state='set';t.setT=.9;
+ if(early){t.state='go'}else{t.state='set';t.setT=.9} // the signal turns green; a train that was already moving keeps rolling
  // quick dispatch bonus
  const bonus=Math.max(0,30-t.waitT*3);
  if(bonus>=1&&tg.kind==='lane'&&!t.type.nonstop)addScore(bonus,X(t.side,WAITX),t.iy-12,'quick',t,'quick');
@@ -1076,7 +1148,7 @@ function finalSummary(){
 }
 function saveFinal(){ // the journey is complete: remember the result and start fresh next time
  if(DEMO)return;
- try{localStorage.setItem(K('sm_final'),JSON.stringify(finalSummary()));localStorage.removeItem(K('sm_round'));localStorage.removeItem(K('sm_score'))}catch(e){}
+ try{localStorage.setItem(K('sm_final'),JSON.stringify(finalSummary()));localStorage.removeItem(K('sm_round'));localStorage.removeItem(K('sm_score'));localStorage.removeItem(K('sm_bseed'));BSEED=0}catch(e){}
 }
 let FIN=null;
 const LV_EMOJI={easy:'🔵★',normal:'🟢★★',hard:'🔴★★★'};
@@ -1105,8 +1177,8 @@ function doShare(){
  note.textContent=text; // last resort: show the message so it can be copied by hand
 }
 function endRound(){
- S.over=true;
- const pts=S.score-S.roundStart,avg=pts/S.total;
+ S.over=true;S.pops=[];
+ const pts=S.score-S.roundStart,avg=pts/Math.max(1,S.done); // per train handled (the same as per target train when no extra trains came)
  const stars=avg>=85?3:avg>=55?2:avg>=20?1:0;
  S.stars=stars;
  document.getElementById('reTitle').textContent=stars?'Round '+S.round+' complete':'Round '+S.round+' not passed';
@@ -1131,7 +1203,7 @@ function endRound(){
   const why=(S.effIdle>=.5||S.effBlock>=.5)?' Avoidable delays: '+S.effIdle.toFixed(1)+' s of trains waiting while a right platform was free, '+S.effBlock.toFixed(1)+' s of finished trains blocking a platform.':'';
   document.getElementById('reEff').innerHTML='<h3>Operating efficiency</h3><div class="satbar effbar"><i style="width:'+Math.min(100,ep)+'%"></i><span></span></div><div class="satline"><b class="'+(ef>=EFF_FROM?'pos':'neg')+'">'+ep+'%</b> '+esc(msg)+esc(why)+'</div>';}
  const bonusAll=bonus+effBonus;
- document.getElementById('reText').textContent=S.total+' trains handled, '+Math.round(pts+bonusAll)+' points this round'+(bonusAll>0?' (including '+bonusAll+' bonus points)':'')+(stars?'':'. Score at least 20 points per train on average to pass.');
+ document.getElementById('reText').textContent=S.done+' trains handled, '+Math.round(pts+bonusAll)+' points this round'+(bonusAll>0?' (including '+bonusAll+' bonus points)':'')+(stars?'':'. Score at least 20 points per train on average to pass.');
  noteBest();saveBest();
  if(S.score>0&&Math.round(S.score)>S.bestAtStart)document.getElementById('reText').textContent+='  ★ New best score: '+best+'!';
  document.getElementById('reBtn').textContent=stars?(S.round>=MAX_ROUND?'See final results':'Next round'):'Retry round';
@@ -1260,7 +1332,8 @@ function startMaintenance(){
  say((kind==='island'?'Platform maintenance: ':'Track maintenance: ')+name+' will close in '+secs+' seconds. Finish with it soon!','bad');
 }
 function update(dt){
- S.t+=dt;spawnTick(dt);
+ if(S.over)return; // the round is finished: the station stands still behind the report, nothing more is scored (waiting, late or held trains cost nothing, nobody earns anything)
+ S.t+=dt;topUp();spawnTick(dt);
  if(S.hiT>0)S.hiT-=dt;
  if(S.stage.maint)tickMaintenance(dt);
  if(S.vipAt>0&&!S.vipWarned&&S.t>=S.vipAt-15){S.vipWarned=true;say('★ A VIP train is due in about 15 seconds: keep a platform free!','good');sfx('vip')}
@@ -1325,7 +1398,7 @@ function update(dt){
      if(m.p>=0)sfx('arrive');addScore(m.p,W/2,LY(t.lane.idx)-12,m.why,t,'match');if(m.p<0)say(t.num+' '+t.type.label+' is on '+t.lane.name+': '+m.why+' ('+r0(m.p)+').','bad');else say(t.num+' '+t.type.label+' reached '+t.lane.name+': '+m.why+' (+'+m.p+').','good')}
     }
    }
-  } else if(t.state==='dwell'){t.dwellT-=dt;t.lane.crowd=Math.max(0,t.lane.crowd-dt*2.5);if(t.dwellT<=0)t.state='ready'}
+  } else if(t.state==='dwell'){t.dwellT-=dt;t.lane.crowd=Math.max(0,t.lane.crowd-dt*2.5);if(t.dwellT<=0){t.state='ready';if(t.key==='goods'&&t.lane.kind==='Goods')t.lane.pileFull=t.gmode!=='load'}} // an unloaded train leaves its crates piled on the apron; a loaded one takes them away
   else if(t.state==='ready'){t.readyT+=dt;if(t.readyT>t.buf){S.score-=LATERATE*dt;t.lossLate+=LATERATE*dt}}
   else if(t.state==='exiting'){t.v=Math.min(t.v+vmax*1.1*dt,vmax,t.vcap);t.s+=t.v*dt}
   if(t.entryLock&&t.s-t.L>t.sClearIn){release(t.side,t,'entry');t.entryLock=false}
@@ -1336,9 +1409,10 @@ function update(dt){
    if(t.lossLate>=1)note('late',-t.lossLate,t.num+' '+t.type.label+' was kept at the platform past its departure buffer ('+Math.round(t.buf*10)/10+' s)',t);
    finishTrain(t)}}
  }
+ updatePax(dt);
  for(const t of S.trains)if(t.state==='gone')releaseAll(t);
  S.trains=S.trains.filter(t=>t.state!=='gone');
- if(!S.over&&S.done>=S.total)endRound();
+ if(!S.over&&targetsMet())endRound();
  if(sel.train&&!S.trains.includes(sel.train)){sel={train:null,target:null}}
  for(const l of S.lanes){l.glow=Math.max(0,l.glow-dt);if(!l.thru&&!l.busy&&l.kind!=='Goods')l.crowd=Math.min(12,l.crowd+dt*.6)}
  for(const p of S.pops){p.life-=dt;p.y-=14*dt}
@@ -1364,7 +1438,7 @@ function targetAt(x,y){
   for(const l of S.lanes){if(!l.enabled)continue;const d=Math.abs(y-tapY(l));if(d<bd){bd=d;best=l}} // only tracks that have been built
   if(best)return{kind:'lane',lane:best};
  }
- if(t.state==='outer')for(const k of loopKs()){const iy=t.iy+ldy(t.side,k);const x0=X(t.side,1170),x1=X(t.side,LHOLD);if(x>=Math.min(x0,x1)-20&&x<=Math.max(x0,x1)+20&&Math.abs(y-iy)<=30)return{kind:'loop',k}}
+ if(t.state==='outer'||t.state==='arriving')for(const k of loopKs()){const iy=t.iy+ldy(t.side,k);const x0=X(t.side,1170),x1=X(t.side,LHOLD);if(x>=Math.min(x0,x1)-20&&x<=Math.max(x0,x1)+20&&Math.abs(y-iy)<=30)return{kind:'loop',k}}
  return null;
 }
 function signalHit(x,y){
@@ -1374,7 +1448,7 @@ function signalHit(x,y){
  const R=Math.max(34,Math.min(46,30*pxUnit));
  const near=(p,r)=>Math.hypot(p.x-x,p.y+3-y)<=(r||R);
  // The signal this train actually needs gets the generous radius. Other (wrong) signals keep a small one, so a tap meant for a platform or train is not mistaken for a wrong-signal tap.
- if(t.state==='outer'&&near(outerSig(t.side)))return{kind:'entry'};
+ if((t.state==='outer'||t.state==='arriving')&&near(outerSig(t.side)))return{kind:'entry'};
  if(t.state==='loop'&&near(loopSig(t.side,t.loopK)))return{kind:'entry'};
  if(t.state==='ready'||t.state==='dwell'){const es=other(t.side);if(near(exitSig(t.lane,es)))return{kind:'exit'}}
  if(t.state==='ready'&&exitChoice(t)&&near(branchSig(t.side)))return{kind:'exitBranch'}
@@ -1385,6 +1459,7 @@ function signalHit(x,y){
  return null;
 }
 function click(x,y){
+ if(S.over)return; // the round is finished: no more clearing (and no more points)
  const sg=signalHit(x,y);
  if(sg){
   const t=sel.train;
@@ -1418,9 +1493,9 @@ function click(x,y){
  }
  if(sel.train){
   const tg=targetAt(x,y);
-  if(tg&&(sel.train.state==='outer'||sel.train.state==='loop')){
+  if(tg&&(sel.train.state==='outer'||sel.train.state==='loop'||sel.train.state==='arriving')){
    sel.target=tg;const why=checkEntry(sel.train,tg);
-   if(why)say(why,'bad');else{sfx('target');say('Route ready. Now click the flashing signal to clear it.')}
+   if(why)say(why,'bad');else{sfx('target');say('Route ready. Now click the flashing signal to clear it'+(sel.train.state==='arriving'?': the train need not stop.':'.'))}
    return;
   }
   // A tap that misses everything keeps the train selected, so a slightly-off tap is not punished.
@@ -1432,10 +1507,12 @@ function click(x,y){
 function selectTrain(t){
  sfx('select');
  sel={train:t,target:null};
- if(t.state==='outer')say(t.num+' '+t.type.label+' selected. Click a platform, or a siding to hold it.');
- else if(t.state==='loop')say(t.num+' '+t.type.label+' selected. Click a platform for it.');
+ const pn=t.sched&&t.sched.plat!=null&&S.lanes[t.sched.plat]?' Planned: '+S.lanes[t.sched.plat].name+'.':'';
+ if(t.state==='outer')say(t.num+' '+t.type.label+' selected.'+pn+' Click a platform, or a siding to hold it.');
+ else if(t.state==='loop')say(t.num+' '+t.type.label+' selected.'+pn+' Click a platform for it.');
  else if(t.state==='ready')say(readyMsg(t));
  else if(t.state==='dwell')say(t.num+' '+t.type.label+' is still boarding.');
+ else if(t.state==='arriving')say(t.num+' '+t.type.label+' selected.'+pn+' Pick its platform, then clear the signal: it need not stop.');
  else say(t.num+' '+t.type.label+' is moving. You can plan it once it stops.');
 }
 
@@ -1500,6 +1577,124 @@ function signal(x,y,green,pulse){
  }
  ctx.restore();
 }
+/* ---------- goods handling ----------
+   A goods train at the goods platform is unloaded or loaded: crates hop between its wagons and piles on the platform's loading apron (small 3D boxes with a lit top, a shaded side and a shadow).
+   Goods trains alternate: one arrives loaded and is unloaded (the crates pile up on the apron), the next arrives empty and takes them away. t.gmode is 'unload' or 'load'. */
+const CRATE_COLS=[['#ecd078','#c9a23a','#9c7d24'],['#e58b73','#b5533c','#86392a'],['#7db4d4','#3e7aa0','#2b5a78'],['#c39bd1','#8a5a9a','#684078'],['#93c593','#5a8a5a','#40663f']];
+const GWAG=7,GCR=2; // wagons behind the locomotive, crates per wagon
+function drawCrate(x,y,s,ci,lift){
+ const c=CRATE_COLS[ci%5];
+ if(lift>.5){ctx.fillStyle='rgba(4,14,18,.38)';ctx.beginPath();ctx.ellipse(x+1.2,y+s*.35,s*.62,s*.3,0,0,7);ctx.fill()} // shadow stays on the ground while the crate is in the air
+ y-=lift;const th=s*.42,fh=s*.58;
+ ctx.fillStyle=c[1];ctx.fillRect(x-s/2,y-s/2+th,s,fh); // front face
+ ctx.fillStyle=c[0];ctx.fillRect(x-s/2,y-s/2,s,th); // lit top
+ ctx.fillStyle=c[2];ctx.fillRect(x+s/2-s*.2,y-s/2+th,s*.2,fh); // shaded side
+ ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=.7;ctx.strokeRect(x-s/2,y-s/2,s,s);
+ ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(x-s/2+.6,y-s/2+.6,s-1.2,.9);
+}
+function crateProg(t,k,j){ // how far crate j of wagon k has travelled from where it starts to where it ends up (0 to 1); null when the train is not at a goods platform
+ if(t.key!=='goods'||!t.lane||t.lane.kind!=='Goods')return null;
+ if(t.state==='dwell'){const f=1-t.dwellT/t.type.dwell;return Math.max(0,Math.min(1,(f-((k-1)*.07+j*.12))/.22))}
+ return (t.state==='ready'||t.state==='exiting'||t.state==='gone')?1:0;
+}
+const wagonSlot=(t,k)=>t.side==='E'?k-1:GWAG-k; // the pile slot nearest wagon k (the train is mirrored for the west end)
+function pilePos(l,i,j){return{x:l.x0+(l.len-8*CAR)/2+(i+1)*CAR+(j?3.7:-3.7),y:LY(l.idx)+22}}
+function wellPos(t,k,j){const p=at(t.path,t.s-k*CAR-CAR/2),o=j?3.2:-3.2;return{x:p.x+o*Math.cos(p.a),y:p.y+o*Math.sin(p.a)}}
+function wellHas(t,k,j){const p=crateProg(t,k,j);if(p===null)return t.gmode!=='load';return t.gmode==='load'?p>=1:p<=0} // is the crate in its wagon right now?
+function pileHas(l,i,j){ // is there a crate in this spot of the pile right now?
+ const T=l.busy&&l.busy.key==='goods'&&l.busy.lane===l?l.busy:null;
+ if(!T)return !!l.pileFull;
+ const p=crateProg(T,T.side==='E'?i+1:GWAG-i,j);
+ return T.gmode==='load'?p<=0:p>=1;
+}
+function drawPiles(l){for(let i=0;i<GWAG;i++)for(let j=0;j<GCR;j++)if(pileHas(l,i,j)){const q=pilePos(l,i,j);drawCrate(q.x,q.y,5.8,i+j,0)}}
+function drawGoodsFx(){ // crates in the air
+ for(const t of S.trains){
+  if(t.state!=='dwell'||t.key!=='goods'||!t.lane||t.lane.kind!=='Goods')continue;
+  const load=t.gmode==='load';
+  for(let k=1;k<=GWAG;k++)for(let j=0;j<GCR;j++){
+   const p=crateProg(t,k,j);if(!(p>0&&p<1))continue;
+   const w=wellPos(t,k,j),q=pilePos(t.lane,wagonSlot(t,k),j),a=load?q:w,b=load?w:q,e=p*p*(3-2*p),s0=Math.sin(Math.PI*p);
+   drawCrate(a.x+(b.x-a.x)*e,a.y+(b.y-a.y)*e,5.6*(1+.3*s0),k+j,s0*11);
+  }
+ }
+}
+/* ---------- passengers on the island platforms ----------
+   Before a passenger train arrives, a few passengers appear on its platform and wait; when it stops some step off and wander a short way before they fade away, and the waiting ones walk to the doors and board.
+   They only use the free space of the platform between the platform's two labels (the name on the left and the kind on the right), so they never cover the text. Purely visual (it follows the boarding timer). */
+const PAX_COLS=[['#ffb3a3','#e0604a','#a83e2c'],['#a9d8ff','#4a98e0','#2c6aa8'],['#ffe9a0','#e0b030','#a8801c'],['#c4f0aa','#5cb85c','#3a8a3a'],['#dfc0f5','#9a62c8','#6a3f90']];
+function faceGap(l){ // the free stretch of this platform face between its two labels, and where the face's track edge is
+ const d=ISLANDS[l.isl],a=S.lanes[d.top],b=S.lanes[d.bottom];
+ const top=LY(a.idx)+11,bot=LY(b.idx)-11,h=bot-top,fs=Math.min(22,Math.max(17,Math.round(h*.28))),subFs=Math.min(16,Math.max(13,Math.round(fs*.8)));
+ const x0=a.x0+6,w=a.len-12;
+ ctx.save();ctx.font='700 '+fs+'px "Chakra Petch",sans-serif';const nw=ctx.measureText(l.name).width;
+ ctx.font='700 '+subFs+'px "Chakra Petch",sans-serif';const bw=ctx.measureText(l.kind.toUpperCase()+(l.ok.length>1?' ('+l.ok.join('/')+')':'')).width;ctx.restore();
+ // feet positions: a person is about 14 units tall, so on the upper face (track above) the feet stand 15 below the platform edge; on the lower face (track below) just above its edge
+ const top2=l.face==='top',half=h/2;
+ return{x0:x0+16+nw+16,x1:x0+w-12-bw-16,edge:top2?top+15:bot-3,sgn:top2?1:-1,depth:Math.max(2,half-18),y0:top2?top:bot-half,y1:top2?top+half:bot};
+}
+function updatePax(dt){
+ for(const l of S.lanes){
+  if(l.thru||l.kind==='Goods'||l.isl===undefined)continue;
+  const P=l.pax;
+  if(!P)continue;
+  const g=l.enabled&&!l.closed?faceGap(l):null;
+  if(!g||g.x1-g.x0<14){P.length=0;continue} // closed, not built, or no free space: nobody
+  const T=l.busy&&l.busy.lane===l&&l.busy.key!=='goods'&&!l.busy.type.nonstop?l.busy:null;
+  const stand=()=>({x:g.x0+4+Math.random()*(g.x1-g.x0-8),y:g.edge+g.sgn*Math.random()*g.depth});
+  const nW=Math.min(T&&T.key==='local'?5:4,Math.ceil((g.x1-g.x0)/16));
+  if(T!==l.pxT){l.pxT=T;l.pxn=0;l.pxAlit=false;l.pxTimer=0}
+  const doors=[];if(T&&T.sStop!==undefined)for(let k=1;k<T.type.cars;k++){const x=at(T.path,T.sStop-k*CAR-CAR/2).x;if(x>g.x0&&x<g.x1)doors.push(x)}
+  const doorX=x=>{let best=null;for(const d of doors)if(best===null||Math.abs(d-x)<Math.abs(best-x))best=d;return best===null?Math.max(g.x0+3,Math.min(g.x1-3,x)):best};
+  if(T&&(T.state==='set'||T.state==='go')&&l.pxn<nW){ // the train is coming: passengers appear and wait
+   l.pxTimer-=dt;if(l.pxTimer<=0){l.pxTimer=.25+Math.random()*.3;const s=stand();P.push({s:'wait',x:s.x,y:s.y,a:0,c:(Math.random()*5)|0,bag:Math.random()<.35,ph:Math.random()*6,t:0});l.pxn++}
+  }
+  if(T&&T.state==='dwell'&&!l.pxAlit){ // the train has stopped: some get off, the waiting ones start to board
+   l.pxAlit=true;
+   const nA=Math.min(T.key==='local'?4:3,Math.max(1,Math.floor((g.x1-g.x0)/18)));
+   for(let i=0;i<nA;i++){const s=stand(),dx=doors.length?doors[(Math.random()*doors.length)|0]:s.x;P.push({s:'pending',x:doorX(dx),y:g.edge,tx:s.x,ty:s.y,a:0,c:(Math.random()*5)|0,bag:Math.random()<.45,ph:Math.random()*6,t:-(.1+i*.4)})}
+   let n=0;for(const p of P)if(p.s==='wait'){p.s='boarding';p.t=-(.9+n*.45);n++}
+  }
+  if(!T||T.state==='ready'||T.state==='exiting'){for(const p of P)if(p.s==='wait'||p.s==='boarding'&&p.t<0){p.s='fade';p.slow=true}} // whoever is left gives up and wanders off
+  for(let i=P.length-1;i>=0;i--){
+   const p=P[i];
+   if(p.s==='wait'){p.a=Math.min(1,p.a+dt*2.2)}
+   else if(p.s==='pending'){p.t+=dt;if(p.t>=0)p.s='alight'}
+   else if(p.s==='alight'||p.s==='tocar'){
+    p.a=Math.min(1,p.a+dt*3);
+    const tx=p.s==='alight'?p.tx:p.dx,ty=p.s==='alight'?p.ty:g.edge,d=Math.hypot(tx-p.x,ty-p.y),st=16*dt;
+    if(d<=st){p.x=tx;p.y=ty;if(p.s==='alight'){p.s='linger';p.t=1.4+Math.random()*2}else{p.s='fade'}}
+    else{p.x+=(tx-p.x)/d*st;p.y+=(ty-p.y)/d*st;p.ph+=dt*11;p.walk=true}
+   }
+   else if(p.s==='linger'){p.walk=false;p.t-=dt;if(p.t<=0)p.s='fade'}
+   else if(p.s==='boarding'){p.t+=dt;if(p.t>=0){p.s='tocar';p.dx=doorX(p.x)}}
+   else if(p.s==='fade'){p.walk=false;p.a-=dt*(p.slow?.9:3.2);if(p.a<=0)P.splice(i,1)}
+   if(p.s==='wait')p.walk=false;
+  }
+ }
+}
+function drawPerson(x,y,c,al,walk,ph,bag){
+ const col=PAX_COLS[c%5],bob=walk?Math.abs(Math.sin(ph))*.8:0,sw=walk?Math.sin(ph)*1.3:0;
+ ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,al));
+ ctx.fillStyle='rgba(4,14,18,.42)';ctx.beginPath();ctx.ellipse(x+1.2,y+1,3.4,1.6,0,0,7);ctx.fill(); // shadow
+ ctx.strokeStyle='rgba(12,26,32,.95)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x-1,y-3-bob);ctx.lineTo(x-1+sw*.5,y);ctx.moveTo(x+1,y-3-bob);ctx.lineTo(x+1-sw*.5,y);ctx.stroke(); // legs
+ const by=y-9.5-bob;
+ ctx.fillStyle=col[1];rr(x-2.6,by,5.2,7,2.2);ctx.fill(); // coat
+ ctx.fillStyle=col[0];ctx.fillRect(x-2.2,by+1,1.7,4.6); // lit side
+ ctx.fillStyle=col[2];ctx.fillRect(x+1.1,by+1,1.4,5.2); // shaded side
+ ctx.fillStyle='#e8c39b';ctx.beginPath();ctx.arc(x,by-2,2.3,0,7);ctx.fill(); // head
+ ctx.fillStyle='rgba(60,36,22,.85)';ctx.beginPath();ctx.arc(x,by-2.7,2.3,Math.PI,0);ctx.fill(); // hair
+ ctx.fillStyle='rgba(255,255,255,.4)';ctx.beginPath();ctx.arc(x-.8,by-2.9,.7,0,7);ctx.fill();
+ if(bag){ctx.fillStyle='#6b4a2e';ctx.fillRect(x+2.8,y-4.2,3.4,3.2);ctx.fillStyle='#8f6a46';ctx.fillRect(x+2.8,y-4.2,3.4,1.1)} // a small case
+ ctx.restore();
+}
+function drawPax(l){
+ const P=l.pax;if(!P||!P.length)return;
+ const g=faceGap(l);
+ ctx.save();ctx.beginPath();ctx.rect(g.x0-4,g.y0,g.x1-g.x0+8,g.y1-g.y0);ctx.clip(); // never outside this platform face's free stretch
+ for(const p of [...P].sort((a,b)=>a.y-b.y))if(p.s!=='pending')drawPerson(p.x,p.y,p.c,p.a,p.walk,p.ph,p.bag);
+ ctx.restore();
+}
 function drawTrain(t){
  const isSel=sel.train===t;
  for(let k=t.type.cars-1;k>=0;k--){
@@ -1549,6 +1744,7 @@ function drawTrain(t){
    // Lateral cargo container ribs
    ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1;
    ctx.beginPath();ctx.moveTo(-3,-5);ctx.lineTo(-3,5);ctx.moveTo(2,-5);ctx.lineTo(2,5);ctx.stroke();
+   for(let j=0;j<GCR;j++)if(wellHas(t,k,j)){ctx.save();ctx.translate(j?3.2:-3.2,0);ctx.rotate(-p.a);drawCrate(0,0,5.4,k+j,0);ctx.restore()} // the crates in the wagon (kept upright)
   }else{
    // Passenger Carriage: 3D Raised Curved Roof Plate
    const rg=ctx.createLinearGradient(0,-3.5,0,3.5);
@@ -1609,7 +1805,7 @@ function drawTrain(t){
  if(h.x>0&&h.x<W-6){
   const lx=t.side==='E'?Math.max(2,h.x):Math.min(W-170,h.x-110);
   ctx.fillStyle='#ffffff';ctx.font='700 17px "Chakra Petch",sans-serif';
-  let tag='';if(t.state==='ready')tag=t.readyT>t.buf?' · overdue, losing points':' · ready, leave within '+Math.ceil(t.buf-t.readyT)+'s';else if(t.state==='dwell')tag=' · boarding '+Math.ceil(t.dwellT)+'s';else if(t.leader&&t.vcap<t.type.vmax-2&&(t.state==='go'||t.state==='exiting'||t.state==='arriving'))tag=' · keeping gap';
+  let tag='';if(t.state==='ready')tag=t.readyT>t.buf?' · overdue, losing points':' · ready, leave within '+Math.ceil(t.buf-t.readyT)+'s';else if(t.state==='dwell')tag=' · '+(t.key==='goods'&&t.lane&&t.lane.kind==='Goods'?(t.gmode==='load'?'loading ':'unloading '):'boarding ')+Math.ceil(t.dwellT)+'s';else if(t.leader&&t.vcap<t.type.vmax-2&&(t.state==='go'||t.state==='exiting'||t.state==='arriving'))tag=' · keeping gap';
   ctx.fillText((t.vip?'★ ':'')+t.num+' '+t.type.label+(t.exitChoice&&t.dest==='branch'?' → Branch':'')+(t.dev>=2?' · late '+t.dev+'s':t.dev<=-2?' · early '+(-t.dev)+'s':'')+tag,lx,h.y-26);
   if(t.state==='dwell'||t.state==='ready'){
    let f,col;
@@ -1645,6 +1841,7 @@ function drawIslands(){
     const badgeText=l.kind.toUpperCase()+(l.ok.length>1?' ('+l.ok.join('/')+')':'');
     ctx.fillStyle=KC[l.kind]||'#ffd36b';ctx.font='700 '+subFs+'px "Chakra Petch",sans-serif';ctx.textAlign='right';
     ctx.fillText(badgeText,x0+w-12,ty);ctx.textAlign='left';
+    drawPax(l);
    } // a face that is not built yet is not drawn at all
   }
   // Subtle center line dividing the two platform faces
@@ -1835,17 +2032,20 @@ function draw(){
   }
   if(l.isl!==undefined)continue; // island faces are drawn with their platform (drawIslands)
   // the goods platform: a strip below the track (there is no passenger platform between goods and the through line)
-  ctx.fillStyle='#2a6272';ctx.fillRect(l.x0+8,ly+10,l.len-16,36);
-  ctx.fillStyle=KC[l.kind];ctx.fillRect(l.x0+8,ly+43,l.len-16,3);
-  if(l.glow>0){ctx.fillStyle='rgba(255,181,71,'+Math.min(1,l.glow)*.3+')';ctx.fillRect(l.x0+8,ly+10,l.len-16,36)}
+  // (a little deeper than a passenger platform: the upper part is the loading apron where crates are piled, the lower part carries the labels)
+  ctx.fillStyle='#2a6272';ctx.fillRect(l.x0+8,ly+10,l.len-16,48);
+  ctx.fillStyle='rgba(8,24,30,.22)';ctx.fillRect(l.x0+8,ly+10,l.len-16,25); // the apron
+  ctx.fillStyle=KC[l.kind];ctx.fillRect(l.x0+8,ly+55,l.len-16,3);
+  if(l.glow>0){ctx.fillStyle='rgba(255,181,71,'+Math.min(1,l.glow)*.3+')';ctx.fillRect(l.x0+8,ly+10,l.len-16,48)}
   ctx.fillStyle='#e8c547';ctx.fillRect(l.x0+8,ly+8,l.len-16,2);
-  ctx.fillStyle=l.busy?'#ff7a59':'#3ddc84';ctx.fillRect(l.x0+13,ly+16,4,24);
-  ctx.fillStyle='#ffffff';ctx.font='700 24px "Chakra Petch",sans-serif';ctx.fillText(l.name,l.x0+24,ly+35);
+  ctx.fillStyle=l.busy?'#ff7a59':'#3ddc84';ctx.fillRect(l.x0+13,ly+28,4,24);
+  ctx.fillStyle='#ffffff';ctx.font='700 24px "Chakra Petch",sans-serif';ctx.fillText(l.name,l.x0+24,ly+47);
   const gbText='GOODS ONLY';
   ctx.font='700 18px "Chakra Petch",sans-serif';ctx.textAlign='right';
   const gbw=ctx.measureText(gbText).width;
-  ctx.fillStyle='rgba(11,27,34,0.78)';ctx.fillRect(l.x0+l.len-gbw-24,ly+16,gbw+12,24);
-  ctx.fillStyle=KC[l.kind];ctx.fillText(gbText,l.x0+l.len-18,ly+34);ctx.textAlign='left';
+  ctx.fillStyle='rgba(11,27,34,0.78)';ctx.fillRect(l.x0+l.len-gbw-24,ly+28,gbw+12,24);
+  ctx.fillStyle=KC[l.kind];ctx.fillText(gbText,l.x0+l.len-18,ly+46);ctx.textAlign='left';
+  drawPiles(l);
   if(l.warnT>0){ // closing soon: flashing amber outline with a countdown
    const fl=.5+.5*Math.sin(performance.now()/160);
    ctx.save();ctx.strokeStyle='rgba(255,194,61,'+(.35+.65*fl)+')';ctx.lineWidth=3;ctx.strokeRect(l.x0-3,ly-39,l.len+6,32);
@@ -1864,12 +2064,16 @@ function draw(){
  const t=sel.train;
  let hintSig=null;
  if(t){
-  if((t.state==='outer'||t.state==='loop')){
+  if(t.sched&&t.sched.plat!=null&&(t.state==='arriving'||t.state==='outer'||t.state==='loop')){ // an incoming train is selected: its planned platform is outlined (dashed amber, pulsing)
+   const pl=S.lanes[t.sched.plat];
+   if(pl&&pl.enabled){const bx=laneBox(pl);ctx.save();ctx.fillStyle='rgba(255,194,61,'+(.09+.08*pulse())+')';ctx.fillRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0]);ctx.strokeStyle='rgba(255,194,61,'+(.45+.4*pulse())+')';ctx.lineWidth=3;ctx.setLineDash([12,7]);ctx.strokeRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0]);ctx.restore()}
+  }
+  if((t.state==='outer'||t.state==='loop'||t.state==='arriving')){
    // clickable targets glow
    if(sel.target){
     const why=checkEntry(t,sel.target);const col=why?'rgba(255,90,90,.95)':'rgba(61,220,132,.95)';
     const pts=routePoints(t,sel.target);ctx.strokeStyle=col;ctx.lineWidth=4;ctx.setLineDash([10,6]);ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();ctx.setLineDash([]);
-    if(!why)hintSig=t.state==='outer'?outerSig(t.side):loopSig(t.side,t.loopK);
+    if(!why)hintSig=t.state==='loop'?loopSig(t.side,t.loopK):outerSig(t.side);
     if(sel.target.kind==='lane'){const bx=laneBox(sel.target.lane);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0])}
    }
   } else if(t.state==='ready'){
@@ -1898,6 +2102,7 @@ function draw(){
   }
  }
  for(const tr of S.trains)drawTrain(tr);
+ drawGoodsFx();
  // signals
  for(const side of ['E','W']){
   const g=S.trains.some(q=>q.side===side&&q.entryLock&&!q.fromLoop&&q.state==='go'&&q.mode&&true);
@@ -1928,27 +2133,35 @@ function boardHtml(end){
  const selT=sel.train;
  const pn=n=>n==='THROUGH'?'THRU':n.replace(' ','');
  const pt=e=>{if(!e||e.plat==null||!S.lanes[e.plat])return '';return '<u'+(e.chg?' class="chg"':'')+'>'+pn(S.lanes[e.plat].name)+'</u>'};
- const dtag=d=>d==='branch'?' <em>→ Branch</em>':'';
- const compact=document.body.classList.contains('bcompact'),nA=compact?2:3,nD=compact?1:3;
+ const compact=document.body.classList.contains('bcompact'),nRows=compact?4:5;
+ const dtag=d=>d==='branch'?(compact?' <em>→Br</em>':' <em>→ Branch</em>'):'';
  const dv=d=>d>=2?' <em class="late">'+(compact?'+'+d:'late '+d+'s')+'</em>':d<=-2?' <em class="early">'+(compact?'−'+(-d):'early '+(-d)+'s')+'</em>':'';
- const arr=[];
- const cur=[]; // trains already here, the selected one first so it can be found
+ // One list per end, in the order things need doing here. An arrow shows what: ▸ a train arriving at this end (clear it in), ◂ a train leaving from this end (clear it out).
+ const items=[]; // [sort key, row html, is the selected train]
+ const add=(key,k,arrow,txt,plat,time,cls,t)=>items.push([key,row(k,'<s>'+arrow+'</s>'+txt,plat,time,cls,t&&t===selT),!!t&&t===selT]);
  for(const t of S.trains){
-  if(t.side!==end||!['arriving','outer','loop','set','go'].includes(t.state))continue;
-  const tm=t.state==='arriving'?'now':t.state==='outer'?'wait':t.state==='loop'?'siding':'in';
-  cur.push([t===selT?0:1,row(t.key,(t.vip?'★ ':'')+TT[t.key].label+dtag(t.dest)+dv(t.dev),pt(t.sched),tm,'now',t===selT)]);
+  const lbl=(t.vip?'★ ':'')+TT[t.key].label+dtag(t.dest)+dv(t.dev);
+  if(t.side===end&&['arriving','outer','loop','set','go'].includes(t.state)){
+   if(t.state==='outer')add(-2,t.key,'▸',lbl,pt(t.sched),'wait','now',t);
+   else if(t.state==='arriving')add(-1.5,t.key,'▸',lbl,pt(t.sched),'now','now',t);
+   else if(t.state==='loop')add(-1,t.key,'▸',lbl,pt(t.sched),'siding','now',t);
+   else add(1,t.key,'▸',lbl,pt(t.sched),'in','now',t);
+  }
+  if(t.side===other){ // it came in from the other end, so it leaves through this one
+   const pl='<u>'+pn(t.lane?t.lane.name:'')+'</u>';
+   if(t.state==='ready')add(-3,t.key,'◂',lbl,pl,'READY','now',t);
+   else if(t.state==='dwell')add(t.dwellT,t.key,'◂',lbl,pl,Math.ceil(t.dwellT)+'s','',t);
+   else if(t.type.nonstop&&t.state==='go')add(2,t.key,'◂',TT[t.key].label,'<u>THRU</u>','passing','',t);
+  }
  }
- cur.sort((a,b)=>a[0]-b[0]);for(const c of cur)arr.push(c[1]);
- for(const e of S.sched){if(arr.length>=nA)break;if(e.spawned||e.side!==end)continue;const eta=e.t-S.t;arr.push(row(e.key,(e.vip?'★ ':'')+TT[e.key].label+dtag(e.dest)+dv(e.dev),pt(e),eta<=0?'held':Math.ceil(eta)+'s',eta<=0?'now':''))}
- const dep=[]; // trains that came in from the other end leave through this one
- for(const t of S.trains){
-  if(t.side!==other)continue;
-  if(t.state==='ready')dep.push([-1,row(t.key,TT[t.key].label+dtag(t.dest)+dv(t.dev),'<u>'+pn(t.lane.name)+'</u>','READY','now',t===selT)]);
-  else if(t.state==='dwell')dep.push([t.dwellT,row(t.key,TT[t.key].label+dtag(t.dest)+dv(t.dev),'<u>'+pn(t.lane.name)+'</u>',Math.ceil(t.dwellT)+'s','',t===selT)]);
-  else if(t.type.nonstop&&t.state==='go')dep.push([-.5,row(t.key,TT[t.key].label,'<u>THRU</u>','passing','',t===selT)]);
+ for(const e of S.sched){ // trains not yet in: due at this end
+  if(e.spawned||e.side!==end)continue;const eta=e.t-S.t;
+  add(eta<=0?-2.5:eta,e.key,'▸',(e.vip?'★ ':'')+TT[e.key].label+dtag(e.dest)+dv(e.dev),pt(e),eta<=0?'held':Math.ceil(eta)+'s',eta<=0?'now':'',null);
  }
- dep.sort((a,b)=>a[0]-b[0]);
- return '<div class="bh">'+(compact?(end==='W'?'West':'East'):(end==='W'?'West':'East')+' end')+'</div><div class="br bth"><span class="bt">Train</span><span class="bp">Plat.</span><b>Time</b></div><div class="bs" data-s="▸">Arrivals</div>'+(arr.slice(0,nA).join('')||'<div class="br bnone"><span>none due</span></div>')+'<div class="bs" data-s="◂">Departures</div>'+(dep.slice(0,nD).map(x=>x[1]).join('')||'<div class="br bnone"><span>none</span></div>');
+ items.sort((a,b)=>a[0]-b[0]);
+ let shown=items.slice(0,nRows);
+ {const si=items.findIndex(x=>x[2]);if(si>=nRows&&shown.length)shown[shown.length-1]=items[si]} // the selected train is always on the board
+ return '<div class="bh">'+(end==='W'?'West':'East')+(compact?'':' end')+'</div><div class="br bth"><span class="bt">Train</span><span class="bp">Plat</span><b>Time</b></div>'+(shown.map(x=>x[1]).join('')||'<div class="br bnone"><span>nothing due</span></div>');
 }
 function updateBoards(){
  if(!BOARD)return;
@@ -1963,7 +2176,6 @@ function hud(){
  document.getElementById('sScore').textContent=Math.round(S.score);
  document.getElementById('sSat').textContent=Math.round(satNow())+'%';
  document.getElementById('sEff').textContent=Math.round(effNow())+'%';
- document.getElementById('sHeld').textContent=S.held;
  noteBest();
  document.getElementById('quota').innerHTML='<div class="q rnd">Round '+S.round+'/'+MAX_ROUND+' <span class="lvb" style="color:'+LV.lite+'" title="'+LV.name+' level">'+'★'.repeat(LV.stars)+'</span></div>'+Object.keys(S.quota).map(k=>{const d=S.completed[k],n=S.quota[k];return '<div class="q'+(d>=n?' done':'')+'"><i style="background:'+TT[k].col+'"></i>'+TT[k].label+' '+d+'/'+n+'</div>'}).join('')+'<div class="q best" title="Highest score ever reached">★ Best <b>'+best+'</b></div>';
 }
@@ -1998,6 +2210,14 @@ syncPauseBtn();
 {const bt=document.getElementById('boardToggle');if(bt)bt.addEventListener('click',()=>{BOARD=!BOARD;try{localStorage.setItem('sm_board',BOARD?'1':'0')}catch(e){}applyBoard();if(BOARD){boardCache.W=boardCache.E='';updateBoards()}})}
 {const gb=document.getElementById('guideToggle');if(gb)gb.addEventListener('click',()=>{if(LV.guide!==null)return;userGuide=!userGuide;try{localStorage.setItem('sm_guide',userGuide?'1':'0')}catch(e){}applyGuide()})}
 {const cb=document.getElementById('cbToggle');if(cb)cb.addEventListener('click',()=>{CB=!CB;try{localStorage.setItem('sm_cb',CB?'1':'0')}catch(e){}applyCB();if(S)applyStageInfo(S.stage,S.round)})}
+{ // the Menu button opens the less-used controls (restart, zoom, sound, full screen, how to play); zoom and sound keep it open
+ const mb=document.getElementById('menuBtn'),mn=document.getElementById('menu');
+ const closeMenu=()=>{mn.hidden=true;mb.setAttribute('aria-expanded','false')};
+ mb.addEventListener('click',e=>{e.stopPropagation();mn.hidden=!mn.hidden;mb.setAttribute('aria-expanded',String(!mn.hidden))});
+ mn.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.dataset.keep)setTimeout(closeMenu,0)});
+ document.addEventListener('pointerdown',e=>{if(!mn.hidden&&!mn.contains(e.target)&&e.target!==mb&&!mb.contains(e.target))closeMenu()});
+ addEventListener('keydown',e=>{if(e.key==='Escape'&&!mn.hidden)closeMenu()});
+}
 document.getElementById('speed').addEventListener('click',e=>{speed=speed===1?2:1;e.currentTarget.textContent='Speed '+speed+'x'});
 // Restart replays the current round (your score goes back to where it was when the round began). "Start over" on the Info page begins again at round 1.
 document.getElementById('restart').addEventListener('click',()=>reset(S.round,S.roundStart));

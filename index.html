@@ -60,6 +60,10 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (max-width:1000px){.stat{padding:0 6px}.stats{gap:3px}.stat b,.stat.score b{font-size:15px}.stat .lb{font-size:0;margin-left:3px}.stat .lb::after{content:attr(data-s);font-size:15px;font-family:var(--display);font-weight:600;letter-spacing:.02em;color:var(--muted)}}
 @media (max-width:1000px){.bar{gap:6px 8px}.bar .seg{gap:2px}.bar .seg button{padding:6px 8px}.bar .stat{padding:0 6px}.bar .stats{gap:3px}} /* stats are the same size as the buttons (15px); the gaps are tight so everything stays on one row on a phone */
 .satline{margin-top:5px;font-size:14px}
+.q.streak{border-color:#ff9a3d;color:#ffb36b}
+.q.goals{border-color:#7fd0ff;color:#bfe6ff}
+.q small{font-size:.8em;margin-left:2px}
+@media (max-height:520px){.q{font-size:13px;height:26px;padding:2px 8px 2px 6px}.q.best{padding:2px 8px}.q.streak small{display:none}.quota{gap:4px}}
 .q.best{margin-left:auto;border-color:var(--amber);color:var(--amber);font-weight:600}
 .q.best b{font-family:var(--display);color:#fff}
 .q.rnd{border-color:var(--amber);color:var(--amber);font-family:var(--display);font-weight:700;letter-spacing:.04em}
@@ -128,6 +132,10 @@ button{padding:6px 12px;font-size:15px}
 /* Floating Bottom Quota Pill Strip (padded on right so ⛶ button sits in line without collision) */
 .quota{position:absolute;bottom:max(8px,env(safe-area-inset-bottom,0px));left:max(10px,env(safe-area-inset-left,0px));right:max(52px,calc(env(safe-area-inset-right,0px) + 48px));z-index:10;display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;pointer-events:none}
 .q{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;height:28px;box-sizing:border-box;background:rgba(9,27,34,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(47,112,128,.6);border-radius:99px;padding:3px 12px 3px 8px;font-size:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.q.streak{border-color:#ff9a3d;color:#ffb36b}
+.q.goals{border-color:#7fd0ff;color:#bfe6ff}
+.q small{font-size:.8em;margin-left:2px}
+@media (max-height:520px){.q{font-size:13px;height:26px;padding:2px 8px 2px 6px}.q.best{padding:2px 8px}.q.streak small{display:none}.quota{gap:4px}}
 .q.best{margin-left:auto;border-color:var(--amber);color:var(--amber);font-weight:600;padding:3px 12px}
 .toast{font-size:16px;padding:6px 14px}
 /* Phones (landscape, short screens): the game messages sit in the bottom-left corner, above the round chips, as a compact box, so they never cover the goods platform or the tracks in the middle */
@@ -187,7 +195,7 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 /* Welcome page: shown every time the app opens (the Info/intro page sits above it so it can be opened from here). */
 .welcome{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;background:radial-gradient(900px 500px at 15% 0,rgba(44,245,160,.24),transparent 60%),radial-gradient(800px 500px at 100% 100%,rgba(255,194,61,.18),transparent 60%),linear-gradient(180deg,#123740,#0a2229)}
 .welcome[hidden]{display:none}
-.wcard{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:560px}
+.wcard{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:min(880px,96vw)}
 .wcard h1{font-size:clamp(34px,7vw,60px)}
 .wtag{color:var(--muted);margin:0;font-size:18px}
 .wstatus{color:var(--amber);font-family:var(--display);font-size:19px;min-height:1.4em;letter-spacing:.03em}
@@ -196,7 +204,7 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 .wbest{color:#fff;font-family:var(--display);font-size:20px;letter-spacing:.04em}
 .wbest b{color:var(--amber);font-size:26px}
 .wbtns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
-.wbtns button{font-size:20px;padding:12px 30px;border:1px solid var(--line);background:rgba(255,255,255,.07)}
+.wbtns button{font-size:18px;padding:11px 20px;border:1px solid var(--line);background:rgba(255,255,255,.07)}
 .wbtns .wprimary{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;border:0;box-shadow:0 0 22px rgba(255,194,61,.5)}
 @media (max-height:460px){.wlogo{width:60px;height:60px}.wcard{gap:6px}.wcard h1{font-size:34px}.wtag{font-size:15px}.wbtns button{font-size:17px;padding:9px 24px}}
 .help{position:fixed;inset:0;z-index:40;overflow-y:auto;background:#09202a;padding:20px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:block}
@@ -287,9 +295,28 @@ body.clean-mode .menu{display:none}
 .wlevels{display:flex;gap:10px;margin:4px 0}
 .wlv{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:96px;padding:8px 12px;border-radius:12px;border:2px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:inherit;cursor:pointer}
 .wlv .wlst{font-size:17px;letter-spacing:.1em;color:var(--lc)}.wlv b{font-family:var(--display);font-size:15px}.wlv small{font-size:11px;color:var(--muted)}
-.wlv[data-lv=easy]{--lc:#4aa8ff}.wlv[data-lv=normal]{--lc:#2fd08a}.wlv[data-lv=hard]{--lc:#ff4d6d}
+.wlv[data-lv=easy]{--lc:#4aa8ff}.wlv[data-lv=normal]{--lc:#2fd08a}.wlv[data-lv=hard]{--lc:#ff4d6d}.wlv[data-lv=daily]{--lc:#ffc23d}
 .wlv.sel{border-color:var(--lc);background:rgba(255,255,255,.12);box-shadow:0 0 18px color-mix(in srgb,var(--lc) 55%,transparent)}
 .lvb{letter-spacing:.05em;margin-left:2px}
+/* leaderboard, finale name field, challenge banner */
+.lbov{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(5,18,23,.9)}
+.lbov[hidden]{display:none}
+.lbbox{width:min(96%,560px);max-height:96%;overflow-y:auto;text-align:center;background:linear-gradient(180deg,rgba(18,52,62,.98),rgba(10,32,40,.99));border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 12px 34px rgba(0,0,0,.55)}
+.lbbox h2{font-family:var(--display);margin:0 0 8px;color:var(--amber)}
+.lbtabs{display:flex;gap:6px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
+.lbtab{border:2px solid var(--lc);background:rgba(255,255,255,.05);padding:5px 10px}.lbtab.on{background:var(--lc);color:#07181e}
+.lbt{width:100%;border-collapse:collapse;font-size:14px}.lbt th{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+.lbt td{padding:4px 6px;text-align:left;border-bottom:1px solid rgba(47,112,128,.25)}.lbt td:nth-child(3){font-family:var(--display);font-weight:700;color:var(--amber)}.lbt tr.me td{background:rgba(255,194,61,.16)}
+.lbnone{color:var(--muted);margin:14px 6px}
+.achg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;text-align:center}
+.ach{border:1px solid var(--line);border-radius:10px;padding:8px 6px;background:rgba(9,27,34,.55);opacity:.62}.ach.on{opacity:1;border-color:var(--amber);background:rgba(255,194,61,.1)}
+.ach .ai{font-size:26px;display:block}.ach b{display:block;font-family:var(--display);font-size:13px}.ach small{display:block;font-size:11px;color:var(--muted);line-height:1.2}
+.rhi{margin:6px 0;font-size:12.5px;color:var(--amber)}.lbfoot{color:var(--muted);font-size:12px;margin:8px 0}
+.fname{display:flex;gap:8px;align-items:center;justify-content:center;margin:2px 0 4px;font-size:13px;color:var(--muted)}
+.fname input{width:150px;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:rgba(9,27,34,.7);color:var(--fg);font:inherit}
+.fpos{font-size:13px;color:var(--amber);min-height:1.2em;margin-bottom:6px}
+.wchal{margin:2px 0;padding:6px 14px;border-radius:99px;border:1px solid var(--amber);background:rgba(255,194,61,.12);color:var(--amber);font-family:var(--display);font-size:15px}
+@media (max-height:460px){.fname,.fpos{margin:0 0 2px;font-size:11px}.fname input{padding:2px 6px}.lbt{font-size:12px}.lbbox{padding:8px 12px}.lbbox h2{font-size:18px;margin-bottom:4px}.wchal{font-size:12px;padding:3px 10px}}
 @media (max-height:460px){.wlv{min-width:84px;padding:4px 8px}.wlv small{display:none}.wlevels{margin:0}}
 /* Round-end report: pop-in card, stars that pop one by one, filling satisfaction bar, confetti */
 .rbox{animation:rpop .35s cubic-bezier(.2,1.2,.3,1) both}
@@ -360,11 +387,12 @@ body.clean-mode .menu{display:none}
   <div class="menu" id="menu" hidden role="menu" aria-label="Settings"><button id="restart">Restart round</button><button id="zoom" data-keep="1" aria-label="Zoom">Zoom</button><button id="sound" data-keep="1" aria-label="Sound">🔊</button><button id="full" hidden aria-label="Full screen">Full screen</button><button id="info" aria-label="How to play">How to play</button></div>
   <div class="stage"><div class="annc" id="annc" aria-live="assertive"></div><div class="toast" id="cap" aria-live="polite"></div><div class="scroller" id="scroller"><canvas id="cv" width="1400" height="520" aria-label="Playable station: tap a train, then a platform or siding, then the signal. Drag to scroll."></canvas></div>
     <div class="roundend" id="roundEnd" hidden><div class="confetti" id="confetti" aria-hidden="true"></div><div class="rbox">
-    <div class="rleft"><h2 id="reTitle">Round complete</h2><div class="stars" id="reStars"></div><span id="reText"></span><button id="reBtn">Next round</button></div>
+    <div class="rleft"><h2 id="reTitle">Round complete</h2><div class="stars" id="reStars"></div><span id="reText"></span><div class="rhi" id="reHi"></div><button id="reBtn">Next round</button></div>
     <div class="rright">
      <div class="rup" id="reUp" hidden></div>
      <div class="rsat" id="reSat"></div>
      <div class="rsat" id="reEff"></div>
+     <div class="rsat" id="reGoals"></div>
      <h3>Operating Ledger &amp; Performance Breakdown</h3><div id="reBreak"></div>
      <h3>Mistakes</h3><ul id="reMist"></ul>
      <h3>Full log</h3><ol id="reLog"></ol>
@@ -381,7 +409,9 @@ body.clean-mode .menu{display:none}
     <p class="fdesc" id="fDesc"></p>
     <div class="fscore" id="fScore"></div><div class="flabel">final score</div>
     <div class="fgrid"><div><b id="fSat"></b><span>passenger satisfaction</span></div><div><b id="fEff"></b><span>efficiency</span></div><div><b id="fTrains"></b><span>trains handled</span></div><div><b id="fBest"></b><span>best score</span></div></div>
-    <div class="fbtns"><button id="fShare" class="fprimary" type="button">Share my score</button><button id="fAgain" type="button">Play again</button></div>
+    <div class="fname"><label for="fName">Your name</label><input id="fName" type="text" maxlength="16" placeholder="optional" autocomplete="off"></div>
+    <div class="fpos" id="fPos" aria-live="polite"></div>
+    <div class="fbtns"><button id="fShare" class="fprimary" type="button">Share my score</button><button id="fCard" type="button">Score card</button><button id="fLb" type="button">Leaderboard</button><button id="fAgain" type="button">Play again</button></div>
     <div class="fnote" id="fNote" aria-live="polite"></div>
    </div><div class="frail" aria-hidden="true"></div></div></div>
   <div class="quota" id="quota" aria-label="Trains needed this round"></div>
@@ -440,7 +470,7 @@ body.clean-mode .menu{display:none}
         <li data-smin="4">From the Junction a branch line leaves the east side. A train from the west with a destination arrow ("→ Branch") must leave by the branch; the others go along the main line. A branch train leaves through the branch signal (the one with the amber arrow); every other train leaves through its platform's exit signal. Tap the departing train, then the exit signal for the way it should go. With Exit guidance on (Info page, the default) the right line glows, the right signal flashes and a wrong signal is refused with a hint. With guidance off nothing flashes, and a wrong signal sends the train the wrong way and costs points.</li>
         <li>The journey ends at round 15. Pass it to see your final rank and share your score with a friend.</li>
         <li>Efficiency is a second score out of 100, shown at the top as "efficient". A train loses efficiency when it waits outside while a right platform and a safe route were free, and when it sits at a platform after boarding is done (each after a 2.5 second grace). Reach 80% to earn bonus points: 40 at 80%, rising steadily to 150 at 100%.</li>
-        <li data-rmin="6">From round 6 a VIP train (gold star) sometimes arrives, with a warning first. Clear it quickly and send it on time for a big bonus.</li>
+        <li data-rmin="6">From round 6 one VIP train (purple with gold trim, marked with a star) sometimes arrives, with a warning first. A stopping VIP: clear it quickly and send it on time. From round 7 it can also be a non-stop VIP: clear it onto its through line at once and never slow it. Either way the bonus is big.</li>
         <li>After every round you get a score report listing each mistake and how the points were made.</li>
         <li>Each round is a fixed set of trains (shown below the track). Handle every one to finish the round. Pass it to move on; the station gets bigger as you go.</li>
         <li data-smax="1">Each train must stay its full time: local 6 s, goods 9 s. Then you get a free buffer (4 and 6 s). Past that, points drain.</li>
@@ -453,6 +483,7 @@ body.clean-mode .menu{display:none}
   <div class="helpbtn"><button id="helpClose">Start playing</button></div>
   </div></div>
 
+  <div class="lbov" id="lbov" hidden role="dialog" aria-modal="true" aria-label="Leaderboard"><div class="lbbox"><h2>Leaderboard</h2><div class="lbtabs" id="lbtabs"></div><div id="lbrows"></div><p class="lbfoot">Kept on this device only. Share your score to challenge a friend.</p><button id="lbClose" type="button">Close</button></div></div>
   <div class="welcome" id="welcome" hidden role="dialog" aria-label="Welcome">
    <div class="wstars" aria-hidden="true"></div>
    <div class="wscene" aria-hidden="true">
@@ -462,11 +493,27 @@ body.clean-mode .menu{display:none}
    <button class="wsound" id="wSound" aria-label="Sound">🔊</button>
    <div class="wcard">
     <svg class="wlogo" viewBox="0 0 108 108" width="88" height="88" aria-hidden="true">
-     <rect width="108" height="108" rx="22" fill="#0E2A33"/>
-     <rect x="22" y="28" width="64" height="46" rx="9" fill="#FFC23D"/>
-     <rect x="30" y="36" width="48" height="18" rx="4" fill="#0E2A33"/>
-     <circle cx="34" cy="63" r="4.5" fill="#2CF5A0"/><circle cx="74" cy="63" r="4.5" fill="#FF4D6D"/>
-     <rect x="14" y="84" width="80" height="6" rx="3" fill="#9B6BFF"/>
+     <defs>
+      <clipPath id="wlc"><rect width="108" height="108" rx="22"/></clipPath>
+      <linearGradient id="wlbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D6F76"/><stop offset="1" stop-color="#0A2229"/></linearGradient>
+      <radialGradient id="wlgl" cx="54" cy="50" r="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFC23D" stop-opacity=".38"/><stop offset="1" stop-color="#FFC23D" stop-opacity="0"/></radialGradient>
+      <linearGradient id="wlbd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset=".45" stop-color="#FFC23D"/><stop offset="1" stop-color="#E58F08"/></linearGradient>
+      <linearGradient id="wlgs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4C8AA3"/><stop offset="1" stop-color="#0B2530"/></linearGradient>
+     </defs>
+     <g clip-path="url(#wlc)">
+      <rect width="108" height="108" fill="url(#wlbg)"/><circle cx="54" cy="50" r="48" fill="url(#wlgl)"/>
+      <path d="M23 94L45 78M85 94L63 78" stroke="#D9EEF2" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+      <path d="M30 89h48M35.5 84h37M40 80h28" stroke="#7C9BA4" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <rect x="32" y="26" width="44" height="50" rx="9" fill="url(#wlbd)"/>
+      <path d="M32 35a9 9 0 0 1 9-9h26a9 9 0 0 1 9 9v2H32z" fill="#9B6BFF"/>
+      <rect x="43" y="29" width="22" height="5" rx="2.5" fill="#0E2A33"/>
+      <circle cx="47.5" cy="31.5" r="1" fill="#FFC23D"/><circle cx="54" cy="31.5" r="1" fill="#2CF5A0"/><circle cx="60.5" cy="31.5" r="1" fill="#FF4D6D"/>
+      <rect x="36.5" y="40" width="35" height="18" rx="5" fill="url(#wlgs)"/>
+      <path d="M41 58L50 41h6L47 58z" fill="#fff" opacity=".2"/>
+      <circle cx="42" cy="66" r="7" fill="#FFE9A0" opacity=".38"/><circle cx="66" cy="66" r="7" fill="#FFE9A0" opacity=".38"/>
+      <circle cx="42" cy="66" r="4.4" fill="#FFF8D0"/><circle cx="66" cy="66" r="4.4" fill="#FFF8D0"/>
+      <rect x="35" y="71.5" width="38" height="3.2" rx="1.6" fill="#0E2A33" opacity=".85"/>
+     </g>
     </svg>
     <h1>Station Master</h1>
     <p class="wtag">Keep the trains moving. Grow your station.</p>
@@ -474,10 +521,12 @@ body.clean-mode .menu{display:none}
      <button type="button" class="wlv" data-lv="easy" role="radio"><span class="wlst">★</span><b>Easy</b><small></small></button>
      <button type="button" class="wlv" data-lv="normal" role="radio"><span class="wlst">★★</span><b>Normal</b><small></small></button>
      <button type="button" class="wlv" data-lv="hard" role="radio"><span class="wlst">★★★</span><b>Hard</b><small></small></button>
+     <button type="button" class="wlv" data-lv="daily" role="radio" title="The same timetable for everyone today"><span class="wlst">📅</span><b>Daily</b><small></small></button>
     </div>
     <div class="wstatus" id="wStatus"></div>
     <div class="wbest" id="wBest" hidden></div>
-    <div class="wbtns"><button id="wPlay" class="wprimary">Play</button><button id="wDemo">Watch demo</button><button id="wInfo">How to play</button></div>
+    <div class="wchal" id="wChal" hidden></div>
+    <div class="wbtns"><button id="wPlay" class="wprimary">Play</button><button id="wDemo">Watch demo</button><button id="wLb">Leaderboard</button><button id="wInfo">How to play</button></div>
    </div>
   </div>
 </div>
@@ -598,10 +647,19 @@ const LOOPS_FROM=Math.min(...STAGES.filter(s=>s.loops).map(s=>s.from));
    planB (planned-platform bonus),
    ceil (the final score of a near-perfect journey on that level, measured with an automatic player that reacts instantly; the rank thresholds are fractions of it). */
 const LEVELS={
- easy:{id:'easy',name:'Easy',stars:1,col:'#4aa8ff',lite:'#8fcbff',dark:'#1d5a9e',speed:.6,gap:1.25,pat:1.3,lateP:.15,earlyP:.1,late:[3,8],devFrom:4,maint:{every:1.4,dur:.7},branchP:.25,guide:true,planB:20,ceil:35200},
- normal:{id:'normal',name:'Normal',stars:2,col:'#2fd08a',lite:'#86f0bd',dark:'#127a4d',speed:.75,gap:1,pat:1,lateP:.3,earlyP:.15,late:[4,14],devFrom:1,maint:{every:1,dur:1},branchP:.4,guide:null,planB:15,ceil:31900},
- hard:{id:'hard',name:'Hard',stars:3,col:'#ff4d6d',lite:'#ff95a8',dark:'#a3182f',speed:1,gap:.8,pat:.8,lateP:.4,earlyP:.2,late:[6,18],devFrom:1,maint:{every:.75,dur:1.2},branchP:.55,guide:false,planB:10,ceil:28500}
+ easy:{id:'easy',name:'Easy',stars:1,col:'#4aa8ff',lite:'#8fcbff',dark:'#1d5a9e',speed:.6,gap:1.25,pat:1.3,lateP:.15,earlyP:.1,late:[3,8],early:[5,10],devFrom:4,maint:{every:1.4,dur:.7},branchP:.25,guide:true,planB:20,ceil:37700},
+ normal:{id:'normal',name:'Normal',stars:2,col:'#2fd08a',lite:'#86f0bd',dark:'#127a4d',speed:.75,gap:1,pat:1,lateP:.3,earlyP:.15,late:[4,14],early:[6,16],devFrom:1,maint:{every:1,dur:1},branchP:.4,guide:null,planB:15,ceil:33900},
+ hard:{id:'hard',name:'Hard',stars:3,col:'#ff4d6d',lite:'#ff95a8',dark:'#a3182f',speed:1,gap:.8,pat:.8,lateP:.4,earlyP:.2,late:[6,18],early:[8,18],devFrom:1,maint:{every:.75,dur:1.2},branchP:.55,guide:false,planB:10,ceil:29800}
 };
+/* The Daily challenge: a level of its own (Normal's rules) whose timetable is the same for everyone on a given day. Everything random that makes up a round (the timetable, delays, the VIP, the branch sides, the goals, the maintenance, the extra trains)
+   is drawn from a generator seeded by the date and the round, so two players see the same journey and can compare scores. Its progress belongs to one date; a new day starts a new journey. */
+LEVELS.daily=Object.assign({},LEVELS.normal,{id:'daily',name:'Daily',stars:2,col:'#ffc23d',lite:'#ffe08a',dark:'#a8780a'});
+const hashStr=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+const mulberry=a=>()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^a>>>15,1|a);t=(t+Math.imul(t^t>>>7,61|t))^t;return((t^t>>>14)>>>0)/4294967296};
+function withSeed(seed,fn){const orig=Math.random;Math.random=mulberry(seed);try{return fn()}finally{Math.random=orig}}
+const todayStr=()=>new Date().toISOString().slice(0,10); // the same date for everyone (UTC)
+const dailyDate=()=>{try{return localStorage.getItem('sm_daily_date')||todayStr()}catch(e){return todayStr()}};
+const dailySeed=round=>hashStr(dailyDate()+'#'+round);
 let LEVEL='normal';try{const v=localStorage.getItem('sm_level');if(LEVELS[v])LEVEL=v}catch(e){}
 let LV=LEVELS[LEVEL];
 const Kof=(b,id)=>id==='normal'?b:b+'_'+id; // storage key of a level: Normal keeps the original keys, so earlier saves carry over
@@ -609,7 +667,12 @@ const K=b=>Kof(b,LEVEL);
 /* Which side has the branch this round. The first branch round (7) has it on the east exit (trains from the west). Then, until both sides have one (bothFrom, round 13), it changes from round to round:
    rounds 8 to 12 get a shuffled mix of east and west exits (3 of one, 2 of the other), the shuffle fixed for the whole journey by a seed saved with the level's progress, so replaying a round keeps its side. */
 let BSEED=0;
+function dailyRefresh(){ // a new day starts a new Daily journey (yesterday's unfinished one is dropped; its finished result stays in the leaderboard)
+ const t=todayStr();let d='';try{d=localStorage.getItem('sm_daily_date')||''}catch(e){}
+ if(d!==t){clearProgress();try{localStorage.setItem('sm_daily_date',t)}catch(e){}}
+}
 function bseed(){
+ if(LEVEL==='daily')return hashStr('branch'+dailyDate());
  if(!BSEED){try{BSEED=parseInt(localStorage.getItem(K('sm_bseed')),10)||0}catch(e){}}
  if(!BSEED){BSEED=1+Math.floor(Math.random()*2147483000);if(!DEMO)try{localStorage.setItem(K('sm_bseed'),String(BSEED))}catch(e){}}
  return BSEED;
@@ -741,14 +804,18 @@ function applyStageInfo(st,round){
    - after a round that opened a new platform / loop / through line, the new piece pulses with a NEW tag for HI_SECS seconds. */
 const HI_SECS=10; // an upgrade indication and animation shows only for 10 seconds of a round, then stops cleanly
 const pulse=()=>.5+.5*Math.sin(performance.now()/180);
-function reset(round,score){
+function reset(round,score){ // on the Daily challenge the whole round is built from a generator seeded by the date and the round
+ if(LEVEL==='daily'&&!DEMO)return withSeed(dailySeed(round||1),()=>resetCore(round,score));
+ return resetCore(round,score);
+}
+function resetCore(round,score){
  round=round||1;score=score||0;const Q=quotaFor(round),st=stageFor(round);const prev=S;
- S={t:0,spawnT:1.2,num:101,trains:[],claims:{E:[],W:[]},score:score,roundStart:score,round:round,quota:Q,remaining:{...Q},completed:{local:0,express:0,goods:0,nonstop:0},total:Object.values(Q).reduce((a,b)=>a+b,0),over:false,done:0,held:0,pops:[],flash:null,log:[],lossHeld:0,bestAtStart:best,stage:st,branches:branchSidesFor(round,st),maint:null,satSum:0,satN:0,effSum:0,effN:0,effIdle:0,effBlock:0,brSeen:0,brGiven:0,vipWarned:false,vipDone:false,
+ S={t:0,spawnT:1.2,num:101,trains:[],claims:{E:[],W:[]},score:score,roundStart:score,round:round,quota:Q,remaining:{...Q},completed:{local:0,express:0,goods:0,nonstop:0},total:Object.values(Q).reduce((a,b)=>a+b,0),over:false,done:0,held:0,pops:[],flash:null,log:[],lossHeld:0,bestAtStart:best,stage:st,branches:branchSidesFor(round,st),streak:0,bestStreak:0,maxWait:0,planMiss:0,lateCount:0,gapCount:0,sidingUsed:0,earlyParked:0,goalsShown:false,goals:[],maint:null,satSum:0,satN:0,effSum:0,effN:0,effIdle:0,effBlock:0,brSeen:0,brGiven:0,vipWarned:false,vipDone:false,
     particles:[],
     closeT:st.maint?rnd(maintOf(st).first[0],maintOf(st).first[1]):1e9,
     vipAt:(round>=6&&totalFor(round)>=4&&Math.random()<.7)?rnd(25,55):-1,
     lanes:LANES.map((l,i)=>({...l,idx:i,x0:(W-l.len)/2,busy:null,crowd:Math.floor(rnd(3,8)),pax:[],glow:0,enabled:st.lanes.includes(i),closed:false,closedT:0,warnT:0,maintKind:null}))};
- S.sched=buildSchedule();planPlatforms();
+ S.sched=buildSchedule();planPlatforms();S.goals=pickGoals();
  S.loopCount=loopKs().length;
  // What opened since the previous round (nothing on the very first load, or when a round is simply replayed)?
  S.newLanes=prev&&prev.lanes?S.lanes.filter((l,i)=>l.enabled&&!prev.lanes[i].enabled).map(l=>l.idx):[];
@@ -765,7 +832,7 @@ function reset(round,score){
 let sayTimer=0;
 function say(t,kind){clearTimeout(sayTimer);if(t&&kind==='bad')sfx('red');capEl.textContent=t;capEl.className='toast'+(kind?' '+kind:'')+(t?' show':'');if(t)sayTimer=setTimeout(()=>capEl.classList.remove('show'),Math.min(9000,(kind==='bad'?3500:2500)+Math.max(0,t.length-60)*45))}
 let anncTimer=0;
-function announce(msg){const el=document.getElementById('annc');if(!el)return;el.textContent='📢 '+msg;
+function announce(msg,icon){const el=document.getElementById('annc');if(!el)return;el.textContent=(icon||'📢')+' '+msg;
  // sit in the free space of the top row, between the buttons and the score boxes, so nothing covers it and it covers nothing
  {const sg=document.querySelector('.seg'),st=document.querySelector('.stats'),sr=el.parentElement.getBoundingClientRect();
   if(sg&&st&&!document.body.classList.contains('clean-mode')){const a=sg.getBoundingClientRect(),b=st.getBoundingClientRect(),gap=b.left-a.right;
@@ -819,6 +886,29 @@ function releaseAll(t){for(const e of ['E','W'])S.claims[e]=S.claims[e].filter(c
 /* Penalties are 75% of their original size (PEN). r0 rounds away from zero so -37.5 shows as -38 everywhere. */
 const PEN=.75,r0=x=>Math.sign(x)*Math.round(Math.abs(x));
 const MINGAP=60,BRAKE=140,GAPPEN=-20*PEN,WRONGPLAT=-50*PEN,WAITRATE=3*PEN,LATERATE=2*PEN,HELDRATE=.5*PEN;
+/* Round goals: one or two optional goals per round (one in round 1), chosen from what the round offers. Each one achieved pays GOAL_B when the round is passed.
+   'avoid' goals (no train waits over 6 s, ...) are decided at the end of the round and fail the moment they are broken; 'reach' goals (a streak of 5, use a siding, ...) are done as soon as they are reached. */
+const GOAL_B=50;
+const GOAL_POOL=[
+ {id:'wait',kind:'avoid',text:'No train waits over 6 s at the signal',ok:s=>s.maxWait<=6,bad:s=>s.maxWait>6},
+ {id:'plan',kind:'avoid',text:'Every train on its planned platform',ok:s=>s.planMiss===0,bad:s=>s.planMiss>0},
+ {id:'ontime',kind:'avoid',text:'No train overstays at a platform',ok:s=>s.lateCount===0,bad:s=>s.lateCount>0},
+ {id:'gap',kind:'avoid',text:'No close-following citations',ok:s=>s.gapCount===0,bad:s=>s.gapCount>0,minRound:2},
+ {id:'streak',kind:'reach',text:'A streak of 5 perfect trains',ok:s=>s.bestStreak>=5,minTrains:7},
+ {id:'siding',kind:'reach',text:'Use a siding',ok:s=>s.sidingUsed>0,need:'siding'},
+ {id:'early',kind:'reach',text:'Park an early train in a siding',ok:s=>s.earlyParked>0,need:'early'}
+];
+const goalDef=id=>GOAL_POOL.find(g=>g.id===id);
+function pickGoals(){
+ const early=S.sched.some(e=>e.dev<=-2&&!TT[e.key].nonstop);
+ const pool=GOAL_POOL.filter(g=>(!g.minRound||S.round>=g.minRound)&&(!g.minTrains||S.total>=g.minTrains)&&(g.need!=='siding'||S.stage.loops)&&(g.need!=='early'||(S.stage.loops&&early)));
+ const n=S.round<2?1:2,out=[];
+ while(out.length<n&&pool.length)out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0].id);
+ return out;
+}
+function goalState(id){const g=goalDef(id);if(g.kind==='reach')return g.ok(S)?'done':(S.over?'fail':'open');return g.bad(S)?'fail':(S.over?'done':'open')}
+const streakBonus=n=>n<2?0:Math.min(25,5*(n-1)); // +5 for the 2nd perfect train in a row, +10 for the 3rd ... up to +25
+const VIP_COL='#a45cf0'; // a VIP train is royal purple with gold trim
 const SATB_MIN=50,SATB_MAX=200,VIPBONUS=150,VIPLATE=-50*PEN; // satisfaction bonus points at 90% / 100%; VIP rewards
 const PROMPT=3; // share of trains running late / early; seconds that count as "promptly" when recovering a late train
 const EFF_FROM=80,EFFB_MIN=40,EFFB_MAX=150,EFF_GRACE=2.5,EFF_RATE=8; // efficiency: bonus from 80%; grace seconds before delay counts; points lost per second of avoidable delay
@@ -915,7 +1005,7 @@ function buildSchedule(){
  const out=[];let tc=1.2;
  keys.forEach((key,idx)=>{
   const r=Math.random();let dev=0;
-  if(S.round>=LV.devFrom){if(r<LV.lateP)dev=Math.round(rnd(LV.late[0],LV.late[1]));else if(r<LV.lateP+LV.earlyP)dev=-Math.round(rnd(2,6))}
+  if(S.round>=LV.devFrom){if(r<LV.lateP)dev=Math.round(rnd(LV.late[0],LV.late[1]));else if(r<LV.lateP+LV.earlyP)dev=-Math.round(rnd(LV.early[0],LV.early[1]))}
   out.push({id:idx,t:Math.max(1.2,tc+dev),sched:tc,dev,side:Math.random()<.5?'E':'W',key,dest:'main',vip:false,spawned:false});
   tc+=Math.max(5,10-tc/40)*rnd(.8,1.2)*LV.gap;
  });
@@ -926,7 +1016,12 @@ function buildSchedule(){
   const el=eligible.filter(e=>e.side===sd);
   if(el.length&&!el.some(e=>e.dest==='branch'))el[Math.min(1,el.length-1)].dest='branch';
  }
- if(S.vipAt>0){const v=out.find(e=>e.t>=S.vipAt&&e.key!=='goods');if(v)v.vip=true} // one VIP train from round 6
+ if(S.vipAt>0){ // at most one VIP train in a round, from round 6. Where non-stop trains exist (round 7 on) it is a coin flip between a stopping VIP and a non-stop VIP.
+  const wantNon=S.stage.types.includes('nonstop')&&Math.random()<.5;
+  const pickVip=non=>out.find(e=>e.t>=S.vipAt&&(non?e.key==='nonstop':(e.key!=='goods'&&e.key!=='nonstop')))||out.find(e=>non?e.key==='nonstop':(e.key!=='goods'&&e.key!=='nonstop'));
+  const v=(wantNon&&pickVip(true))||pickVip(false);
+  if(v){v.vip=true;v.vipKind=v.key==='nonstop'?'nonstop':'stop'}
+ }
  return out;
 }
 function spawnEntry(e){
@@ -937,11 +1032,12 @@ function spawnEntry(e){
  // From round 6 one train per round may be a VIP: shorter patience, a bonus if it is cleared quickly and leaves on time.
  t.sched=e;t.lateBy=Math.max(0,S.t-e.t);t.planSat=0; // how long it was held outside before it could come in
  t.dev=e.dev||0;
- if(t.dev<=-2)t.pat+=Math.min(6,-t.dev); // running early: it has time in hand, so it can wait
+ t.early=t.dev<=-2; // running early: it may wait outside, or in a siding, without penalty until its scheduled time; parking it in a siding earns a bonus
+ // // running early: it has time in hand, so it can wait
  if(t.dev>=2){t.lateSat=Math.min(25,t.dev*2);t.satLoss+=t.lateSat} // running late: its passengers are already unhappy
  if(e.vip){
-  t.vip=true;t.pat*=.6;if(t.buf)t.buf*=.7;S.vipDone=true;
-  say('★ VIP train '+t.num+' ("'+type.label+'") is on its way: clear it quickly for a bonus!','good');sfx('vip');
+  t.vip=true;t.vipKind=type.nonstop?'nonstop':'stop';if(type.nonstop)t.pat=6*LV.pat;else t.pat*=.6;if(t.buf)t.buf*=.7; // a stopping VIP has less patience than usual; a non-stop VIP gets 6 s at the signal (a normal non-stop train has 3 s) because it needs both junctions freeS.vipDone=true;
+  say(t.vipKind==='nonstop'?'★ VIP non-stop train '+t.num+' is on its way: clear it onto its through line at once and never slow it, for a bonus!':'★ VIP train '+t.num+' ("'+type.label+'") is on its way: clear it quickly and send it on time, for a bonus!','good');sfx('vip');
  }
  // Branch destinations: some trains from a side with a branch line are bound for it. In the first round with a branch, at least one is.
  t.dest=e.dest;t.exitChoice=branchOn(sd)&&!type.nonstop;
@@ -962,10 +1058,11 @@ function topUp(){
  if(S.sched.reduce((n,e)=>n+(e.spawned?0:1),0)>=3||S.sched.length>=S.total*2+4)return;
  const need={};let sum=0;for(const k in S.quota){const n=S.quota[k]-S.completed[k];if(n>0){need[k]=n;sum+=n}}
  if(!sum)return;
+ if(LEVEL==='daily'&&!topUp.seeded){topUp.seeded=true;try{return withSeed(hashStr(dailyDate()+'#'+S.round+'#t'+S.sched.length),topUp)}finally{topUp.seeded=false}}
  let r=Math.random()*sum,key=null;for(const k in need){key=k;r-=need[k];if(r<=0)break}
  const last=S.sched.reduce((m,e)=>Math.max(m,e.sched),0),tc=Math.max(last,S.t)+Math.max(5,10-last/40)*rnd(.8,1.2)*LV.gap;
  let dev=0;const q=Math.random();
- if(S.round>=LV.devFrom){if(q<LV.lateP)dev=Math.round(rnd(LV.late[0],LV.late[1]));else if(q<LV.lateP+LV.earlyP)dev=-Math.round(rnd(2,6))}
+ if(S.round>=LV.devFrom){if(q<LV.lateP)dev=Math.round(rnd(LV.late[0],LV.late[1]));else if(q<LV.lateP+LV.earlyP)dev=-Math.round(rnd(LV.early[0],LV.early[1]))}
  const e={id:S.sched.length,t:Math.max(S.t+1.5,tc+dev),sched:tc,dev,side:Math.random()<.5?'E':'W',key,dest:'main',vip:false,spawned:false};
  if(branchOn(e.side)&&!TT[key].nonstop&&Math.random()<LV.branchP)e.dest='branch';
  S.sched.push(e);e.plat=assignPlat(e);e.plat0=e.plat;S.sched.sort((a,b)=>a.t-b.t);
@@ -1092,10 +1189,12 @@ function checkExit(t){
 function commitEntry(t,tg){
  const early=t.state==='arriving'; // cleared before it has stopped: it does not stop at the signal
  if(early)t.waitT=t.lateBy||0; // a train that was held outside is still late
+ if(t.state!=='loop')S.maxWait=Math.max(S.maxWait,t.waitT); // for the round goal about waiting at the signal
+ if(tg.kind==='loop')S.sidingUsed++;
  const b=buildPath(t,tg);
  t.path=b.path;t.sClearIn=b.path.cum[b.rp.map[b.clearIn]];t.sStop=b.path.cum[b.rp.map[b.stop]];
  if(tg.kind==='lane'&&t.sched&&t.sched.plat!=null&&!t.type.nonstop&&t.sched.plat!==tg.lane.idx){
-  const was=S.lanes[t.sched.plat];t.sched.plat=tg.lane.idx;t.sched.chg=true;
+  const was=S.lanes[t.sched.plat];t.sched.plat=tg.lane.idx;t.sched.chg=true;S.planMiss++;
   announce('Platform change: '+t.num+' '+t.type.label+' now on '+tg.lane.name+(was?' (was '+was.name+')':''));
  }
  t.target=tg;t.mode=b.mode;t.fromLoop=t.state==='loop';t.loopFrom=t.loopK;
@@ -1103,6 +1202,7 @@ function commitEntry(t,tg){
  else t.loopK=tg.k;
  claim(t.side,t,'entry',entrySeg(t,tg));t.entryLock=true;
  if(t.mode==='lane'&&t.type.nonstop){claim(other(t.side),t,'exit',fanSeg('exit',other(t.side),tg.lane));t.exitLock=true;t.exitSide=other(t.side)}
+ if(tg.kind==='loop'&&t.early&&t.sched&&S.t<t.sched.sched)t.parkedEarly=true; // an early train put in a siding: a bonus if it then reaches its platform on time
  if(early){t.state='go'}else{t.state='set';t.setT=.9} // the signal turns green; a train that was already moving keeps rolling
  // quick dispatch bonus
  const bonus=Math.max(0,30-t.waitT*3);
@@ -1146,13 +1246,75 @@ function finalSummary(){
  const score=Math.round(S.score),rk=rankFor(score);
  return{score,lvl:LEVEL,rank:rk.name,tier:rk.tier,desc:rk.desc,sat:Math.round(avg('sat')),eff:Math.round(avg('eff')),trains:TRAINS_TOTAL};
 }
+/* ---------- leaderboard and challenges ----------
+   A top-10 list per level, kept on this device only (a name is optional). A shared score carries a link with ?c=score&l=level&n=name: whoever opens it sees
+   the challenge on the welcome page and, after their own journey, whether they beat it. Nothing is sent anywhere. */
+const lbLoad=id=>{try{const a=JSON.parse(localStorage.getItem(Kof('sm_lb',id))||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
+const lbSave=(id,a)=>{try{localStorage.setItem(Kof('sm_lb',id),JSON.stringify(a))}catch(e){}};
+const playerName=()=>{try{return(localStorage.getItem('sm_name')||'').slice(0,16)}catch(e){return''}};
+let FINPOS=0,LAST_LB=null; // the finished journey's place in the top 10 (0 = not in it) and its entry
+function lbAdd(f){
+ if(DEMO)return 0;
+ const a=lbLoad(LEVEL),e={s:f.score,r:f.rank,t:f.tier,d:Date.now(),n:playerName()};
+ a.push(e);a.sort((x,y)=>y.s-x.s||x.d-y.d);const top=a.slice(0,10);lbSave(LEVEL,top);LAST_LB={lvl:LEVEL,d:e.d};
+ return top.indexOf(e)+1; // 0 when it did not make the top 10
+}
+let CHAL=null; // a challenge from a shared link: {score, level, name}
+try{
+ const q=new URLSearchParams(location.search),c=parseInt(q.get('c'),10),l=q.get('l');
+ if(c>0&&LEVELS[l]&&(l!=='daily'||q.get('dd')===todayStr())){CHAL={score:c,level:l,name:(q.get('n')||'').slice(0,16)}; // a Daily challenge only counts on the day it was made, when everyone has the same timetable
+  localStorage.setItem('sm_chal',JSON.stringify(CHAL));if(LEVEL!==l)applyLevel(l)} // open the challenge's level
+ else{const s=localStorage.getItem('sm_chal');if(s){const o=JSON.parse(s);if(o&&o.score>0&&LEVELS[o.level])CHAL=o}}
+}catch(e){}
+function challengeUrl(f){const n=playerName();return SHARE_URL+(SHARE_URL.indexOf('?')<0?'?':'&')+'c='+f.score+'&l='+f.lvl+(f.lvl==='daily'?'&dd='+dailyDate():'')+(n?'&n='+encodeURIComponent(n):'')}
+/* ---------- achievements ----------
+   Badges kept on the device (sm_ach: id -> time unlocked). A banner announces each one as it is earned; they are listed under the Badges tab of the leaderboard. */
+const ACH=[
+ {id:'journey',icon:'🏁',name:'All the way',desc:'Finish all 15 rounds'},
+ {id:'spotless',icon:'✨',name:'Spotless',desc:'Pass a round without losing a single point'},
+ {id:'streak10',icon:'🔥',name:'On fire',desc:'A streak of 10 perfect trains'},
+ {id:'goals',icon:'🎯',name:'Goal getter',desc:'Achieve every goal of a round'},
+ {id:'early',icon:'🕊️',name:'Early bird',desc:'Earn the early-train parking bonus'},
+ {id:'vip',icon:'👑',name:'Royal service',desc:'Earn a bonus for a stopping VIP'},
+ {id:'vipnon',icon:'🚄',name:'Fast track',desc:'Earn a bonus for a non-stop VIP'},
+ {id:'junction',icon:'🔀',name:'Junction master',desc:'Pass round 13, with branches on both sides'},
+ {id:'chief',icon:'🏆',name:'Chief Controller',desc:'Reach the top rank'},
+ {id:'hard',icon:'💪',name:'Hard hat',desc:'Finish a journey on Hard'},
+ {id:'daily',icon:'📅',name:'Daily driver',desc:'Finish a Daily journey'},
+ {id:'challenger',icon:'⚔️',name:'Challenger',desc:'Beat a friend\'s challenge'},
+ {id:'colours',icon:'🌈',name:'Three colours',desc:'Finish a journey on Easy, Normal and Hard'}
+];
+const achLoad=()=>{try{return JSON.parse(localStorage.getItem('sm_ach')||'{}')||{}}catch(e){return{}}};
+function achGrant(id){
+ if(DEMO)return;const have=achLoad();if(have[id])return;
+ have[id]=Date.now();try{localStorage.setItem('sm_ach',JSON.stringify(have))}catch(e){}
+ const a=ACH.find(x=>x.id===id);if(a){announce('Achievement: '+a.name+' – '+a.desc,'🏅');sfx('vip')}
+}
+function showLeaderboard(id){
+ id=(id==='badges'||LEVELS[id])?id:LEVEL;
+ const el=document.getElementById('lbov');if(!el)return;
+ const have=achLoad();
+ document.getElementById('lbtabs').innerHTML=Object.keys(LEVELS).map(k=>{const L=LEVELS[k];return '<button type="button" class="lbtab'+(k===id?' on':'')+'" data-lv="'+k+'" style="--lc:'+L.col+'">'+'★'.repeat(L.stars)+' '+L.name+'</button>'}).join('')+'<button type="button" class="lbtab'+(id==='badges'?' on':'')+'" data-lv="badges" style="--lc:#ffc23d">🏅 Badges '+ACH.filter(a=>have[a.id]).length+'/'+ACH.length+'</button>';
+ if(id==='badges'){
+  document.getElementById('lbrows').innerHTML='<div class="achg">'+ACH.map(a=>'<div class="ach'+(have[a.id]?' on':'')+'"><span class="ai">'+(have[a.id]?a.icon:'🔒')+'</span><b>'+esc(a.name)+'</b><small>'+esc(a.desc)+'</small></div>').join('')+'</div>';
+  for(const b of document.querySelectorAll('#lbtabs .lbtab'))b.onclick=()=>showLeaderboard(b.dataset.lv);
+  el.hidden=false;return;
+ }
+ const a=lbLoad(id);
+ document.getElementById('lbrows').innerHTML=a.length?'<table class="lbt"><thead><tr><th>#</th><th>Name</th><th>Score</th><th>Rank</th><th>Date</th></tr></thead><tbody>'+a.map((e,i)=>'<tr'+(LAST_LB&&LAST_LB.lvl===id&&LAST_LB.d===e.d?' class="me"':'')+'><td>'+(i+1)+'</td><td>'+esc(e.n||'Player')+'</td><td>'+(+e.s).toLocaleString('en-US')+'</td><td>'+esc(e.r||'')+'</td><td>'+new Date(e.d).toLocaleDateString()+'</td></tr>').join('')+'</tbody></table>':'<p class="lbnone">No finished journeys on this level yet. Finish all 15 rounds to enter the list.</p>';
+ for(const b of document.querySelectorAll('#lbtabs .lbtab'))b.onclick=()=>showLeaderboard(b.dataset.lv);
+ el.hidden=false;
+}
 function saveFinal(){ // the journey is complete: remember the result and start fresh next time
  if(DEMO)return;
- try{localStorage.setItem(K('sm_final'),JSON.stringify(finalSummary()));localStorage.removeItem(K('sm_round'));localStorage.removeItem(K('sm_score'));localStorage.removeItem(K('sm_bseed'));BSEED=0}catch(e){}
+ const fs=finalSummary();FINPOS=lbAdd(fs);
+ achGrant('journey');if(fs.tier>=6)achGrant('chief');if(fs.lvl==='hard')achGrant('hard');if(fs.lvl==='daily')achGrant('daily');
+ try{const done=JSON.parse(localStorage.getItem('sm_done')||'[]');if(!done.includes(fs.lvl))done.push(fs.lvl);localStorage.setItem('sm_done',JSON.stringify(done));if(['easy','normal','hard'].every(k=>done.includes(k)))achGrant('colours')}catch(e){}
+ try{localStorage.setItem(K('sm_final'),JSON.stringify(fs));localStorage.removeItem(K('sm_round'));localStorage.removeItem(K('sm_score'));localStorage.removeItem(K('sm_bseed'));BSEED=0}catch(e){}
 }
 let FIN=null;
-const LV_EMOJI={easy:'🔵★',normal:'🟢★★',hard:'🔴★★★'};
-function shareMessage(f){return 'I finished Station Master '+(LV_EMOJI[f.lvl]||'')+' as '+f.rank+' with '+f.score.toLocaleString('en-US')+' points ('+f.sat+'% passenger satisfaction, '+f.eff+'% efficiency). Can you beat my score?'+(SHARE_URL?' '+SHARE_URL:'')}
+const LV_EMOJI={easy:'🔵★',normal:'🟢★★',hard:'🔴★★★',daily:'🟡📅'};
+function shareMessage(f){return 'I finished Station Master '+(LV_EMOJI[f.lvl]||'')+' as '+f.rank+' with '+f.score.toLocaleString('en-US')+' points ('+f.sat+'% passenger satisfaction, '+f.eff+'% efficiency). Can you beat my score?'+(SHARE_URL?' '+challengeUrl(f):'')}
 function showFinale(){
  const f=FIN=finalSummary(),$=id=>document.getElementById(id);
  $('roundEnd').hidden=true;
@@ -1164,6 +1326,12 @@ function showFinale(){
  $('fScore').textContent=f.score.toLocaleString('en-US');
  $('fSat').textContent=f.sat+'%';$('fEff').textContent=f.eff+'%';$('fTrains').textContent=f.trains;$('fBest').textContent=Math.max(best,f.score).toLocaleString('en-US');
  $('fNote').textContent='';
+ { // leaderboard place, the optional name, and the result of a challenge
+  const nm=$('fName');nm.value=playerName();
+  let pos=FINPOS?'Leaderboard: place '+FINPOS+' of the top 10 on this level.':'Not in the top 10 on this level yet.';
+  if(CHAL&&CHAL.level===f.lvl){pos+=f.score>CHAL.score?' You beat '+(CHAL.name||'your friend')+'\'s '+CHAL.score.toLocaleString('en-US')+'!':' '+(CHAL.score-f.score).toLocaleString('en-US')+' points short of '+(CHAL.name?CHAL.name+'\'s ':'the challenge of ')+CHAL.score.toLocaleString('en-US')+'.';try{localStorage.removeItem('sm_chal')}catch(e){}if(f.score>CHAL.score)achGrant('challenger');CHAL=null}
+  $('fPos').textContent=pos;
+ }
  $('finale').hidden=false;
  confetti(60,'confetti2');jingle('upgrade');
 }
@@ -1202,12 +1370,24 @@ function endRound(){
   const msg=!stars?'Pass the round to earn the efficiency bonus.':ef>=EFF_FROM?'+'+effBonus+' bonus points ('+rule+')':'Below '+EFF_FROM+'%: no bonus this time ('+rule+')';
   const why=(S.effIdle>=.5||S.effBlock>=.5)?' Avoidable delays: '+S.effIdle.toFixed(1)+' s of trains waiting while a right platform was free, '+S.effBlock.toFixed(1)+' s of finished trains blocking a platform.':'';
   document.getElementById('reEff').innerHTML='<h3>Operating efficiency</h3><div class="satbar effbar"><i style="width:'+Math.min(100,ep)+'%"></i><span></span></div><div class="satline"><b class="'+(ef>=EFF_FROM?'pos':'neg')+'">'+ep+'%</b> '+esc(msg)+esc(why)+'</div>';}
- const bonusAll=bonus+effBonus;
+ let goalBonus=0; // round goals
+ {const res=(S.goals||[]).map(id=>({g:goalDef(id),st:goalState(id)}));
+  for(const r of res)if(r.st==='done'&&stars){goalBonus+=GOAL_B;S.score+=GOAL_B;note('goal',GOAL_B,'Round goal: '+r.g.text)}
+  document.getElementById('reGoals').innerHTML=res.length?'<h3>Round goals</h3>'+res.map(r=>'<div class="satline"><b class="'+(r.st==='done'?'pos':'neg')+'">'+(r.st==='done'?'✓':'✗')+'</b> '+esc(r.g.text)+(r.st==='done'&&stars?' <b class="pos">+'+GOAL_B+'</b>':'')+'</div>').join(''):'';}
+ const bonusAll=bonus+effBonus+goalBonus;
  document.getElementById('reText').textContent=S.done+' trains handled, '+Math.round(pts+bonusAll)+' points this round'+(bonusAll>0?' (including '+bonusAll+' bonus points)':'')+(stars?'':'. Score at least 20 points per train on average to pass.');
  noteBest();saveBest();
  if(S.score>0&&Math.round(S.score)>S.bestAtStart)document.getElementById('reText').textContent+='  ★ New best score: '+best+'!';
  document.getElementById('reBtn').textContent=stars?(S.round>=MAX_ROUND?'See final results':'Next round'):'Retry round';
  if(S.lossHeld>=1)note('held',-S.lossHeld,'Trains left waiting outside the station cost points while they queued');
+ if(stars){ // achievements earned by this round, and its highlight line
+  if(S.log.every(e=>e.pts>=0))achGrant('spotless');
+  if(S.goals.length>=2&&S.goals.every(id=>goalState(id)==='done'))achGrant('goals');
+  if(S.round===13)achGrant('junction');
+ }
+ {const hi=[];if(S.bestStreak>=3)hi.push('longest streak '+S.bestStreak+' perfect trains');
+  const top=S.log.filter(e=>e.pts>0&&!['sat','eff','goal'].includes(e.cat)).sort((a,b)=>b.pts-a.pts)[0];if(top&&top.pts>=40)hi.push('best moment: '+(top.tr?top.tr+' – ':'')+top.text+' (+'+top.pts+')');
+  const el=document.getElementById('reHi');if(el)el.textContent=hi.length?'★ Highlight: '+hi.join(' · '):''}
  renderReport();
  // Passing the round may promote the station to the next grade: announce what is being built.
  {const up=document.getElementById('reUp'),nxt=stageFor(S.round+1);
@@ -1229,9 +1409,12 @@ const CATS=[
  ['sat','Passenger Satisfaction Bonus','+'+SATB_MIN+' at 90% average satisfaction, rising to +'+SATB_MAX+' at 100% (only when the round is passed)'],
  ['eff','Operating Efficiency Bonus','+'+EFFB_MIN+' at '+EFF_FROM+'% efficiency, rising to +'+EFFB_MAX+' at 100% (only when the round is passed)'],
  ['plan','Planned Platform Bonus','Bonus points (Easy +'+LEVELS.easy.planB+', Normal +'+LEVELS.normal.planB+', Hard +'+LEVELS.hard.planB+') when a train is brought to the platform shown for it on the timetable board; its passengers are also '+PLAN_SAT+'% happier'],
+ ['goal','Round Goals','+'+GOAL_B+' for each optional goal of the round that you achieved (only when the round is passed)'],
+ ['streak','Streak Bonus','+5 for the second perfect train in a row, rising by 5 up to +25 for every further one (a perfect train: satisfaction 95% or more: right platform, not kept waiting, on time); any other train breaks the streak'],
+ ['early','Early-Train Parking Bonus','Up to +40 for an early train that waited in a siding and then reached its platform on or after its scheduled time without being kept waiting too long'],
  ['recover','Late-Train Recovery Bonus','Up to +40 for a train that arrived late and was sent in and out again promptly (within '+PROMPT+' s each way); it also restores that train\'s passenger satisfaction'],
  ['exit','Misrouted Departure Penalty',r0(BR_WRONG)+' each time a train is sent out along the wrong line (main line or branch)'],
- ['vip','VIP Royal Train Protocol','+'+VIPBONUS+' prestige revenue for punctual clearance; '+r0(VIPLATE)+' penalty if delayed'],
+ ['vip','VIP Royal Train Protocol','+'+VIPBONUS+' prestige revenue for a VIP (purple, with gold trim) handled well: a stopping VIP cleared quickly and sent on time, a non-stop VIP cleared at once and never slowed; '+r0(VIPLATE)+' penalty if delayed'],
  ['held','Approach Congestion Demurrage','-'+(+HELDRATE.toFixed(2))+' per second for congested queues held outside the station']
 ];
 function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
@@ -1281,10 +1464,16 @@ function finishTrain(t){
  const over=t.lossWait/WAITRATE,late=t.lossLate/LATERATE;
  t.sat=Math.min(100,Math.max(0,100-t.satLoss-Math.min(30,over*5)-Math.min(25,late*5)+(t.planSat||0)));
  S.satSum+=t.sat;S.satN++;
+ /* The streak: a train handled perfectly (satisfaction 95% or more: the right platform, nobody kept waiting, on time, no wrong exit or close following) extends it; every perfect train after the first pays a bonus.
+    Any other train breaks it. A train that was already late can only be perfect if it is recovered promptly. */
+ if(t.lossLate>=1)S.lateCount++;
+ if(t.sat>=95){S.streak++;S.bestStreak=Math.max(S.bestStreak,S.streak);if(S.bestStreak>=10)achGrant('streak10');const sb=streakBonus(S.streak);if(sb>0)addScore(sb,W/2,92,'streak '+S.streak,t,'streak')}
+ else{if(S.streak>=3)say('Streak of '+S.streak+' ended.');S.streak=0}
  {const idle=Math.max(0,(t.idleFree||0)-EFF_GRACE),block=Math.max(0,(t.readyT||0)-EFF_GRACE);
   t.eff=Math.max(0,100-EFF_RATE*(idle+block));if(t.recovered)t.eff=Math.min(110,t.eff+Math.min(15,t.dev*1.5)); /* recovering a late train lifts its efficiency */ S.effSum+=t.eff;S.effN++;S.effIdle+=idle;S.effBlock+=block}
- if(t.vip){ // the VIP train: a bonus for being cleared quickly and leaving on time
-  if(t.lossWait<1&&t.lossLate<1){sfx('vip');addScore(VIPBONUS,W/2,70,'VIP on time',t,'vip');say('★ VIP '+t.num+' was on time: +'+VIPBONUS+' points!','good')}
+ if(t.vip){ // the VIP train: a stopping VIP must be cleared quickly and leave on time; a non-stop VIP must be cleared at once and never slowed
+  const ok=t.vipKind==='nonstop'?(t.lossWait<1&&!t.gapHit):(t.lossWait<1&&t.lossLate<1);
+  if(ok){achGrant(t.vipKind==='nonstop'?'vipnon':'vip');sfx('vip');addScore(VIPBONUS,W/2,70,t.vipKind==='nonstop'?'VIP through, no delay':'VIP on time',t,'vip');say('★ VIP '+t.num+(t.vipKind==='nonstop'?' ran through without delay':' was on time')+': +'+VIPBONUS+' points!','good')}
   else addScore(VIPLATE,W/2,70,'VIP delayed',t,'vip');
  }
 }
@@ -1313,7 +1502,10 @@ function tickMaintenance(dt){
   }
  }
  S.closeT-=dt;
- if(S.closeT<=0){S.closeT=rnd(m.every[0],m.every[1]);if(!S.maint)startMaintenance()}
+ if(S.closeT<=0){
+  const go=()=>{S.closeT=rnd(m.every[0],m.every[1]);if(!S.maint)startMaintenance()};
+  if(LEVEL==='daily'){S.mcount=(S.mcount||0)+1;withSeed(hashStr(dailyDate()+'#'+S.round+'#m'+S.mcount),go)}else go();
+ }
 }
 function startMaintenance(){
  const cand=l=>l.enabled&&!l.thru&&l.kind!=='Goods';
@@ -1334,9 +1526,10 @@ function startMaintenance(){
 function update(dt){
  if(S.over)return; // the round is finished: the station stands still behind the report, nothing more is scored (waiting, late or held trains cost nothing, nobody earns anything)
  S.t+=dt;topUp();spawnTick(dt);
+ if(!S.goalsShown&&S.t>.8&&S.goals&&S.goals.length){S.goalsShown=true;announce('Goals: '+S.goals.map(id=>goalDef(id).text).join(' · ')+' (+'+GOAL_B+' each)','🎯')}
  if(S.hiT>0)S.hiT-=dt;
  if(S.stage.maint)tickMaintenance(dt);
- if(S.vipAt>0&&!S.vipWarned&&S.t>=S.vipAt-15){S.vipWarned=true;say('★ A VIP train is due in about 15 seconds: keep a platform free!','good');sfx('vip')}
+ if(S.vipAt>0&&!S.vipWarned){const ve=S.sched.find(e=>e.vip&&!e.spawned);if(ve&&S.t>=ve.t-15){S.vipWarned=true;say(ve.vipKind==='nonstop'?'★ A VIP non-stop train is due in about 15 seconds: keep its through line clear!':'★ A VIP train is due in about 15 seconds: keep a platform free!','good');sfx('vip')}}
  // particles update & emission
  if(!S.particles)S.particles=[];
  for(let i=S.particles.length-1;i>=0;i--){
@@ -1375,14 +1568,16 @@ function update(dt){
   // Keep the minimum gap: slow down for the train ahead. If a train the player cleared has to slow down, that was a planning mistake.
   {const lc=leaderCap(t);t.vcap=lc.cap;t.leader=lc.lead;
    if(lc.lead&&lc.cap<vmax-2&&(t.state==='go'||t.state==='exiting')&&t.gapHit!==lc.lead){
-    t.gapHit=lc.lead;t.satLoss+=15;
+    t.gapHit=lc.lead;t.satLoss+=15;S.gapCount++;
     addScore(GAPPEN,Math.max(10,Math.min(W-10,at(t.path,t.s).x)),at(t.path,t.s).y-30,'too close',t,'gap');
     S.log[S.log.length-1].text=t.num+' '+t.type.label+' was cleared too close behind '+lc.lead.num+' '+lc.lead.type.label+' and had to slow down to keep a safe gap';
     say(t.num+' is too close behind '+lc.lead.num+': keep a gap when you clear trains ('+r0(GAPPEN)+').','bad');
    }}
   if(t.state==='arriving'){t.v=Math.min(vmax,(t.sWait-t.s)*2.2+8,t.vcap);t.s+=t.v*dt;if(t.s>=t.sWait-.5){t.s=t.sWait;t.state='outer';t.v=0;t.waitT=t.lateBy||0;sfx('horn') /* a train that was held outside arrives already late */}}
-  else if(t.state==='outer'||t.state==='loop'){t.waitT+=dt;
-   t.effChk=(t.effChk||0)-dt;if(t.effChk<=0){t.effChk=.1;if(freeRightPlatform(t))t.idleFree=(t.idleFree||0)+.1} // efficiency: a right platform sat free while this train waited
+  else if(t.state==='outer'||t.state==='loop'){
+   const earlyWait=t.early&&t.sched&&S.t<t.sched.sched; // an early train is not yet due: waiting costs it nothing
+   if(!earlyWait)t.waitT+=dt;
+   t.effChk=(t.effChk||0)-dt;if(t.effChk<=0){t.effChk=.1;if(!earlyWait&&freeRightPlatform(t))t.idleFree=(t.idleFree||0)+.1} // efficiency: a right platform sat free while this train waited
    if(t.waitT>t.pat){S.score-=WAITRATE*dt;t.lossWait+=WAITRATE*dt}}
   else if(t.state==='set'){t.setT-=dt;if(t.setT<=0){t.state='go';t.v=10}}
   else if(t.state==='go'){
@@ -1394,6 +1589,7 @@ function update(dt){
      t.s=t.sStop;t.v=0;
      if(t.mode==='loop'){t.state='loop';say(t.num+' '+t.type.label+' is held in siding '+t.loopK+'. Click it again when a platform is free.')}
      else{t.state='dwell';t.dwellT=t.type.dwell;t.readyT=0;const m=matchScore(t,t.lane);t.satLoss+=m.sat;
+      if(t.parkedEarly&&t.sched&&S.t>=t.sched.sched-.5&&t.lossWait<1){const eb=Math.min(40,Math.max(15,Math.round(-t.dev*2.5)));addScore(eb,X(t.side,WAITX),LY(t.lane.idx)-48,'early train parked',t,'early');S.earlyParked++;achGrant('early');say(t.num+' '+t.type.label+' was early, waited in a siding and reached its platform on time: +'+eb+'.','good')}
       if(t.sched){if(t.sched.plat0===t.lane.idx){t.planSat=PLAN_SAT;addScore(LV.planB,X(t.side,WAITX),LY(t.lane.idx)-30,'planned platform',t,'plan')}t.sched.arrived=true}
      if(m.p>=0)sfx('arrive');addScore(m.p,W/2,LY(t.lane.idx)-12,m.why,t,'match');if(m.p<0)say(t.num+' '+t.type.label+' is on '+t.lane.name+': '+m.why+' ('+r0(m.p)+').','bad');else say(t.num+' '+t.type.label+' reached '+t.lane.name+': '+m.why+' (+'+m.p+').','good')}
     }
@@ -1508,7 +1704,7 @@ function selectTrain(t){
  sfx('select');
  sel={train:t,target:null};
  const pn=t.sched&&t.sched.plat!=null&&S.lanes[t.sched.plat]?' Planned: '+S.lanes[t.sched.plat].name+'.':'';
- if(t.state==='outer')say(t.num+' '+t.type.label+' selected.'+pn+' Click a platform, or a siding to hold it.');
+ if(t.state==='outer')say(t.num+' '+t.type.label+' selected.'+pn+(t.early&&t.sched&&S.t<t.sched.sched?' It is early: park it in a siding for a bonus.':' Click a platform, or a siding to hold it.'));
  else if(t.state==='loop')say(t.num+' '+t.type.label+' selected.'+pn+' Click a platform for it.');
  else if(t.state==='ready')say(readyMsg(t));
  else if(t.state==='dwell')say(t.num+' '+t.type.label+' is still boarding.');
@@ -1717,16 +1913,18 @@ function drawTrain(t){
   // 2. Carriage Main Body with 3D Bevel Gradient
   const cg=ctx.createLinearGradient(0,-10,0,10);
   cg.addColorStop(0,'rgba(255,255,255,0.4)');
-  cg.addColorStop(0.18,t.type.col);
-  cg.addColorStop(0.65,t.type.col);
+  const tcol=t.vip?VIP_COL:t.type.col; // a VIP train is royal purple
+  cg.addColorStop(0.18,tcol);
+  cg.addColorStop(0.65,tcol);
   cg.addColorStop(1,'rgba(0,0,0,0.45)');
-  ctx.fillStyle=t.type.col;
+  ctx.fillStyle=tcol;
   rr(-CAR/2+1,-9.5,CAR-2,19,3.5);ctx.fill();
   ctx.fillStyle=cg;
   rr(-CAR/2+1,-9.5,CAR-2,19,3.5);ctx.fill();
 
-  // livery stripe and bogies
+  // livery stripe and bogies (a VIP also carries gold trim along both edges)
   ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(-CAR/2+1,3.2,CAR-2,1.6);
+  if(t.vip){ctx.fillStyle='#ffc23d';ctx.fillRect(-CAR/2+1,-9.5,CAR-2,1.5);ctx.fillRect(-CAR/2+1,8,CAR-2,1.5)}
   ctx.fillStyle='rgba(6,18,22,.7)';ctx.fillRect(-CAR/2+3,-10.6,4,1.4);ctx.fillRect(CAR/2-7,-10.6,4,1.4);ctx.fillRect(-CAR/2+3,9.2,4,1.4);ctx.fillRect(CAR/2-7,9.2,4,1.4);
   // Colour-blind pattern per train type: express = diagonal stripes, non-stop = dark edge bands (local plain, goods has container wells)
   if(CB){
@@ -1803,10 +2001,12 @@ function drawTrain(t){
  }
  const h=at(t.path,t.s);
  if(h.x>0&&h.x<W-6){
-  const lx=t.side==='E'?Math.max(2,h.x):Math.min(W-170,h.x-110);
+  let lx=t.side==='E'?Math.max(2,h.x):Math.min(W-170,h.x-110);
   ctx.fillStyle='#ffffff';ctx.font='700 17px "Chakra Petch",sans-serif';
-  let tag='';if(t.state==='ready')tag=t.readyT>t.buf?' · overdue, losing points':' · ready, leave within '+Math.ceil(t.buf-t.readyT)+'s';else if(t.state==='dwell')tag=' · '+(t.key==='goods'&&t.lane&&t.lane.kind==='Goods'?(t.gmode==='load'?'loading ':'unloading '):'boarding ')+Math.ceil(t.dwellT)+'s';else if(t.leader&&t.vcap<t.type.vmax-2&&(t.state==='go'||t.state==='exiting'||t.state==='arriving'))tag=' · keeping gap';
-  ctx.fillText((t.vip?'★ ':'')+t.num+' '+t.type.label+(t.exitChoice&&t.dest==='branch'?' → Branch':'')+(t.dev>=2?' · late '+t.dev+'s':t.dev<=-2?' · early '+(-t.dev)+'s':'')+tag,lx,h.y-26);
+  let tag='';if(t.state==='ready')tag=t.readyT>t.buf?' · overdue, losing points':' · ready, leave within '+Math.ceil(t.buf-t.readyT)+'s';else if(t.state==='dwell')tag=' · '+(t.key==='goods'&&t.lane&&t.lane.kind==='Goods'?(t.gmode==='load'?'loading ':'unloading '):'boarding ')+Math.ceil(t.dwellT)+'s';else if(t.early&&t.sched&&(t.state==='outer'||t.state==='loop')&&S.t<t.sched.sched)tag=' · can wait '+Math.ceil(t.sched.sched-S.t)+'s';else if(t.leader&&t.vcap<t.type.vmax-2&&(t.state==='go'||t.state==='exiting'||t.state==='arriving'))tag=' · keeping gap';
+  const ltxt=(t.vip?'★ ':'')+t.num+' '+t.type.label+(t.exitChoice&&t.dest==='branch'?' → Branch':'')+(t.dev>=2?' · late '+t.dev+'s':t.dev<=-2?' · early '+(-t.dev)+'s':'')+tag;
+  lx=Math.max(2,Math.min(lx,W-ctx.measureText(ltxt).width-6)); // keep the whole label on screen
+  ctx.fillText(ltxt,lx,h.y-26);
   if(t.state==='dwell'||t.state==='ready'){
    let f,col;
    if(t.state==='dwell'){f=1-t.dwellT/t.type.dwell;col=CB?'#bbbbbb':'#5fb0ff'}
@@ -1814,7 +2014,10 @@ function drawTrain(t){
    else{f=1;col=barBad()}
    ctx.fillStyle='#0b1015';ctx.fillRect(lx,h.y-21,80,6);ctx.fillStyle=col;ctx.fillRect(lx,h.y-21,80*Math.max(0,Math.min(1,f)),6);
   }
-  if(t.state==='outer'||t.state==='loop'){const f=Math.max(0,1-t.waitT/t.pat);ctx.fillStyle='#0b1015';ctx.fillRect(lx,h.y-21,60,6);ctx.fillStyle=f>.5?barGood():f>.2?barMid():barBad();ctx.fillRect(lx,h.y-21,60*f,6)}
+  if(t.state==='outer'||t.state==='loop'){
+   if(t.early&&t.sched&&S.t<t.sched.sched){const f=Math.min(1,(t.sched.sched-S.t)/Math.max(1,-t.dev));ctx.fillStyle='#0b1015';ctx.fillRect(lx,h.y-21,60,6);ctx.fillStyle='#4aa8ff';ctx.fillRect(lx,h.y-21,60*f,6)} // early: a blue bar counting down to its scheduled time
+   else{const f=Math.max(0,1-t.waitT/t.pat);ctx.fillStyle='#0b1015';ctx.fillRect(lx,h.y-21,60,6);ctx.fillStyle=f>.5?barGood():f>.2?barMid():barBad();ctx.fillRect(lx,h.y-21,60*f,6)}
+  }
  }
 }
 function routePoints(t,tg){const b=buildPath(t,tg);return b.orig.slice(b.routeFrom,b.routeTo+1)}
@@ -2129,7 +2332,7 @@ const boardCache={W:'',E:''};
 function boardHtml(end){
  const other=end==='W'?'E':'W';
  // a table of three columns: train, platform, time
- const row=(k,txt,plat,time,cls,hl)=>'<div class="br'+(hl?' hl':'')+'"><span class="bt"><i style="background:'+TT[k].col+'"></i><span>'+txt+'</span></span><span class="bp">'+(plat||'–')+'</span><b class="'+(cls||'')+'">'+time+'</b></div>';
+ const row=(k,txt,plat,time,cls,hl,col)=>'<div class="br'+(hl?' hl':'')+'"><span class="bt"><i style="background:'+(col||TT[k].col)+'"></i><span>'+txt+'</span></span><span class="bp">'+(plat||'–')+'</span><b class="'+(cls||'')+'">'+time+'</b></div>';
  const selT=sel.train;
  const pn=n=>n==='THROUGH'?'THRU':n.replace(' ','');
  const pt=e=>{if(!e||e.plat==null||!S.lanes[e.plat])return '';return '<u'+(e.chg?' class="chg"':'')+'>'+pn(S.lanes[e.plat].name)+'</u>'};
@@ -2138,7 +2341,7 @@ function boardHtml(end){
  const dv=d=>d>=2?' <em class="late">'+(compact?'+'+d:'late '+d+'s')+'</em>':d<=-2?' <em class="early">'+(compact?'−'+(-d):'early '+(-d)+'s')+'</em>':'';
  // One list per end, in the order things need doing here. An arrow shows what: ▸ a train arriving at this end (clear it in), ◂ a train leaving from this end (clear it out).
  const items=[]; // [sort key, row html, is the selected train]
- const add=(key,k,arrow,txt,plat,time,cls,t)=>items.push([key,row(k,'<s>'+arrow+'</s>'+txt,plat,time,cls,t&&t===selT),!!t&&t===selT]);
+ const add=(key,k,arrow,txt,plat,time,cls,t,v)=>items.push([key,row(k,'<s>'+arrow+'</s>'+txt,plat,time,cls,t&&t===selT,(v||(t&&t.vip))?VIP_COL:null),!!t&&t===selT]);
  for(const t of S.trains){
   const lbl=(t.vip?'★ ':'')+TT[t.key].label+dtag(t.dest)+dv(t.dev);
   if(t.side===end&&['arriving','outer','loop','set','go'].includes(t.state)){
@@ -2156,7 +2359,7 @@ function boardHtml(end){
  }
  for(const e of S.sched){ // trains not yet in: due at this end
   if(e.spawned||e.side!==end)continue;const eta=e.t-S.t;
-  add(eta<=0?-2.5:eta,e.key,'▸',(e.vip?'★ ':'')+TT[e.key].label+dtag(e.dest)+dv(e.dev),pt(e),eta<=0?'held':Math.ceil(eta)+'s',eta<=0?'now':'',null);
+  add(eta<=0?-2.5:eta,e.key,'▸',(e.vip?'★ ':'')+TT[e.key].label+dtag(e.dest)+dv(e.dev),pt(e),eta<=0?'held':Math.ceil(eta)+'s',eta<=0?'now':'',null,e.vip);
  }
  items.sort((a,b)=>a[0]-b[0]);
  let shown=items.slice(0,nRows);
@@ -2177,7 +2380,7 @@ function hud(){
  document.getElementById('sSat').textContent=Math.round(satNow())+'%';
  document.getElementById('sEff').textContent=Math.round(effNow())+'%';
  noteBest();
- document.getElementById('quota').innerHTML='<div class="q rnd">Round '+S.round+'/'+MAX_ROUND+' <span class="lvb" style="color:'+LV.lite+'" title="'+LV.name+' level">'+'★'.repeat(LV.stars)+'</span></div>'+Object.keys(S.quota).map(k=>{const d=S.completed[k],n=S.quota[k];return '<div class="q'+(d>=n?' done':'')+'"><i style="background:'+TT[k].col+'"></i>'+TT[k].label+' '+d+'/'+n+'</div>'}).join('')+'<div class="q best" title="Highest score ever reached">★ Best <b>'+best+'</b></div>';
+ document.getElementById('quota').innerHTML='<div class="q rnd">Round '+S.round+'/'+MAX_ROUND+' <span class="lvb" style="color:'+LV.lite+'" title="'+LV.name+' level">'+'★'.repeat(LV.stars)+(LEVEL==='daily'?' Daily':'')+'</span></div>'+Object.keys(S.quota).map(k=>{const d=S.completed[k],n=S.quota[k];return '<div class="q'+(d>=n?' done':'')+'"><i style="background:'+TT[k].col+'"></i>'+TT[k].label+' '+d+'/'+n+'</div>'}).join('')+(S.goals&&S.goals.length?'<div class="q goals" title="'+esc(S.goals.map(id=>goalDef(id).text).join('; '))+'">🎯 '+S.goals.filter(id=>goalState(id)==='done').length+'/'+S.goals.length+(S.goals.some(id=>goalState(id)==='fail')?' ✗':'')+'</div>':'')+(S.streak>=2?'<div class="q streak" title="Perfect trains in a row">🔥 '+S.streak+'<small> (+'+streakBonus(S.streak+1)+' next)</small></div>':'')+'<div class="q best" title="Highest score ever reached">★ Best <b>'+best+'</b></div>';
 }
 let last=performance.now(),hudT=0;
 function frame(now){
@@ -2229,19 +2432,53 @@ document.getElementById('restart').addEventListener('click',()=>reset(S.round,S.
  });}
 document.getElementById('reBtn').addEventListener('click',()=>{if(S.stars&&S.round>=MAX_ROUND){showFinale();return}if(S.stars)reset(S.round+1,S.score);else reset(S.round,S.roundStart)});
 document.getElementById('fShare').addEventListener('click',doShare);
+document.getElementById('quota').addEventListener('click',e=>{if(e.target.closest('.q.goals')&&S.goals.length)say('Round goals: '+S.goals.map(id=>{const st=goalState(id);return (st==='done'?'✓ ':st==='fail'?'✗ ':'')+goalDef(id).text}).join(' · '))});
+document.getElementById('fLb').addEventListener('click',()=>showLeaderboard(FIN?FIN.lvl:LEVEL));
+{ // the score card: the result as a picture to share (in a browser; the Android app shares the text and link instead)
+ const cb=document.getElementById('fCard');
+ if(window.StationMasterShare)cb.hidden=true;
+ cb.addEventListener('click',()=>{
+  if(!FIN)return;const f=FIN,L=LEVELS[f.lvl]||LV,c=document.createElement('canvas');c.width=1080;c.height=1080;const g=c.getContext('2d');
+  const bg=g.createLinearGradient(0,0,0,1080);bg.addColorStop(0,'#123740');bg.addColorStop(1,'#0a2229');g.fillStyle=bg;g.fillRect(0,0,1080,1080);
+  g.fillStyle='rgba(255,255,255,.05)';for(let i=0;i<24;i++){g.beginPath();g.moveTo(540,420);g.arc(540,420,900,i*Math.PI/12,i*Math.PI/12+Math.PI/24);g.closePath();g.fill()}
+  for(let i=0;i<14;i++){g.fillStyle=['#ffc23d','#d9eef2','#ff4d6d'][i%3];g.beginPath();g.moveTo(40+i*72,40);g.lineTo(100+i*72,40);g.lineTo(70+i*72,110);g.closePath();g.fill()}
+  const rb=g.createLinearGradient(0,200,0,500);rb.addColorStop(0,L.lite);rb.addColorStop(.4,L.col);rb.addColorStop(1,L.dark);g.fillStyle=rb;g.fillRect(110,200,860,300);
+  g.fillStyle=L.dark;g.fillRect(70,240,60,260);g.fillRect(950,240,60,260);
+  g.textAlign='center';g.fillStyle='rgba(255,255,255,.85)';g.font='700 34px sans-serif';g.fillText('STATION MASTER',540,258);
+  g.font='700 96px sans-serif';g.lineWidth=8;g.strokeStyle='rgba(0,0,0,.35)';g.strokeText('★'.repeat(L.stars),540,360);g.fillStyle='#fff7d6';g.fillText('★'.repeat(L.stars),540,360);
+  g.fillStyle='#fff';g.font='700 70px sans-serif';g.fillText(f.rank,540,452);
+  g.fillStyle='#ffc23d';g.font='700 190px sans-serif';g.fillText(f.score.toLocaleString('en-US'),540,720);
+  g.fillStyle='#9fb8bf';g.font='600 38px sans-serif';g.fillText('points · '+L.name+' level'+(f.lvl==='daily'?' · '+dailyDate():''),540,785);
+  g.fillStyle='#fff';g.font='600 44px sans-serif';g.fillText(f.sat+'% happy · '+f.eff+'% efficient'+(playerName()?' · '+playerName():''),540,880);
+  g.fillStyle='#ffc23d';g.font='700 52px sans-serif';g.fillText('Can you beat it?',540,980);
+  g.fillStyle='#9fb8bf';g.font='500 28px sans-serif';g.fillText((SHARE_URL||'').replace(/^https?:\/\//,''),540,1030);
+  c.toBlob(async b=>{if(!b)return;const file=new File([b],'station-master-score.png',{type:'image/png'});
+   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:shareMessage(f)});return}}catch(e){if(e&&e.name==='AbortError')return}
+   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='station-master-score.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+   document.getElementById('fNote').textContent='Score card saved as a picture.';
+  },'image/png');
+ });
+}
+document.getElementById('fName').addEventListener('change',e=>{ // the name is kept for the leaderboard entry and for the next share
+ const v=String(e.target.value||'').trim().slice(0,16);try{localStorage.setItem('sm_name',v)}catch(x){}
+ if(LAST_LB){const a=lbLoad(LAST_LB.lvl),en=a.find(z=>z.d===LAST_LB.d);if(en){en.n=v;lbSave(LAST_LB.lvl,a)}}
+});
+document.getElementById('lbClose').addEventListener('click',()=>{document.getElementById('lbov').hidden=true});
+addEventListener('keydown',e=>{if(e.key==='Escape'){const o=document.getElementById('lbov');if(o&&!o.hidden)o.hidden=true}});
 document.getElementById('fAgain').addEventListener('click',()=>{clearProgress();document.getElementById('finale').hidden=true;confetti(0,'confetti2');reset(1,0)});
 document.body.dataset.level=LEVEL;applyGuide();
+if(LEVEL==='daily')dailyRefresh();
 {const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset();} // the Welcome page tells the player where they are resuming
 hud();
 addEventListener('pagehide',()=>{noteBest();saveBest()});
 if(document.addEventListener)document.addEventListener('visibilitychange',()=>{if(document.hidden){noteBest();saveBest()}});
 let demoPrev=null;
-window.__sm={MAX_ROUND,get H(){return H},get Y0(){return Y0},adaptCanvas,tapY,other,bodyPos:t=>at(t.path,t.s-CAR/2),
+window.__sm={showLeaderboard,challenge:()=>CHAL,MAX_ROUND,get H(){return H},get Y0(){return Y0},adaptCanvas,tapY,other,bodyPos:t=>at(t.path,t.s-CAR/2),
  demoStart(r){demoPrev=LEVEL;applyLevel('normal',true);DEMO=true;reset(r||1,0)}, // the demo always runs on Normal
  demoEnd(){DEMO=false;if(demoPrev)applyLevel(demoPrev,true);demoPrev=null;const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset()},
  level:()=>LEVEL,
- setLevel(id){if(!LEVELS[id])return;applyLevel(id);const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset(1,0)},
- levels(){return Object.keys(LEVELS).map(id=>{const g=(b)=>{try{return localStorage.getItem(Kof(b,id))}catch(e){return null}};let fin=null;try{fin=JSON.parse(g('sm_final')||'null')}catch(e){}const r=parseInt(g('sm_round'),10);return{id,name:LEVELS[id].name,stars:LEVELS[id].stars,round:r>=1?Math.min(r,MAX_ROUND):0,score:Math.round(parseFloat(g('sm_score'))||0),fin,best:parseInt(g('sm_best'),10)||0}})},
+ setLevel(id){if(!LEVELS[id])return;applyLevel(id);if(id==='daily')dailyRefresh();const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset(1,0)},
+ levels(){return Object.keys(LEVELS).map(id=>{const g=(b)=>{try{return localStorage.getItem(Kof(b,id))}catch(e){return null}};let fin=null;try{fin=JSON.parse(g('sm_final')||'null')}catch(e){}const r=parseInt(g('sm_round'),10);let stale=false;if(id==='daily'){try{stale=(localStorage.getItem('sm_daily_date')||'')!==todayStr()}catch(e){}}if(stale)fin=null;return{id,name:LEVELS[id].name,stars:LEVELS[id].stars,round:(!stale&&r>=1)?Math.min(r,MAX_ROUND):0,score:Math.round(parseFloat(g('sm_score'))||0),fin,best:parseInt(g('sm_best'),10)||0}})},
 spawnOn:(sd)=>{spawnOn(sd);const t=S.trains[S.trains.length-1];t.key="nonstop";t.type=TT.nonstop;t.L=t.type.cars*CAR;return t},S:()=>S,sel:()=>sel,click,outerSig,loopSig,exitSig,trainPos:t=>at(t.path,t.s),LY,W,LW,LE};
 requestAnimationFrame(frame);
 })();
@@ -2346,12 +2583,14 @@ requestAnimationFrame(frame);
   });
   document.getElementById('wStatus').textContent=saved?'Round '+c.round+' of '+smx.MAX_ROUND+' · score '+c.score.toLocaleString('en-US'):(fin?'Journey complete · '+fin.rank+' · '+fin.score.toLocaleString('en-US')+' points':'A new station is waiting for its first train.');
   document.getElementById('wPlay').textContent=saved?'Continue':(fin?'Play again':'Play');
+  {const ch=smx.challenge&&smx.challenge(),el=document.getElementById('wChal');if(el){el.hidden=!ch;if(ch){const L=smx.levels().find(x=>x.id===ch.level);el.textContent='🏆 Challenge: beat '+(ch.name?ch.name+'\'s ':'')+ch.score.toLocaleString('en-US')+' on '+(L?L.name:ch.level)+'!'}}}
   const bs=c.best;
   const wb=document.getElementById('wBest');wb.hidden=!(bs>0);wb.innerHTML='★ Best score <b>'+bs.toLocaleString('en-US')+'</b>';
  }
  function showWelcome(){refreshWelcome();welcome.hidden=false;if(pause.textContent==='Pause')pause.click()}
  function startGame(){welcome.hidden=true;if(pause.textContent==='Play')pause.click();if(window.__smFit)window.__smFit(false);if(!seen())open()}
  document.querySelectorAll('#wLevels .wlv').forEach(b=>b.addEventListener('click',()=>{window.__sm.setLevel(b.dataset.lv);refreshWelcome()}));
+ document.getElementById('wLb').addEventListener('click',()=>window.__sm.showLeaderboard(window.__sm.level()));
  document.getElementById('wPlay').addEventListener('click',startGame);
  document.getElementById('wInfo').addEventListener('click',open);
  showWelcome();

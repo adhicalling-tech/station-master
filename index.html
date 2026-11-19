@@ -344,6 +344,8 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 .board .br.bth{font-family:var(--display);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(47,112,128,.7);margin-top:2px}
 .board .br .bt{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden}
 .board .br .bt>span{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.scroller,.board{transition:filter .18s ease}
+body.hazy .scroller,body.hazy .board{filter:blur(9px) brightness(.88)} /* paused: the game area is hazy (see frame) */
 .board.wrap .br{white-space:normal}.board.wrap .br .bt{align-items:flex-start}.board.wrap .br .bt>span{overflow:visible;text-overflow:clip;white-space:normal;line-height:1.15}
 .board .br .bp{text-align:center}
 .board .br b{text-align:right}
@@ -615,7 +617,7 @@ body.clean-mode .menu{display:none}
       <ul>
         <li>Only one train can use each end's junction at a time.</li>
         <li>A signal will not clear a route that conflicts with another train.</li>
-        <li data-smin="3">Sidings hold a train out of the way while you wait for a platform. Each siding holds one train and then runs straight into the platforms beside it (the upper siding to the upper island, the lower siding to the lower island or the goods line), so a parked train can go directly to one of those platforms. Non-stop trains never use sidings. A train that cannot come in yet waits outside, and it costs points (more for express and non-stop trains) and arrives already late.</li>
+        <li data-smin="3">Sidings hold a train out of the way while you wait for a platform. There is one siding on each side. It holds one train and then runs straight into the platforms beside it (the west siding to the upper island, PF 1 and PF 2; the east siding to the lower island, PF 3 and PF 4), so a parked train can go directly to one of those platforms. Non-stop trains never use sidings. A train that cannot come in yet waits outside, and it costs points (more for express and non-stop trains) and arrives already late.</li>
         <li>The timetable boards at each end show which trains are due, in how many seconds, and which are about to leave. Use them to plan: for example park a slow train in a siding so an express due in a few seconds can come straight in. Each train also has a planned platform (for example PF2) on the board: bring it there for bonus points and happier passengers. Tap a train and its row lights up on the board. If you send it to another platform, the board updates and an announcement appears at the top. You can switch the boards off on this page.</li>
         <li>Some trains run late ("late 8s") or early ("early 4s"), shown on the boards and on the train. Passengers on a late train are already unhappy, but if you send it in promptly (within 3 seconds at the signal) and out again as soon as it has finished boarding (within 3 seconds), it recovers: its satisfaction is restored, you earn a bonus and its efficiency gets a lift. An early train has time in hand and can wait, so park it in a siding if a late train needs the way.</li>
         <li data-smin="3" data-smax="3">Priority: express, local, goods.</li>
@@ -773,6 +775,16 @@ const LANES=[
 const otherFace=l=>l.isl===undefined?null:(l.face==='top'?ISLANDS[l.isl].bottom:ISLANDS[l.isl].top);
 function tapY(l){const y=LY(l.idx);if(l.isl===undefined)return l.thru?y:y+20;return l.face==='top'?y+24:y-24} // goods: its platform strip is below the track
 function laneBox(l){const y=LY(l.idx);if(l.thru)return[y-16,y+16];if(l.isl===undefined)return[y-16,y+58];const mid=(y+LY(otherFace(l)))/2;return l.face==='top'?[y-14,mid]:[mid,y+14]}
+/* How long a train stands at its platform. An EARLY train does not leave early: it stays for its normal time plus the time it is ahead of its timetable (at most EARLY_MAX s), so it leaves when it was meant to.
+   A LATE train may leave early to make up the time it lost: its stop is cut by the time it is behind, down to 40% of the normal stop (and never under 1.5 s). On time (within 2 s) it is the normal stop.
+   "Ahead" is measured at the platform against the scheduled time plus the usual 8 s from the signal to the platform. */
+const EARLY_MAX=20;
+function dwellFor(t,when){
+ const base=t.type.dwell||0;if(!base||!t.sched||(window.__tutActive===true&&!SHADOW))return base;
+ const ahead=t.sched.sched+8-(when===undefined?S.t:when);
+ if(Math.abs(ahead)<2)return base;
+ return Math.max(Math.max(1.5,base*.4),Math.min(base+EARLY_MAX,base+ahead));
+}
 const TT={
  nonstop:{label:'Non-stop',col:'#e2b43d',cars:6,dwell:0,w:1,pat:3,vmax:170,nonstop:true},
  express:{label:'Express',col:'#d64541',cars:6,dwell:4,buf:3,w:2,pat:5,vmax:150},
@@ -831,7 +843,7 @@ const STAGES=[
  {id:2,from:4,name:'Small station',types:['local','goods','express'],lanes:[1,2,4],loops:false,weights:{local:3,goods:1.5,express:2},newTypes:['express'],
   news:['Express trains now arrive: fast, with a short stop.','Platform 2 (main line) has been built for them.']},
  {id:3,from:5,name:'Growing station',types:['local','goods','express'],lanes:[1,2,3,4],loops:true,maint:{first:[40,60],every:[60,90],dur:20},weights:{local:3,goods:1.5,express:2},newTypes:[],
-  news:['Platform 3 opens: local and express trains can both use it.','Sidings are built at both ends: park a train there to let another one pass, then send it straight into the platforms beside it. The timetable boards show what is coming.','Maintenance begins: a platform will now and then close for a short while, with a warning first.']},
+  news:['Platform 3 opens: local and express trains can both use it.','A siding is built at each end: park a train there to let another one pass, then send it straight into the platforms beside it. The timetable boards show what is coming.','Maintenance begins: a platform will now and then close for a short while, with a warning first.']},
  {id:4,from:7,name:'Junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5],loops:true,branches:['W','E'],maint:{first:[35,55],every:[55,80],dur:20},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:['nonstop'],
   news:['Non-stop trains now arrive. They never stop.','Two through lines are built so they can pass the station.','A branch line opens on the east side: some trains from the west are bound for it. Trains bound for it leave through the new branch signal, the one with the amber arrow.']},
  {id:5,from:10,name:'Major junction',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,branches:['W','E'],bothFrom:13,maint:{first:[30,50],every:[45,70],dur:25},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
@@ -839,9 +851,9 @@ const STAGES=[
  {id:6,from:16,name:'Metropolitan terminal',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,branches:['W','E'],bothFrom:13,maint:{first:[28,45],every:[40,62],dur:28},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
   news:['The station is now a metropolitan terminal: the busiest it has been.','Closures for maintenance come more often and last longer than ever.']},
  {id:7,from:21,name:'Grand Central',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,entries:['W'],branches:['W','E'],bothFrom:13,maint:{first:[25,40],every:[35,55],dur:30},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
-  news:['Grand Central: the finest station on the network, and the hardest to run.','A dedicated entry opens on the west side, coming in at an angle from the lower left. It replaces the west lower siding: some trains arrive straight onto it, and from there they can only go to PF 3 or PF 4.','Closures are at their most frequent: keep a platform in hand at all times.']},
+  news:['Grand Central: the finest station on the network, and the hardest to run.','A dedicated entry opens on the west side, coming in at an angle from the lower left. It is a new line below the west siding: some trains arrive straight onto it, and from there they can only go to PF 3 or PF 4.','Closures are at their most frequent: keep a platform in hand at all times.']},
  {id:8,from:25,name:'Grand Central twin entries',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,entries:['W','E'],branches:['W','E'],bothFrom:13,maint:{first:[25,40],every:[35,55],dur:30},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
-  news:['A second dedicated entry opens on the east side, from the upper right. It replaces the east upper siding.','Both ends now feed PF 3 and PF 4 directly: entry trains go only to those two platforms.']},
+  news:['A second dedicated entry opens on the east side, from the upper right. It takes the place of the east siding.','Both ends now feed PF 3 and PF 4 directly: entry trains go only to those two platforms.']},
  {id:9,from:26,name:'Meridian Metropolis',types:['local','goods','express','nonstop'],lanes:[0,1,2,3,4,5,6],loops:true,entries:['W','E'],branches:['W','E'],bothFrom:13,maint:{first:[22,36],every:[32,50],dur:30},weights:{local:3,goods:1.5,express:2,nonstop:1.5},newTypes:[],
   news:['Meridian Metropolis: a city of millions, and the final chapter. The station has never been busier.','Maintenance closures are at their most frequent. Expect the rules you trust to be tested.']}
 ];
@@ -1140,7 +1152,7 @@ function resetCore(round,score){
  {const sb=document.getElementById('speed');if(sb){if(S.fast){speed=1;sb.textContent='Speed '+S.fast+'x (round)'}else sb.textContent='Speed '+speed+'x';sb.disabled=!!S.fast}} // a fast round has its speed fixed
  S.liveN=0;S.nextLive=5;S.allowLive=!DEMO&&LEVEL!=='daily'&&!window.__noLive&&!S.unfair; // live traffic (see liveExtra): not in the Daily, where everyone sees the same trains
  S.introPending=!DEMO;S.goalSeen={}; // the round briefing opens as soon as no other screen is in the way, and the round stays frozen until OK
- S.loopCount=loopKs().length;
+ S.loopCount=S.stage.loops?1:0;
  // What opened since the previous round (nothing on the very first load, or when a round is simply replayed)?
  S.newLanes=prev&&prev.lanes?S.lanes.filter((l,i)=>l.enabled&&!prev.lanes[i].enabled).map(l=>l.idx):[];
  S.newLoops=[];if(prev&&prev.loopCount!==undefined)for(let k=prev.loopCount+1;k<=S.loopCount;k++)S.newLoops.push(k);
@@ -1184,7 +1196,7 @@ const Msg=(()=>{
   if(!box.length)return null;let u=null;for(const b of box){const r={l:c.l+b[0]*sx,t:c.t+b[1]*sy,r:c.l+b[2]*sx,b:c.t+b[3]*sy};u=u?{l:Math.min(u.l,r.l),t:Math.min(u.t,r.t),r:Math.max(u.r,r.r),b:Math.max(u.b,r.b)}:r}return u}
  /* at most two lines on a small screen, cut at a word (never in the middle of one) */
  function fitLines(el,text,maxL){
-  el.textContent=text;const L=maxL||(small()?2:0);if(!L)return;
+  el.textContent=text;const L=maxL||(small()?2:0);if(!L||typeof getComputedStyle==='undefined')return;
   const cs=getComputedStyle(el),lh=parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.3,lim=lh*L+(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0)+3;
   if(el.getBoundingClientRect().height<=lim)return;
   const w=text.split(' ');let lo=1,hi=w.length-1,best=1;
@@ -1550,7 +1562,7 @@ function trimDeviations(out,lim){ // drop an early/late deviation where it would
    const at=Math.max(1.2,e.sched+e.dev),from=e.dev<0?e.sched:at; // an early train may wait for free until its scheduled time
    const f=e.slot!=null?(free[e.slot]||0):0,start=Math.max(at,f),wait=start-from;
    if(wait>(lim||.55)*TT[e.key].pat*LV.pat*patMul(e.key)){bad={e,prev:e.slot!=null?who[e.slot]:null};break}
-   if(e.slot!=null){free[e.slot]=start+OCC[e.key];who[e.slot]=e}
+   if(e.slot!=null){free[e.slot]=start+OCC[e.key]+(e.dev<=-2?Math.min(EARLY_MAX,-e.dev):0);who[e.slot]=e} // (an early train stays longer: see dwellFor)
   }
   if(!bad)return;
   const c=bad.prev&&bad.prev.dev>0?bad.prev:(bad.e.dev!==0?bad.e:(bad.prev&&bad.prev.dev!==0?bad.prev:null));
@@ -1802,12 +1814,12 @@ function checkEntry(t,tg){
   if(!S.stage.loops)return 'Sidings have not been built yet.';
   if(entryOn(t.side)&&tg.k===entryK(t.side))return 'That line is a dedicated entry: trains arrive on it, they cannot be sent into it.';
   if(t.state==='loop')return 'Only a train at the outer signal can enter a siding.';
-  if(S.trains.some(q=>q.side===t.side&&q.loopK===tg.k&&q.state!=='gone'))return 'Siding '+tg.k+' is already occupied.';
+  if(S.trains.some(q=>q.side===t.side&&q.loopK===tg.k&&q.state!=='gone'))return 'The siding is already occupied.';
   if(t.type.nonstop)return 'Non-stop trains never stop, so they do not use sidings.';
-  {const sl=sidingLanes(t.side,tg.k);if(!sl.some(l=>isRightLane(t,l)))return 'Siding '+tg.k+' leads to '+(sl.map(l=>l.name).join(' and ')||'no platform')+', which this train cannot use.'}
+  {const sl=sidingLanes(t.side,tg.k);if(!sl.some(l=>isRightLane(t,l)))return 'The siding leads to '+(sl.map(l=>l.name).join(' and ')||'no platform')+', which this train cannot use.'}
  } else {
   const l=tg.lane;
-  if(t.state==='loop'){const sl=sidingLanes(t.side,t.loopK);if(!sl.includes(l))return 'Siding '+t.loopK+' only leads to '+(sl.map(x=>x.name).join(' and ')||'no platform')+'.'}
+  if(t.state==='loop'){const sl=sidingLanes(t.side,t.loopK);if(!sl.includes(l))return 'The siding only leads to '+(sl.map(x=>x.name).join(' and ')||'no platform')+'.'}
   if(!l.enabled)return l.name+' is not in service yet (opens in round '+LANE_FROM[l.idx]+').';
   if(l.closed)return l.name+' is closed for maintenance ('+Math.ceil(l.closedT)+' s left).';
   if(l.warnT>0&&l.warnT<NOENTRY)return l.name+' closes for maintenance in '+Math.ceil(l.warnT)+' s: no new trains.';
@@ -2308,7 +2320,8 @@ function entryClaimSecs(t,tg){ // how long an entry claims its end of the juncti
 function readyIn(y){ // seconds until a train is ready to leave
  if(y.state==='ready')return 0;
  if(y.state==='dwell')return y.dwellT;
- return Math.max(0,(((y.sStop||0)-y.s)/Math.max(25,y.v||0.7*y.type.vmax)))+y.type.dwell+(y.state==='set'?y.setT:0);
+ const run=Math.max(0,(((y.sStop||0)-y.s)/Math.max(25,y.v||0.7*y.type.vmax)))+(y.state==='set'?y.setT:0);
+ return run+dwellFor(y,S.t+run);
 }
 function exitClash(t){ // would t's exit, about APPR seconds from now, overlap another train's exit through the same end of the junction?
  if(t.type.nonstop)return false;
@@ -2366,7 +2379,7 @@ function witnessAct(){
   // nothing free now: park in a siding if that lets a train waiting behind it come in
   if(t.state==='outer'&&S.stage.loops&&room>2){
    const behind=S.held>0||(!bkTheme()&&S.sched.some(e=>!e.spawned&&e.side===t.side&&e.t-S.t<8)); // no looking ahead at the timetable in a Circuit Breaker round
-   if(behind)for(const k of loopKs()){const tg={kind:'loop',k};if(!checkEntry(t,tg)){commitEntry(t,tg);did();return}}
+   if(behind)for(const k of loopKs(t.side)){const tg={kind:'loop',k};if(!checkEntry(t,tg)){commitEntry(t,tg);did();return}}
   }
  }
 }
@@ -2503,8 +2516,8 @@ function update(dt){
     t.v=Math.min(t.v+vmax*1.1*dt,Math.max(8,Math.min(vmax,dist*2.2)),t.vcap);t.s+=t.v*dt;
     if(dist<=.6){
      t.s=t.sStop;t.v=0;
-     if(t.mode==='loop'){t.state='loop';say(t.num+' '+t.type.label+' is held in siding '+t.loopK+'. '+CLK+' it again when a platform is free.')}
-     else{t.state='dwell';t.dwellT=t.type.dwell;t.readyT=0;const m=matchScore(t,t.lane);t.satLoss+=m.sat;
+     if(t.mode==='loop'){t.state='loop';say(t.num+' '+t.type.label+' is held in the siding. '+CLK+' it again when a platform is free.')}
+     else{t.state='dwell';t.dwellT=t.dwellMax=dwellFor(t);t.readyT=0;const m=matchScore(t,t.lane);t.satLoss+=m.sat;
       if(t.parkedEarly&&t.sched&&S.t>=t.sched.sched-.5&&t.lossWait<1){const eb=Math.min(40,Math.max(15,Math.round(-t.dev*2.5)));addScore(eb,X(t.side,WAITX),LY(t.lane.idx)-48,'early train parked',t,'early');S.earlyParked++;achGrant('early');say(t.num+' '+t.type.label+' was early, waited in a siding and reached its platform on time: +'+eb+'.','good')}
       if(t.sched){if(t.sched.plat0===t.lane.idx&&!noPlan()){t.planSat=PLAN_SAT;addScore(LV.planB,tcx(t),LY(t.lane.idx)-58,'planned platform',t,'plan')}t.sched.arrived=true}
      if(m.p>=0)sfx('arrive');if(m.p>0){t.glowAt=performance.now();t.lane.sweepAt=t.glowAt} /* right platform: a short gold-green sweep along the train and the platform */ addScore(m.p,tcx(t),LY(t.lane.idx)-22,m.why,t,'match',m.p>0);if(m.p<0)say(t.num+' '+t.type.label+' is on '+t.lane.name+': '+m.why+' ('+r0(m.p)+').','bad');else say(t.num+' '+t.type.label+' reached '+t.lane.name+': '+m.why+' (+'+m.p+').','good')}
@@ -2535,7 +2548,9 @@ function update(dt){
 
 /* ---------- geometry for clicks ---------- */
 function outerSig(sd){return{x:X(sd,1222),y:INY[sd]-30}}
-const loopKs=()=>S.stage.loops?(S.stage.loop3?[1,2,3]:[1,2]):[]; // loops that exist right now
+/* ONE siding on each side (k=1: the west siding is the upper one, leading to PF 1 and PF 2; the east one is the upper one too, leading to PF 3 and PF 4). The lower slot on the west side (k=2) is only ever the dedicated entry, from round 21; on the east side the one slot (k=1) becomes the entry from round 25.
+   loopKs(side) lists the lines in a side's siding slots that exist right now (the siding, or the entry that has taken its place). */
+const loopKs=sd=>S.stage.loops?(entryOn(sd)&&entryK(sd)===2?[1,2]:[1]):[];
 function loopSig(sd,k){const d=ldy(sd,k);return{x:X(sd,992),y:INY[sd]+d+(d<0?-20:24)}}
 function exitSig(l,exitSide){return{x:exitSide==='W'?LW+16:LE-16,y:LY(l.idx)+13}}
 function trainHit(x,y){
@@ -2551,7 +2566,7 @@ function targetAt(x,y){
   for(const l of S.lanes){if(!l.enabled)continue;const d=Math.abs(y-tapY(l));if(d<bd){bd=d;best=l}} // only tracks that have been built
   if(best)return{kind:'lane',lane:best};
  }
- if(t.state==='outer'||t.state==='arriving')for(const k of loopKs()){const iy=t.iy+ldy(t.side,k);const x0=X(t.side,1170),x1=X(t.side,LHOLD);if(x>=Math.min(x0,x1)-20&&x<=Math.max(x0,x1)+20&&Math.abs(y-iy)<=30)return{kind:'loop',k}}
+ if(t.state==='outer'||t.state==='arriving')for(const k of loopKs(t.side)){const iy=t.iy+ldy(t.side,k);const x0=X(t.side,1170),x1=X(t.side,LHOLD);if(x>=Math.min(x0,x1)-20&&x<=Math.max(x0,x1)+20&&Math.abs(y-iy)<=30)return{kind:'loop',k}}
  return null;
 }
 function signalHit(x,y){
@@ -2566,7 +2581,7 @@ function signalHit(x,y){
  if(t.state==='ready'||t.state==='dwell'){const es=other(t.side);if(near(exitSig(t.lane,es)))return{kind:'exit'}}
  if(t.state==='ready'&&exitChoice(t)&&near(branchSig(t.side)))return{kind:'exitBranch'}
  // wrong signals: any outer/loop/exit signal gives a hint
- for(const sd of ['E','W']){if(near(outerSig(sd),26))return{kind:'wrong'};for(const k of loopKs())if(near(loopSig(sd,k),26))return{kind:'wrong'}}
+ for(const sd of ['E','W']){if(near(outerSig(sd),26))return{kind:'wrong'};for(const k of loopKs(sd))if(near(loopSig(sd,k),26))return{kind:'wrong'}}
  for(const l of S.lanes)if(!l.thru&&l.enabled)for(const es of ['E','W'])if(near(exitSig(l,es),26))return{kind:'wrong'};
  for(const sd of ['W','E'])if(branchOn(sd)&&near(branchSig(sd),26))return{kind:'wrong'};
  return null;
@@ -2581,7 +2596,7 @@ function click(x,y){
    const why=checkEntry(t,sel.target);
    if(why){S.flash={x:0,y:0,life:.5};say('Signal stays red: '+why,'bad');return}
    commitEntry(t,sel.target);sel.target=null;sfx('go'); // signal cleared
-   say(t.mode==='loop'?t.num+' '+t.type.label+' goes into siding '+t.loopK+'.':t.num+' '+t.type.label+' is cleared to '+t.lane.name+'. Plan its exit when boarding ends.');
+   say(t.mode==='loop'?t.num+' '+t.type.label+' goes into the siding.':t.num+' '+t.type.label+' is cleared to '+t.lane.name+'. Plan its exit when boarding ends.');
   } else if(sg.kind==='exit'||sg.kind==='exitBranch'){
    // The platform's own exit signal sends a train along the main line; the branch signal sends it up the branch.
    const key=sg.kind==='exitBranch'?'branch':'main';
@@ -2681,7 +2696,8 @@ function signal(x,y,green,pulse){
 
  // 3D Fresnel Lens & Glow
  // the lens cross-fades between red and green (SA.v eases 0..1) instead of snapping
- if(idle){ctx.fillStyle='#8c162b';ctx.beginPath();ctx.arc(x,y-4,4.3,0,7);ctx.fill();ctx.fillStyle='#ff4d6d';ctx.beginPath();ctx.arc(x,y-4,3.5,0,7);ctx.fill();ctx.fillStyle='rgba(255,170,185,.7)';ctx.beginPath();ctx.arc(x-1,y-5,1.2,0,7);ctx.fill()} // a lit red lens, solid and clearly on (so it never looks switched off), but small and with no glow
+ if(idle){{const hs=haloSprite('redIdle','255,77,109',28);ctx.save();ctx.globalAlpha=.6;ctx.drawImage(hs,x-hs.sz/2,y-4-hs.sz/2,hs.sz,hs.sz);ctx.restore()} // a small, faint halo (a cached sprite): lit like the green one, but quieter
+  ctx.fillStyle='#8c162b';ctx.beginPath();ctx.arc(x,y-4,4.3,0,7);ctx.fill();ctx.fillStyle='#ff4d6d';ctx.beginPath();ctx.arc(x,y-4,3.5,0,7);ctx.fill();ctx.fillStyle='rgba(255,170,185,.7)';ctx.beginPath();ctx.arc(x-1,y-5,1.2,0,7);ctx.fill()} // a lit red lens, solid and clearly on (so it never looks switched off), but small and with no glow
  else for(const isG of [false,true]){
   const al=isG?SA.v:1-SA.v;if(al<.01)continue;
   const sp=lensSprite(isG); // the lens and its glow, drawn once and copied (cross-faded with globalAlpha)
@@ -2718,7 +2734,7 @@ function drawCrate(x,y,s,ci,lift){
 }
 function crateProg(t,k,j){ // how far crate j of wagon k has travelled from where it starts to where it ends up (0 to 1); null when the train is not at a goods platform
  if(t.key!=='goods'||!t.lane||t.lane.kind!=='Goods')return null;
- if(t.state==='dwell'){const f=1-t.dwellT/t.type.dwell;return Math.max(0,Math.min(1,(f-((k-1)*.07+j*.12))/.22))}
+ if(t.state==='dwell'){const f=1-t.dwellT/(t.dwellMax||t.type.dwell);return Math.max(0,Math.min(1,(f-((k-1)*.07+j*.12))/.22))}
  return (t.state==='ready'||t.state==='exiting'||t.state==='gone')?1:0;
 }
 const wagonSlot=(t,k)=>t.side==='E'?k-1:GWAG-k; // the pile slot nearest wagon k (the train is mirrored for the west end)
@@ -2975,7 +2991,7 @@ function drawTrainLabel(t){
   const yb=y0+5;
   if(t.state==='dwell'||t.state==='ready'){
    let f,col;
-   if(t.state==='dwell'){f=1-t.dwellT/t.type.dwell;col=CB?'#bbbbbb':'#5fb0ff'}
+   if(t.state==='dwell'){f=1-t.dwellT/(t.dwellMax||t.type.dwell);col=CB?'#bbbbbb':'#5fb0ff'}
    else if(t.readyT<=t.buf){f=1-t.readyT/t.buf;col=barGood()}
    else{f=1;col=barBad()}
    ctx.fillStyle='#0b1015';ctx.fillRect(lx,yb,80,6);ctx.fillStyle=col;ctx.fillRect(lx,yb,80*Math.max(0,Math.min(1,f)),6);
@@ -3077,7 +3093,7 @@ function buildScenery(){
  };
  bed(0,W,INY.W);bed(0,W,INY.E);
  for(const l of S.lanes)if(!l.thru&&l.enabled)bed(LW,LE,LY(l.idx));
- for(const sd of ['E','W'])for(const k of loopKs()){const y=INY[sd]+ldy(sd,k),a=X(sd,1170),b=X(sd,LH);bed(Math.min(a,b),Math.max(a,b),y)}
+ for(const sd of ['E','W'])for(const k of loopKs(sd)){const y=INY[sd]+ldy(sd,k),a=X(sd,1170),b=X(sd,LH);bed(Math.min(a,b),Math.max(a,b),y)}
  // branch lines (they run off across the edge zones): keep trees and containers clear of them
  const brSegs=[];for(const sd of ['W','E'])if(branchOn(sd)){const i=INY[sd],p=mir(sd,[[W-LH,i],...tailLocal(sd,i,'branch')]);brSegs.push([p[1],p[2]],[p[2],p[3]])}
  const nearBr=(x,y,m)=>brSegs.some(([a,b])=>{const dx=b[0]-a[0],dy=b[1]-a[1],u=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));return Math.hypot(x-(a[0]+dx*u),y-(a[1]+dy*u))<m});
@@ -3225,7 +3241,7 @@ function draw(){
   const IN=INY[side],OUT=INY[other(side)];
   track(X(side,LH),IN,X(side,W+4),IN);track(X(side,LH),OUT,X(side,W+4),OUT);
   for(const k of [1,2,3]){
-   const built=S.stage.loops&&(k<3||!!S.stage.loop3);
+   const built=loopKs(side).includes(k);
    if(!built)continue; // a loop that is not there is not drawn at all
    const isEnt=entryOn(side)&&k===entryK(side),y=IN+ldy(side,k),isNew=built&&S.hiT>0&&(isEnt?(S.newEntries||[]).includes(side):S.newLoops.includes(k));
    const sl=sidingLanes(side,k),ey=y+90*Math.sign(ldy(side,k)); // a dedicated entry comes in at an angle from off screen instead of leaving the approach line
@@ -3240,11 +3256,11 @@ function draw(){
    track(X(side,LE),LY(l.idx),X(side,peelX(IN,l)),IN,'rgba(195,228,236,.72)',2.4);track(X(side,LE),LY(l.idx),X(side,peelX(OUT,l)),OUT,'rgba(195,228,236,.72)',2.4)} // throat tracks are drawn a little thinner and softer so the platforms and trains stand out
   ctx.fillStyle='#aab5da';ctx.font='700 17px "Chakra Petch",sans-serif';
   for(const k of [1,2,3]){
-   const built=S.stage.loops&&(k<3||!!S.stage.loop3);
+   const built=loopKs(side).includes(k);
    if(!built)continue;
    const isEnt=entryOn(side)&&k===entryK(side),d=ldy(side,k),isNew=built&&S.hiT>0&&(isEnt?(S.newEntries||[]).includes(side):S.newLoops.includes(k));
    if(isNew)ctx.fillStyle='#ffc23d';
-   {const tx=(isEnt?'ENTRY':'SIDING '+k)+(isNew?' · NEW':''),px=side==='E'?X(side,1170)-4:X(side,1170)+10,py=IN+d+(d<0?-22:30),wtx=ctx.measureText(tx).width,al=Msg.avoidBoards(px,py-16,wtx,20,IN+d+(d<0?30:-22)-16); /* a siding or entry name never sits under a timetable board: it goes to the other side of its track, or slides past the board */ ctx.globalAlpha=Msg.labelA(al[0],al[1],wtx,20);ctx.fillText(tx,al[0],al[1]+16)} // inside the loop's span so it clears the neighbouring loop's diagonal
+   {const tx=(isEnt?'ENTRY':'SIDING')+(isNew?' · NEW':''),px=side==='E'?X(side,1170)-4:X(side,1170)+10,py=IN+d+(d<0?-22:30),wtx=ctx.measureText(tx).width,al=Msg.avoidBoards(px,py-16,wtx,20,IN+d+(d<0?30:-22)-16); /* a siding or entry name never sits under a timetable board: it goes to the other side of its track, or slides past the board */ ctx.globalAlpha=Msg.labelA(al[0],al[1],wtx,20);ctx.fillText(tx,al[0],al[1]+16)} // inside the loop's span so it clears the neighbouring loop's diagonal
    ctx.globalAlpha=1;ctx.fillStyle='#aab5da'}
   ctx.fillStyle='#c9d2f2';ctx.font='700 19px "Chakra Petch",sans-serif';ctx.textAlign='left';
  }
@@ -3306,11 +3322,14 @@ function draw(){
    const pl=ffLie(t)?ffWrongLane(t):S.lanes[t.sched.plat]; // (False Flag: the outline lies)
    if(pl&&pl.enabled){const bx=laneBox(pl);ctx.save();ctx.fillStyle='rgba(255,194,61,'+(.09+.08*pulse())+')';ctx.fillRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0]);ctx.strokeStyle='rgba(255,194,61,'+(.45+.4*pulse())+')';ctx.lineWidth=3;ctx.setLineDash([12,7]);ctx.strokeRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0]);ctx.restore()}
   }
-  if((t.state==='outer'||t.state==='loop'||t.state==='arriving')&&!bkTheme()){ // which platforms this train may use: those glow softly green, the others are dimmed
-   const pu=reduce?.5:.5+.5*Math.sin(performance.now()/260);
-   for(const l of S.lanes){if(!l.enabled)continue;const bx=laneBox(l);
-    if(isRightLane(t,l)){ctx.fillStyle='rgba(61,220,132,'+(.1+.07*pu)+')';ctx.fillRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0])}
-    else{ctx.fillStyle='rgba(6,20,26,.34)';ctx.fillRect(LW-6,bx[0],LE-LW+12,bx[1]-bx[0])}}
+  if((t.state==='outer'||t.state==='arriving')&&S.stage.loops&&!t.type.nonstop&&!bkTheme()){ // the siding is worth using (the platform it is booked on is busy or closing, another train is waiting behind it, or it is early): outline it too, next to the planned platform
+   const pl0=t.sched&&t.sched.plat!=null?S.lanes[t.sched.plat]:null,blocked=!!pl0&&(pl0.busy||pl0.closed||(pl0.warnT>0&&pl0.warnT<NOENTRY)),behind=S.held>0||S.sched.some(e=>!e.spawned&&e.side===t.side&&e.t-S.t<8),early=!!(t.early&&t.sched&&S.t<t.sched.sched);
+   if(blocked||behind||early)for(const k of loopKs(t.side)){
+    if(entryOn(t.side)&&k===entryK(t.side))continue;
+    if(checkEntry(t,{kind:'loop',k}))continue; // occupied, or it leads nowhere this train can use
+    const sy=t.iy+ldy(t.side,k),xa=X(t.side,1170),xb=X(t.side,LHOLD),bx0=Math.min(xa,xb)-10,bw=Math.abs(xb-xa)+20;
+    ctx.save();ctx.fillStyle='rgba(255,194,61,'+(.09+.08*pulse())+')';ctx.fillRect(bx0,sy-17,bw,34);ctx.strokeStyle='rgba(255,194,61,'+(.45+.4*pulse())+')';ctx.lineWidth=3;ctx.setLineDash([12,7]);ctx.strokeRect(bx0,sy-17,bw,34);ctx.restore();
+   }
   }
   if((t.state==='outer'||t.state==='loop'||t.state==='arriving')){
    // clickable targets glow
@@ -3358,7 +3377,7 @@ function draw(){
   const os=outerSig(side);
   const g=S.trains.some(q=>q.side===side&&q.entryLock&&!q.fromLoop&&q.state==='go'&&q.mode&&!tailPast(q,os));
   signal(os.x,os.y,g,hintSig&&hintSig.x===os.x&&hintSig.y===os.y);
-  for(const k of loopKs()){const ls=loopSig(side,k);const gl=S.trains.some(q=>q.side===side&&q.fromLoop&&q.loopFrom===k&&q.entryLock&&q.state==='go'&&!tailPast(q,ls));signal(ls.x,ls.y,gl,hintSig&&hintSig.x===ls.x&&hintSig.y===ls.y)}
+  for(const k of loopKs(side)){const ls=loopSig(side,k);const gl=S.trains.some(q=>q.side===side&&q.fromLoop&&q.loopFrom===k&&q.entryLock&&q.state==='go'&&!tailPast(q,ls));signal(ls.x,ls.y,gl,hintSig&&hintSig.x===ls.x&&hintSig.y===ls.y)}
  }
  for(const l of S.lanes)if(!l.thru&&l.enabled)for(const es of ['E','W']){
   const sg=exitSig(l,es);const g=l.busy&&l.busy.state==='exiting'&&l.busy.exitSide===es&&!tailPast(l.busy,sg);
@@ -3459,11 +3478,14 @@ function scoreTick(rdt){
  const txt=String(Math.round(dispScore));if(el.textContent!==txt)el.textContent=txt;
 }
 let last=performance.now(),lastDraw=0,hudT=0,DEVAUTO=false; // DEVAUTO (developer mode only): the scripted player plays the live round
+let hazeOn=false;
 function frame(now){
  let dt=Math.min(.05,(now-last)/1000);last=now;scoreTick(dt);
  if(window.__tutActive===true&&S.round===1&&!DEMO&&(S.introPending||introOpen)){S.introPending=false;if(introOpen){introOpen=false;document.getElementById('rIntro').hidden=true}} // a new player goes straight into the interactive tutorial: no briefing screen first
  if(S.introPending&&!introOpen&&!DEMO&&overlaysClear())showIntro();
  if(!paused&&!introOpen){const sp=speed*(S.fast||1);dt*=sp*LV.speed;const n=Math.max(sp>1?2:1,Math.ceil(sp));for(let k=0;k<n;k++){if(DEVAUTO&&!S.over)witnessAct();update(dt/n)}}
+ // Paused: the game area (the track picture and the timetable boards) goes hazy, so nobody can study the station and plan ahead while the clock is stopped. The top bar, the round chips and the buttons stay sharp.
+ {const want=paused&&!DEMO&&!S.over&&!introOpen&&overlaysClear();if(want!==hazeOn){hazeOn=want;document.body.classList.toggle('hazy',want)}}
  // While the game is paused, or the briefing or another full-screen panel is open, nothing moves: redraw only about 15 times a second (enough for the pulsing highlights). requestAnimationFrame keeps running, so resuming is instant.
  if(paused||introOpen||!overlaysClear()){if(!lastDraw||now-lastDraw>=66){draw();lastDraw=now||1}}else{draw();lastDraw=now||1}
  hudT-=dt;if(hudT<=0){hudT=.1;hud()}

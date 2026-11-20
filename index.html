@@ -12,6 +12,12 @@
 :root{
   --bg:#2a6c7c; --panel:#327a8b; --line:#62a9ba; --fg:#f2fbfd; --muted:#a9cdd6; --amber:#ffc23d; --green:#2cf5a0; --red:#ff4d6d; --blue:#4dc3ff; --violet:#9b6bff;
   --glow-amber:0 0 14px rgba(255,194,61,.55); --glow-green:0 0 12px rgba(44,245,160,.5);
+  /* DESIGN TOKENS: one set of surfaces, radii, shadows and type sizes for every screen (game bars, round card, result, review, final, help, leaderboard). */
+  --surface:#327a8b; --surface-deep:#256372; --scrim:rgba(22,66,80,.93);
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:99px;
+  --sh-1:0 2px 8px rgba(0,0,0,.28); --sh-2:0 8px 22px rgba(0,0,0,.36); --sh-3:0 14px 32px rgba(0,0,0,.45);
+  --fs-xs:11px; --fs-sm:13px; --fs-md:15px; --fs-lg:18px; --fs-xl:24px;
+  --btn-primary:linear-gradient(180deg,#ffd36b,#ffc23d); --btn-secondary:linear-gradient(180deg,#3d8a9d,#2d7080);
   --display:"Chakra Petch","Segoe UI",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,sans-serif;
   color-scheme:dark;
 }
@@ -22,11 +28,22 @@ body{font-family:var(--body);font-size:15px;line-height:1.5;padding-left:max(16p
 h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,4vw,36px);line-height:1.1;margin:0;letter-spacing:.02em;background:linear-gradient(90deg,var(--amber),#ff8a5c 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
 .lede{color:var(--muted);margin:4px 0 0;max-width:70ch}
 .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
-.seg{display:flex;gap:4px;background:linear-gradient(180deg,#327a8b,#276878);border:1px solid #62a9ba;border-radius:8px;padding:3px;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
-button{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.04em;color:var(--fg);background:linear-gradient(180deg,#3d8a9d,#2d7080);border:1px solid #74b7c7;border-radius:6px;padding:6px 12px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:all .12s ease}
+.seg{display:flex;gap:4px;background:linear-gradient(180deg,#327a8b,#276878);border:1px solid #62a9ba;border-radius:var(--r-sm);padding:3px;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+button{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.04em;color:var(--fg);background:linear-gradient(180deg,#3d8a9d,#2d7080);border:1px solid #74b7c7;border-radius:var(--r-sm);padding:6px 12px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:all .12s ease}
 button:hover{background:linear-gradient(180deg,#4a9bb0,#357f91);border-color:var(--blue);box-shadow:0 0 8px rgba(77,195,255,.3)}
 button:active{transform:translateY(1px);background:linear-gradient(180deg,#102f37,#17424d);box-shadow:inset 0 2px 4px rgba(0,0,0,.5)}
-button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button{-webkit-tap-highlight-color:transparent}
+::selection{background:rgba(255,194,61,.35)}
+/* the same slim, quiet scroll bars on every panel */
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.28);border-radius:var(--r-pill)}::-webkit-scrollbar-track{background:transparent}
+/* top-bar buttons carry a small icon (the labels stay plain text: the game reads them) */
+#pause::before{content:"";display:inline-block;width:3px;height:11px;background:currentColor;box-shadow:6px 0 0 currentColor;margin-right:14px;vertical-align:-1px;border-radius:1px}
+#pause.is-paused::before{width:0;height:0;background:none;box-shadow:none;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent currentColor;margin-right:8px;vertical-align:-1px;border-radius:0}
+#speed::before{content:"»";font-size:17px;line-height:0;margin-right:5px;vertical-align:-1px}
+/* a finished round chip is ticked */
+.q.done::after{content:"✓";color:var(--green);font-weight:700;margin-left:2px}
 #pause{background:linear-gradient(180deg,#229267,#135a3f);border-color:#2cf5a0;color:#f3fff9;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 8px rgba(44,245,160,.25)}
 #pause:hover{background:linear-gradient(180deg,#2ab17d,#18704e);border-color:#5affba;box-shadow:0 0 12px rgba(44,245,160,.45)}
 #pause:active{background:linear-gradient(180deg,#114c35,#1b7552)}
@@ -45,17 +62,17 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .pis-blk.occ{color:#ff4d6d;border-color:rgba(255,77,109,.55);background:rgba(255,77,109,.18)}
 .pis-blk.warn{color:#ffc23d;border-color:rgba(255,194,61,.55);background:rgba(255,194,61,.18)}
 .pis-ticker{margin-left:auto;color:#a2c9d4;font-size:12px;font-family:var(--display);letter-spacing:.04em;background:rgba(36,92,106,.9);border:1px solid rgba(35,81,94,.5);border-radius:4px;padding:2px 8px;box-shadow:0 2px 6px rgba(0,0,0,.35);overflow:hidden;text-overflow:ellipsis}
-.caption{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:8px;padding:10px 14px;min-height:3.4em}
+.caption{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:var(--r-sm);padding:10px 14px;min-height:3.4em}
 /* Messages: the toast (say) and the banner (announce) are placed by script (Msg), never by fixed offsets. They fade and slide in and out in about 150 ms. */
 .msg{position:fixed;left:0;top:0;z-index:13;pointer-events:none;box-sizing:border-box;overflow-wrap:break-word;word-break:normal;opacity:0;transform:translateY(var(--slide,6px));transition:opacity .15s ease,transform .15s ease}
 .msg.show{opacity:1;transform:none}
-.toast{--slide:6px;max-width:92vw;background:rgba(34,88,102,.94);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:8px;padding:5px 12px;font-size:13px;line-height:1.35;text-align:center}
+.toast{--slide:6px;max-width:92vw;background:rgba(34,88,102,.94);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:var(--r-sm);padding:5px 12px;font-size:13px;line-height:1.35;text-align:center}
 .toast.mini{font-size:11px;line-height:1.25;padding:3px 8px;text-align:left}
 .toast.bad{border-left-color:var(--red)}
 .toast.good{border-left-color:var(--green)}
 .seg button{white-space:nowrap}
 .rsat{margin-bottom:10px}
-.satbar{position:relative;height:12px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.satbar{position:relative;height:12px;border-radius:var(--r-pill);background:rgba(255,255,255,.12);overflow:hidden}
 .satbar i{display:block;height:100%;background:linear-gradient(90deg,#ff8a5c,#ffc23d 70%,#2cf5a0)}
 .satbar span{position:absolute;left:90%;top:0;bottom:0;width:2px;background:#fff}
 .effbar span{left:80%}
@@ -70,19 +87,19 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .q.best{margin-left:auto;border-color:var(--amber);color:var(--amber);font-weight:600}
 .q.best b{font-family:var(--display);color:#fff}
 .q.rnd{border-color:var(--amber);color:var(--amber);font-family:var(--display);font-weight:700;letter-spacing:.04em}
-.stage{background:#2a6c7c;border:1px solid #74b7c7;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px rgba(44,245,160,.2),0 8px 26px rgba(2,14,18,.55)}
+.stage{background:#2a6c7c;border:1px solid #74b7c7;border-radius:var(--r-md);overflow:hidden;box-shadow:0 0 0 1px rgba(44,245,160,.2),0 8px 26px rgba(2,14,18,.55)}
 canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* Stop Android WebView flashing a highlight box over tapped elements (the canvas fills the whole game area). */
 *{-webkit-tap-highlight-color:transparent}
 button,.bar,.caption,.stage{-webkit-user-select:none;user-select:none}
 .cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.card{background:linear-gradient(180deg,#1f5361,var(--panel));border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.card{background:linear-gradient(180deg,#1f5361,var(--panel));border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;min-width:0;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .card h3{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
 .card ol,.card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:14px}
 .pts{display:grid;grid-template-columns:1fr auto;gap:2px 14px;font-size:14px;font-variant-numeric:tabular-nums}
 .pts b.pos{color:var(--green)}.pts b.neg{color:var(--red)}
 .quota{display:flex;flex-wrap:wrap;gap:8px}
-.q{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:3px 12px 3px 8px;font-size:13px;font-variant-numeric:tabular-nums}
+.q{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-pill);padding:3px 12px 3px 8px;font-size:13px;font-variant-numeric:tabular-nums}
 .q i{width:12px;height:8px;border-radius:2px;display:inline-block}
 /* Round briefing (3D ribbon before each round) and the round-end challenge feedback */
 .fstars i.cur{background:radial-gradient(circle at 35% 30%,#fff,#9fe3b0 60%,#2cf5a0);box-shadow:0 0 0 2px rgba(255,255,255,.55),0 0 10px rgba(44,245,160,.9);animation:curpulse 1.2s ease-in-out infinite}
@@ -96,10 +113,10 @@ button,.bar,.caption,.stage{-webkit-user-select:none;user-select:none}
 #rIntro .riScroll{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain}
 #rIntro .fbtns{flex:none;padding-top:8px}
 .riTrains{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0 0 12px}
-.riTrains span{display:inline-flex;align-items:center;gap:6px;background:rgba(36,92,106,.65);border:1px solid var(--line);border-radius:99px;padding:3px 11px 3px 8px;font-size:14px;font-family:var(--display)}
+.riTrains span{display:inline-flex;align-items:center;gap:6px;background:rgba(36,92,106,.65);border:1px solid var(--line);border-radius:var(--r-pill);padding:3px 11px 3px 8px;font-size:14px;font-family:var(--display)}
 .riTrains i{width:11px;height:8px;border-radius:2px;display:inline-block}
 .riGoals h3,.rsat h3.gh{font-family:var(--display);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin:2px 0 6px}
-.rgoal{display:flex;gap:9px;align-items:flex-start;text-align:left;background:rgba(255,194,61,.09);border:1px solid rgba(255,194,61,.4);border-radius:10px;padding:7px 11px;margin:6px 0;font-size:15px;animation:goalIn .45s cubic-bezier(.2,1.2,.3,1) both;animation-delay:calc(.5s + var(--i,0)*.22s)}
+.rgoal{display:flex;gap:9px;align-items:flex-start;text-align:left;background:rgba(255,194,61,.09);border:1px solid rgba(255,194,61,.4);border-radius:var(--r-md);padding:7px 11px;margin:6px 0;font-size:15px;animation:goalIn .45s cubic-bezier(.2,1.2,.3,1) both;animation-delay:calc(.5s + var(--i,0)*.22s)}
 .rgoal>b{margin-left:auto;color:var(--amber);white-space:nowrap;font-family:var(--display)}
 .rgoal.ok{background:rgba(44,245,160,.1);border-color:rgba(44,245,160,.55)}.rgoal.ok>b{color:var(--green)}
 .rgoal.no{background:rgba(255,77,109,.08);border-color:rgba(255,77,109,.4);opacity:.92}.rgoal.no>b{color:var(--muted)}
@@ -108,20 +125,29 @@ button,.bar,.caption,.stage{-webkit-user-select:none;user-select:none}
 @keyframes goalIn{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
 @keyframes stamp{from{opacity:0;transform:scale(2.4) rotate(-14deg)}to{opacity:1;transform:none}}
 @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.gverdict{font-family:var(--display);font-weight:700;font-size:15px;padding:7px 11px;border-radius:10px;margin:2px 0 6px;animation:popIn .45s cubic-bezier(.2,.9,.3,1.3) .35s both}
+.gverdict{font-family:var(--display);font-weight:700;font-size:15px;padding:7px 11px;border-radius:var(--r-md);margin:2px 0 6px;animation:popIn .45s cubic-bezier(.2,.9,.3,1.3) .35s both}
 .gverdict.ok{background:rgba(44,245,160,.14);color:var(--green);border:1px solid rgba(44,245,160,.55)}
 .gverdict.mid{background:rgba(255,194,61,.12);color:var(--amber);border:1px solid rgba(255,194,61,.5)}
 .gverdict.no{background:rgba(255,77,109,.1);color:#ff9aa9;border:1px solid rgba(255,77,109,.45)}
-.rpts{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.1;color:var(--amber);text-shadow:0 2px 0 #9a6a0a,0 0 18px rgba(255,194,61,.45);font-variant-numeric:tabular-nums}
+.rpts{display:inline-block;animation:ptsbump .6s 1.5s cubic-bezier(.2,1.6,.4,1) both;font-family:var(--display);font-weight:700;font-size:34px;line-height:1.1;color:var(--amber);text-shadow:0 2px 0 #9a6a0a,0 0 18px rgba(255,194,61,.45);font-variant-numeric:tabular-nums}
 .roundend:not([hidden]) .rright .rrow{animation:rowIn .35s ease-out both;animation-delay:calc(.25s + var(--i,0)*.06s)}
 @media (prefers-reduced-motion:reduce){.rgoal,.rgoal .gm,.gverdict,.fstars i.cur,.roundend:not([hidden]) .rright .rrow{animation:none}}
 /* Round result banner (same family as the briefing and the final results) */
-.rbanner{background:radial-gradient(900px 500px at 50% 0,rgba(255,194,61,.16),transparent 60%),rgba(6,22,28,.95)}
+.rbanner{background:radial-gradient(900px 500px at 50% 0,rgba(255,194,61,.16),transparent 60%),var(--scrim)}
 .rbanner .fbox{padding:12px 18px}
 .rbanner .rmain .stars{font-size:30px;margin-top:4px;letter-spacing:.3em;color:#ffd24a;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 14px rgba(255,210,74,.7)}
 .rbanner .rmain .stars .st:not(.on){color:rgba(0,0,0,.35);opacity:1;text-shadow:none}
 .roundend.rbanner h2.pass,.roundend.rbanner h2.fail{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35),0 3px 6px rgba(0,0,0,.5)}
 .rbanner .rpts{font-size:clamp(34px,8vw,48px)}
+@keyframes ptsbump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes rshine{from{background-position:-80% 0,0 0}to{background-position:190% 0,0 0}}
+@keyframes rshineLoop{0%{background-position:-80% 0,0 0}26%{background-position:190% 0,0 0}100%{background-position:190% 0,0 0}}
+.wbanner .rmain{animation:rshineLoop 6.5s 1.2s ease-out infinite}
+/* a small town skyline: behind the welcome page's trains, and as the picture of the new station on the promotion review */
+.wsky{position:absolute;left:0;right:0;bottom:19%;height:17%;pointer-events:none;opacity:.9}.wsky svg{width:100%;height:100%;display:block}
+.rvTown{position:relative;height:70px;margin:0 0 10px;border-radius:var(--r-md);overflow:hidden;background:linear-gradient(180deg,#4f9db0,#a6dde0 88%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}.rvTown svg{position:absolute;inset:0;width:100%;height:100%}
+@media (max-height:460px){.rvTown{display:none}.wsky{bottom:15%}}
+@media (prefers-reduced-motion:reduce){.rmain,.wbanner .rmain,.rpts{animation:none}}
 .rmeters{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:4px 0 6px;text-align:left}
 @media (max-width:560px){.rmeters{grid-template-columns:1fr}}
 .rmeter{display:flex;flex-direction:column;gap:3px}
@@ -132,16 +158,16 @@ button,.bar,.caption,.stage{-webkit-user-select:none;user-select:none}
 .rstarwhy b{color:#e8f4f7}
 .rbanner .rhi{margin:2px 0 8px}
 /* promotion progress on the result, and the promotion review */
-.rprog{margin:6px 0;padding:8px 10px;border:1px solid rgba(255,194,61,.5);border-radius:10px;background:rgba(255,194,61,.07);font-size:13px}
+.rprog{margin:6px 0;padding:8px 10px;border:1px solid rgba(255,194,61,.5);border-radius:var(--r-md);background:rgba(255,194,61,.07);font-size:13px}
 .rprog .phead{color:var(--amber);font-weight:700;margin-bottom:5px}.rprog .pnote{margin-top:5px;color:var(--muted);font-size:12px}
 .pchips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.pchip{padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:12.5px;white-space:nowrap}.pchip i{font-style:normal;color:var(--muted)}
+.pchip{padding:3px 9px;border-radius:var(--r-pill);border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:12.5px;white-space:nowrap}.pchip i{font-style:normal;color:var(--muted)}
 .pchip.ok{border-color:rgba(61,220,132,.7);color:#bff7dd}.pchip.no{border-color:rgba(255,90,90,.7);color:#ffc0c0}
 #review .fbanner{width:min(94%,640px)}
 .rvtargets{margin:6px 0 8px}.rvrow{display:grid;grid-template-columns:1fr auto auto 22px;gap:10px;align-items:center;padding:5px 8px;border-bottom:1px solid rgba(47,112,128,.3);text-align:left;font-size:14px}
 .rvrow b{font-family:var(--display);font-size:16px}.rvrow i{font-style:normal;color:var(--muted);font-size:12px}.rvrow em{font-style:normal;font-weight:800}
 .rvrow.ok em{color:#3ddc84}.rvrow.no em{color:#ff6a6a}.rvrow.no b{color:#ffb0b0}
-.rvrounds{margin:8px 0}.rvr{display:grid;grid-template-columns:62px 1fr auto auto auto;gap:8px;align-items:center;padding:4px 8px;border-radius:8px;text-align:left;font-size:13px}
+.rvrounds{margin:8px 0}.rvr{display:grid;grid-template-columns:62px 1fr auto auto auto;gap:8px;align-items:center;padding:4px 8px;border-radius:var(--r-sm);text-align:left;font-size:13px}
 .rvr.weak{background:rgba(255,194,61,.12);outline:1px solid rgba(255,194,61,.55)}.rvr .rn{color:var(--muted)}.rvr .rs{color:#ffd24a;letter-spacing:.1em}.rvr .rm{color:#d6e8ec;font-size:12px}
 .rvr button{padding:3px 10px;font-size:12px}
 @media (max-height:460px){.rvrow{padding:2px 6px;font-size:12px}.rvr{padding:2px 6px;font-size:11.5px}.rvrounds{margin:4px 0}.rprog{padding:4px 8px;font-size:11.5px}#review .fkick{display:none}}
@@ -149,7 +175,7 @@ button,.bar,.caption,.stage{-webkit-user-select:none;user-select:none}
 .rbanner .rgoalsbox{margin:8px 0}
 .rtext{margin:6px 0 10px;color:#cfe6ec;font-size:14px}
 .roundend button.plain{background:rgba(36,92,106,.85);color:#cfe6ec;border:1px solid var(--line);box-shadow:none;margin-top:0}
-.roundend button.plain:hover{background:rgba(18,52,64,.95)}
+.roundend button.plain:hover{background:var(--surface-deep)}
 .rdetails{text-align:left;margin-top:14px;border-top:1px solid var(--line);padding-top:6px;animation:fadeIn .25s ease-out}
 .rdetails[hidden]{display:none}
 .rdetails h3{font-family:var(--display);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px;font-weight:600}
@@ -172,7 +198,7 @@ button,.bar,.caption,.stage{-webkit-user-select:none;user-select:none}
 .roundend{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,24,30,.84)}
 .roundend[hidden]{display:none}
 .roundend{z-index:20} /* above the top bar (10), boards (8), menu/coach (12) and announcements (14) so none show through the report */
-.rbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:flex;flex-direction:row;gap:18px;align-items:stretch;width:min(96%,920px);max-height:94%;box-sizing:border-box}
+.rbox{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 18px;display:flex;flex-direction:row;gap:18px;align-items:stretch;width:min(96%,920px);max-height:94%;box-sizing:border-box}
 .rleft{flex:0 0 220px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;text-align:center}
 .rright{flex:1 1 auto;min-width:0;overflow-y:auto;font-size:14px;line-height:1.35;padding-right:6px;text-align:left}
 .rright h3{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px;font-weight:600}
@@ -207,9 +233,9 @@ canvas{display:block;width:100%;height:100%;max-width:none;max-height:none;touch
 
 /* Floating Top Control Bar (Left buttons, Right stats) */
 .bar{position:absolute;top:max(8px,env(safe-area-inset-top,0px));left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:10;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
-.seg{pointer-events:auto;display:flex;gap:4px;background:rgba(36,92,106,.9);border:1px solid rgba(47,112,128,.6);border-radius:8px;padding:3px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.seg{pointer-events:auto;display:flex;gap:4px;background:rgba(36,92,106,.9);border:1px solid rgba(47,112,128,.6);border-radius:var(--r-sm);padding:3px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 .stats{pointer-events:auto;display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
-.stat{background:rgba(36,92,106,.9);border:1px solid rgba(47,112,128,.6);border-radius:8px;padding:0 12px;height:34px;display:inline-flex;align-items:center;box-sizing:border-box;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.stat{background:rgba(36,92,106,.9);border:1px solid rgba(47,112,128,.6);border-radius:var(--r-sm);padding:0 12px;height:34px;display:inline-flex;align-items:center;box-sizing:border-box;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 .stat b{font-family:var(--display);font-size:15px;line-height:1}
 .stat.score b{font-size:15px;line-height:1}
 .stat span{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.04em;margin-left:5px;white-space:nowrap;line-height:1}
@@ -217,7 +243,7 @@ button{padding:6px 12px;font-size:15px}
 
 /* Floating Bottom Quota Pill Strip (padded on right so ⛶ button sits in line without collision) */
 .quota{position:absolute;bottom:max(8px,env(safe-area-inset-bottom,0px));left:max(10px,env(safe-area-inset-left,0px));right:max(52px,calc(env(safe-area-inset-right,0px) + 48px));z-index:10;display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;pointer-events:none}
-.q{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;height:28px;box-sizing:border-box;background:rgba(36,92,106,.9);border:1px solid rgba(47,112,128,.6);border-radius:99px;padding:3px 12px 3px 8px;font-size:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.q{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;height:28px;box-sizing:border-box;background:rgba(36,92,106,.9);border:1px solid rgba(47,112,128,.6);border-radius:var(--r-pill);padding:3px 12px 3px 8px;font-size:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 .q.streak{border-color:#ff9a3d;color:#ffb36b}
 .q.goals{border-color:#7fd0ff;color:#bfe6ff}
 .q small{font-size:.8em;margin-left:2px}
@@ -255,7 +281,7 @@ body.clean-mode .quota{
  position:absolute;bottom:max(8px,env(safe-area-inset-bottom,0px));right:max(10px,env(safe-area-inset-right,0px));
  z-index:100;display:inline-flex;align-items:center;justify-content:center;
  width:34px;height:28px;box-sizing:border-box;background:rgba(36,92,106,.9);
- border:1px solid var(--amber);border-radius:99px;font-family:var(--display);
+ border:1px solid var(--amber);border-radius:var(--r-pill);font-family:var(--display);
  font-size:18px;font-weight:700;color:var(--amber);box-shadow:0 3px 10px rgba(0,0,0,.4);
  cursor:pointer;transition:all .15s ease;-webkit-tap-highlight-color:transparent;
 }
@@ -267,7 +293,7 @@ body:has(#welcome:not([hidden])) .hud-toggle-btn,body:has(#finale:not([hidden]))
 body.clean-mode .hud-toggle-btn .ic-compress{display:block}
 body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 /* Station upgrade panel (round-end popup) and Info-page extras. */
-.rup{background:linear-gradient(180deg,rgba(255,194,61,.2),rgba(255,194,61,.08));border:1px solid var(--amber);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.rup{background:linear-gradient(180deg,rgba(255,194,61,.2),rgba(255,194,61,.08));border:1px solid var(--amber);border-radius:var(--r-md);padding:10px 12px;margin-bottom:10px}
 .rup[hidden]{display:none}
 .rup h4{font-family:var(--display);margin:0 0 4px;font-size:17px;color:var(--amber);letter-spacing:.04em}
 .rup ul{margin:4px 0 0;padding-left:18px;display:block}
@@ -329,13 +355,13 @@ body.clean-mode .hud-toggle-btn .ic-expand{display:none}
 .wbtns button{font-size:18px;padding:11px 20px;border:1px solid var(--line);background:rgba(255,255,255,.07)}
 .wbtns .wprimary{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;border:0;box-shadow:0 0 22px rgba(255,194,61,.5)}
 @media (max-height:460px){.wlogo{width:60px;height:60px}.wcard{gap:6px}.wcard h1{font-size:34px}.wtag{font-size:15px}.wbtns button{font-size:17px;padding:9px 24px}}
-.help{position:fixed;inset:0;z-index:40;overflow-y:auto;background:#09202a;padding:20px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:block}
+.help{position:fixed;inset:0;z-index:40;overflow-y:auto;background:linear-gradient(180deg,#34849a,var(--bg));padding:20px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:block}
 .help[hidden]{display:none}
 .helpin{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-.helpbtn{position:sticky;bottom:0;display:flex;justify-content:center;padding:14px 0 18px;background:linear-gradient(180deg,transparent,#09202a 40%)}
+.helpbtn{position:sticky;bottom:0;display:flex;justify-content:center;padding:14px 0 18px;background:linear-gradient(180deg,transparent,var(--bg) 40%)}
 .helpbtn button{background:linear-gradient(180deg,#ffd36b,var(--amber));color:#1a1206;padding:10px 28px;font-size:15px;box-shadow:0 0 18px rgba(255,194,61,.45)}
 /* Timetable boards: what is due at each end, and what is about to leave it. They never block taps. */
-.board{--cp:44px;--ct:40px;position:absolute;z-index:8;left:max(10px,env(safe-area-inset-left,0px));top:60px;width:182px;pointer-events:none;background:rgba(34,88,102,.74);border:1px solid rgba(47,112,128,.55);border-radius:8px;padding:4px 8px 5px;font-size:11.5px;line-height:1.32;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.board{--cp:44px;--ct:40px;position:absolute;z-index:8;left:max(10px,env(safe-area-inset-left,0px));top:60px;width:182px;pointer-events:none;background:rgba(34,88,102,.74);border:1px solid rgba(47,112,128,.55);border-radius:var(--r-sm);padding:4px 8px 5px;font-size:11.5px;line-height:1.32;box-shadow:0 3px 10px rgba(0,0,0,.35)}
 .board.bR{left:auto;right:max(10px,env(safe-area-inset-right,0px))}
 .board .bh{font-family:var(--display);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-size:11px}
 .board .bs{font-family:var(--display);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:3px}
@@ -357,25 +383,25 @@ body.hazy .scroller,body.hazy .board{filter:blur(9px) brightness(.88)} /* paused
 .board .br s{text-decoration:none;color:#b9d3da;margin-right:3px;font-size:1.05em}
 .board .br u{text-decoration:none;font-family:var(--display);font-weight:700;color:#9fe3b0;margin-right:1px}.board .br u.chg{color:#ffc23d}
 .board .br.hl{background:rgba(255,194,61,.24);box-shadow:0 0 0 1px rgba(255,194,61,.7);border-radius:3px}
-.menu{position:absolute;left:max(10px,env(safe-area-inset-left,0px));top:calc(max(8px,env(safe-area-inset-top,0px)) + 46px);z-index:12;display:flex;flex-direction:column;gap:4px;padding:6px;background:rgba(36,92,106,.94);border:1px solid rgba(47,112,128,.7);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.menu{position:absolute;left:max(10px,env(safe-area-inset-left,0px));top:calc(max(8px,env(safe-area-inset-top,0px)) + 46px);z-index:25;display:flex;flex-direction:column;gap:4px;padding:6px;background:rgba(22,62,74,.98);border:1px solid rgba(98,169,186,.7);border-radius:var(--r-md);box-shadow:0 0 0 100vmax rgba(2,12,16,.35),0 8px 24px rgba(0,0,0,.6)}
 .menu[hidden]{display:none}
 .menu button{text-align:left;white-space:nowrap}
 body.clean-mode .menu{display:none}
-.annc{--slide:-6px;max-width:90vw;background:rgba(60,38,4,.95);border:1px solid #ffc23d;border-radius:8px;padding:6px 16px;font-size:14px;font-weight:700;color:#ffe29a;text-align:center}
+.annc{--slide:-6px;max-width:90vw;background:rgba(60,38,4,.95);border:1px solid #ffc23d;border-radius:var(--r-sm);padding:6px 16px;font-size:14px;font-weight:700;color:#ffe29a;text-align:center}
 .noboard .board{display:none} /* the boards stay in view in fit-to-window mode; only the Info-page switch hides them */
 /* Compact boards (phones: short or narrow screens): one slim line per end, so they never cover the track */
 /* phones and small windows: the same three-column table, only smaller and narrower */
 .bcompact .board{width:164px;padding:2px 5px 3px;font-size:10px;line-height:1.22;background:rgba(34,88,102,.7)}
 .bcompact .board .bh{font-size:10px;letter-spacing:.12em}
-.bcompact .board .bs{font-size:8.5px;margin-top:2px}
+.bcompact .board .bs{font-size:9px;margin-top:2px}
 .bcompact .board{--cp:34px;--ct:39px}
 .bcompact .board .br{column-gap:3px;padding:0}
-.bcompact .board .br.bth{font-size:8px;margin-top:1px;letter-spacing:.04em}
+.bcompact .board .br.bth{font-size:9px;margin-top:1px;letter-spacing:.04em}
 .bcompact .board .br .bt{gap:3px}
 .bcompact .board .br i{width:7px;height:6px}
 @media (min-width:1100px){.board{--cp:54px;--ct:46px;width:228px;font-size:13.5px;padding:6px 10px 7px}.board .bh{font-size:12px}.board .bs{font-size:10.5px}}
 /* Finale: final rank, score and a Share button */
-.finale{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(900px 500px at 50% 0,rgba(255,194,61,.18),transparent 60%),rgba(6,22,28,.94);padding:12px}
+.finale{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(900px 500px at 50% 0,rgba(255,194,61,.18),transparent 60%),var(--scrim);padding:12px}
 .finale[hidden]{display:none}
 /* The finale banner: a 3D ribbon in the level's colour (blue/green/red) with its stars, hanging from bunting above a plaque with the results and a strip of rail below. */
 .finale{--lc:#2fd08a;--lc2:#86f0bd;--lc3:#127a4d;overflow:hidden}
@@ -387,7 +413,8 @@ body.clean-mode .menu{display:none}
 .fbunting{height:30px;margin:0 -4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='30'%3E%3Cpath d='M0 3Q60 9 120 3' stroke='%23d9eef2' stroke-width='1.6' fill='none'/%3E%3Cpath d='M6 5L34 7L20 28Z' fill='%23ffc23d'/%3E%3Cpath d='M46 7L74 7L60 28Z' fill='%23d9eef2'/%3E%3Cpath d='M86 7L114 5L100 28Z' fill='%23ff4d6d'/%3E%3C/svg%3E") repeat-x center top/120px 30px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4))}
 .fribbon{position:relative;margin:2px 14px 0;transform:rotateX(7deg);transform-origin:50% 100%;animation:fsway 5s ease-in-out infinite alternate;filter:drop-shadow(0 10px 8px rgba(0,0,0,.55))}
 @keyframes fsway{from{transform:rotateX(7deg) rotateZ(-.6deg)}to{transform:rotateX(5deg) rotateZ(.6deg)}}
-.rmain{position:relative;z-index:2;padding:8px 18px 10px;border-radius:6px;background:linear-gradient(180deg,var(--lc2) 0,var(--lc) 38%,var(--lc3) 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(0,0,0,.28),0 0 0 2px rgba(0,0,0,.18)}
+/* a light sweep crosses every ribbon once as a screen opens (and every few seconds on the welcome page) */
+.rmain{position:relative;z-index:2;padding:8px 18px 10px;border-radius:6px;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.42) 50%,transparent 60%) no-repeat -80% 0/50% 100%,linear-gradient(180deg,var(--lc2) 0,var(--lc) 38%,var(--lc3) 100%);animation:rshine 1.5s .7s ease-out 1 both;box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(0,0,0,.28),0 0 0 2px rgba(0,0,0,.18)}
 .rtail{position:absolute;z-index:1;top:16px;width:64px;height:calc(100% - 4px);background:linear-gradient(180deg,var(--lc) 0,var(--lc3) 100%);filter:brightness(.78)}
 .rl{left:-34px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,22px 50%)}
 .rr{right:-34px;clip-path:polygon(0 0,100% 0,calc(100% - 22px) 50%,100% 100%,0 100%)}
@@ -400,13 +427,13 @@ body.clean-mode .menu{display:none}
 .fstars{display:flex;gap:7px;justify-content:center;margin-top:5px}
 .fstars i{width:11px;height:11px;border-radius:50%;background:rgba(0,0,0,.28);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
 .fstars i.on{background:radial-gradient(circle at 35% 30%,#fff6c8,#ffc23d 60%,#c98a0a);box-shadow:0 0 8px rgba(255,210,74,.8)}
-.fbox{position:relative;z-index:1;margin:14px 6px 0;text-align:center;background:linear-gradient(180deg,rgba(18,52,62,.97),rgba(10,32,40,.98));border:2px solid var(--lc);border-radius:14px;padding:14px 20px;box-shadow:0 0 0 3px rgba(0,0,0,.25),0 14px 30px rgba(0,0,0,.5),0 0 34px color-mix(in srgb,var(--lc) 30%,transparent)}
+.fbox{position:relative;z-index:1;margin:14px 6px 0;text-align:center;background:linear-gradient(180deg,var(--surface),var(--surface-deep));border:2px solid var(--lc);border-radius:var(--r-lg);padding:14px 20px;box-shadow:0 0 0 3px rgba(0,0,0,.2),var(--sh-3),0 0 34px color-mix(in srgb,var(--lc) 30%,transparent)}
 .frail{height:12px;margin:10px 6px 0;border-top:3px solid #9fb8bf;border-bottom:3px solid #9fb8bf;background:repeating-linear-gradient(90deg,#6b4a2b 0 8px,transparent 8px 22px);opacity:.85}
 .fdesc{margin:6px 0 10px;color:var(--muted);font-size:14px}
 .fscore{font-family:var(--display);font-weight:700;font-size:clamp(34px,8vw,52px);line-height:1;color:var(--amber);text-shadow:0 2px 0 #9a6a0a,0 0 22px rgba(255,194,61,.5)}
 .flabel{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
-.fgrid div{background:rgba(36,92,106,.6);border:1px solid var(--line);border-radius:10px;padding:6px 4px}
+.fgrid div{background:rgba(36,92,106,.6);border:1px solid var(--line);border-radius:var(--r-md);padding:6px 4px}
 .fgrid b{display:block;font-family:var(--display);font-size:18px}
 .fgrid span{font-size:11px;color:var(--muted);line-height:1.2;display:block}
 .fbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -417,7 +444,7 @@ body.clean-mode .menu{display:none}
 @media (prefers-reduced-motion:reduce){.fbanner,.fribbon,.frays{animation:none}}
 /* level picker on the welcome page, and the level stars next to the round number */
 .wlevels{display:flex;gap:10px;margin:4px 0}
-.wlv{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:96px;padding:8px 12px;border-radius:12px;border:2px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:inherit;cursor:pointer}
+.wlv{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:96px;padding:8px 12px;border-radius:var(--r-md);border:2px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:inherit;cursor:pointer}
 .wlv .wlst{font-size:17px;letter-spacing:.1em;color:var(--lc)}.wlv b{font-family:var(--display);font-size:15px}.wlv small{font-size:11px;color:var(--muted)}
 .wlv[data-lv=easy]{--lc:#4aa8ff}.wlv[data-lv=normal]{--lc:#2fd08a}.wlv[data-lv=hard]{--lc:#ff4d6d}.wlv[data-lv=daily]{--lc:#ffc23d}
 .wlv.sel{border-color:var(--lc);background:rgba(255,255,255,.12);box-shadow:0 0 18px color-mix(in srgb,var(--lc) 55%,transparent)}
@@ -425,7 +452,7 @@ body.clean-mode .menu{display:none}
 /* leaderboard, finale name field, challenge banner */
 .lbov{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(5,18,23,.9)}
 .lbov[hidden]{display:none}
-.lbbox{width:min(96%,560px);max-height:96%;overflow-y:auto;text-align:center;background:linear-gradient(180deg,rgba(18,52,62,.98),rgba(10,32,40,.99));border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 12px 34px rgba(0,0,0,.55)}
+.lbbox{width:min(96%,560px);max-height:96%;overflow-y:auto;text-align:center;background:linear-gradient(180deg,var(--surface),var(--surface-deep));border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;box-shadow:var(--sh-3)}
 .lbbox h2{font-family:var(--display);margin:0 0 8px;color:var(--amber)}
 .lbtabs{display:flex;gap:6px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
 .lbtab{border:2px solid var(--lc);background:rgba(255,255,255,.05);padding:5px 10px}.lbtab.on{background:var(--lc);color:#07181e}
@@ -433,13 +460,13 @@ body.clean-mode .menu{display:none}
 .lbt td{padding:4px 6px;text-align:left;border-bottom:1px solid rgba(47,112,128,.25)}.lbt td:nth-child(3){font-family:var(--display);font-weight:700;color:var(--amber)}.lbt tr.me td{background:rgba(255,194,61,.16)}
 .lbnone{color:var(--muted);margin:14px 6px}
 .achg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;text-align:center}
-.ach{border:1px solid var(--line);border-radius:10px;padding:8px 6px;background:rgba(36,92,106,.55);opacity:.62}.ach.on{opacity:1;border-color:var(--amber);background:rgba(255,194,61,.1)}
+.ach{border:1px solid var(--line);border-radius:var(--r-md);padding:8px 6px;background:rgba(36,92,106,.55);opacity:.62}.ach.on{opacity:1;border-color:var(--amber);background:rgba(255,194,61,.1)}
 .ach .ai{font-size:26px;display:block}.ach b{display:block;font-family:var(--display);font-size:13px}.ach small{display:block;font-size:11px;color:var(--muted);line-height:1.2}
 .rhi{margin:6px 0;font-size:12.5px;color:var(--amber)}.lbfoot{color:var(--muted);font-size:12px;margin:8px 0}
 .fname{display:flex;gap:8px;align-items:center;justify-content:center;margin:2px 0 4px;font-size:13px;color:var(--muted)}
 .fname input{width:150px;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:rgba(36,92,106,.7);color:var(--fg);font:inherit}
 .fpos{font-size:13px;color:var(--amber);min-height:1.2em;margin-bottom:6px}
-.wchal{margin:2px 0;padding:6px 14px;border-radius:99px;border:1px solid var(--amber);background:rgba(255,194,61,.12);color:var(--amber);font-family:var(--display);font-size:15px}
+.wchal{margin:2px 0;padding:6px 14px;border-radius:var(--r-pill);border:1px solid var(--amber);background:rgba(255,194,61,.12);color:var(--amber);font-family:var(--display);font-size:15px}
 @media (max-height:460px){.fname,.fpos{margin:0 0 2px;font-size:11px}.fname input{padding:2px 6px}.lbt{font-size:12px}.lbbox{padding:8px 12px}.lbbox h2{font-size:18px;margin-bottom:4px}.wchal{font-size:12px;padding:3px 10px}}
 @media (max-height:460px){.wlv{min-width:84px;padding:4px 8px}.wlv small{display:none}.wlevels{margin:0}}
 /* Round-end report: pop-in card, stars that pop one by one, filling satisfaction bar, confetti */
@@ -459,7 +486,7 @@ body.clean-mode .menu{display:none}
 /* Welcome backdrop: twinkling stars and two trains passing (pure CSS; stops for reduced-motion players) */
 .wstars{position:absolute;inset:0 0 40% 0;pointer-events:none;background-image:radial-gradient(1.6px 1.6px at 8% 22%,#fff,transparent),radial-gradient(1.2px 1.2px at 19% 9%,#cfe,transparent),radial-gradient(1.8px 1.8px at 33% 30%,#fff,transparent),radial-gradient(1.2px 1.2px at 47% 12%,#fe9,transparent),radial-gradient(1.6px 1.6px at 61% 26%,#fff,transparent),radial-gradient(1.2px 1.2px at 74% 8%,#cfe,transparent),radial-gradient(1.8px 1.8px at 86% 24%,#fff,transparent),radial-gradient(1.4px 1.4px at 93% 11%,#fe9,transparent);animation:wtw 4s ease-in-out infinite alternate}
 @keyframes wtw{from{opacity:.35}to{opacity:1}}
-.wscene{position:absolute;left:0;right:0;bottom:0;height:34%;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(5,20,25,.55))}
+.wscene{position:absolute;left:0;right:0;bottom:0;height:34%;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(12,44,56,.45))}
 .wtrack{position:absolute;left:0;right:0;height:26px}
 .wtrack.a{bottom:46%}.wtrack.b{bottom:12%}
 .wtrack::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;background:linear-gradient(#bfe6ee,#bfe6ee) top/100% 2px no-repeat,repeating-linear-gradient(90deg,rgba(8,24,28,.55) 0 4px,transparent 4px 14px) bottom/100% 7px no-repeat;opacity:.7}
@@ -489,7 +516,7 @@ body.clean-mode .menu{display:none}
 .demoOn .finger{display:block}
 .finger.tap{transform:scale(.7);background:rgba(44,245,160,.6)}
 /* Guided first-play tutorial banner */
-.coach{position:absolute;left:50%;top:calc(max(8px,env(safe-area-inset-top,0px)) + 52px);transform:translateX(-50%);z-index:12;display:flex;align-items:center;gap:12px;max-width:min(94%,680px);background:rgba(34,88,102,.95);border:1px solid var(--amber);border-radius:12px;padding:8px 10px 8px 14px;box-shadow:0 4px 18px rgba(0,0,0,.5),0 0 14px rgba(255,194,61,.3);font-size:15px;line-height:1.35;pointer-events:none}
+.coach{position:absolute;left:50%;top:calc(max(8px,env(safe-area-inset-top,0px)) + 52px);transform:translateX(-50%);z-index:12;display:flex;align-items:center;gap:12px;max-width:min(94%,680px);background:rgba(34,88,102,.95);border:1px solid var(--amber);border-radius:var(--r-md);padding:8px 10px 8px 14px;box-shadow:0 4px 18px rgba(0,0,0,.5),0 0 14px rgba(255,194,61,.3);font-size:15px;line-height:1.35;pointer-events:none}
 .coach[hidden]{display:none}
 .coach .cstep{font-family:var(--display);font-weight:700;color:var(--amber);white-space:nowrap;letter-spacing:.04em}
 .coach .ctext{min-width:0}
@@ -555,6 +582,7 @@ body.clean-mode .menu{display:none}
     <div class="fribbon"><span class="rtail rl" aria-hidden="true"></span><span class="rtail rr" aria-hidden="true"></span>
      <div class="rmain"><div class="fkick" id="rvKick"></div><h2 id="rvTitle"></h2><div class="fstars" id="rvDots" aria-hidden="true"></div></div></div>
     <div class="fbox">
+     <div class="rvTown" id="rvTown" aria-hidden="true"></div>
      <p class="fdesc" id="rvMsg"></p>
      <div class="fbtns"><button id="rvGo" class="fprimary" type="button"></button><button id="rvClose" class="plain" type="button">Close</button></div>
      <div class="rvtargets" id="rvTargets"></div>
@@ -647,6 +675,7 @@ body.clean-mode .menu{display:none}
   <div class="lbov" id="lbov" hidden role="dialog" aria-modal="true" aria-label="Leaderboard"><div class="lbbox"><h2>Leaderboard</h2><div class="lbtabs" id="lbtabs"></div><div id="lbrows"></div><p class="lbfoot">Kept on this device only. Share your score to challenge a friend.</p><button id="lbClose" type="button">Close</button></div></div>
   <div class="welcome" id="welcome" hidden role="dialog" aria-label="Welcome">
    <div class="wstars" aria-hidden="true"></div>
+   <div class="wsky" id="wSky" aria-hidden="true"></div>
    <div class="wscene" aria-hidden="true">
     <div class="wtrack a"><div class="wtrain loc"><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar eng"></b></div></div>
     <div class="wtrack b"><div class="wtrain gds"><b class="wcar eng"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b><b class="wcar"></b></div></div>
@@ -715,6 +744,7 @@ function calcH(w,h){
 }
 let H=calcH();
 cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+const THROAT_R=40; // corner radius of the junction tracks, where they leave the main line and join a platform (used by both the drawn rails and the trains' paths, so trains stay on the rails)
 const CAR=20,LH=935,LE=880,LW=520,WAITX=1230,LHOLD=1005; // platform tracks run from LW to LE; LH is where the innermost platform peels off a trunk line
 /* Layout units: the track is laid out on a 1400 x UH grid scaled to the canvas height.
    Real-station layout, top to bottom (LANE_Y is the y position of each track, indexed by lane number):
@@ -1369,7 +1399,18 @@ function peelX(lineY,lane){
  for(const o of S.lanes){if(o.thru||o===lane)continue;const od=LY(o.idx)-lineY;if((od<0)===up&&Math.abs(od)<Math.abs(d))rank++}
  return LH+rank*PEEL_STEP;
 }
-function fanSeg(kind,end,lane){return kind==='entry'?[[X(end,peelX(INY[end],lane)),INY[end]],[X(end,LE),LY(lane.idx)]]:[[X(end,LE),LY(lane.idx)],[X(end,peelX(INY[other(end)],lane)),INY[other(end)]]]}
+/* MERGING JUNCTION: on a main line, the platform tracks on one side of it (above or below) do not each run to the main line separately. They converge on one merge node M, and a single short track (T to M) joins the main line at T.
+   funnelPts gives a platform's route in local coordinates, from the main line to the platform end: [T, M, platform end] (a through line goes straight: [LH, platform end]). Both the drawn rails and the trains' paths use it. */
+const FUN_XT=975,FUN_XM=925,FUN_DY=22;
+function funnelPts(lineY,lane){
+ const ly=LY(lane.idx);
+ if(lane.thru)return[[LH,lineY],[LE,ly]];
+ return[[FUN_XT,lineY],[FUN_XM,lineY+(ly<lineY?-FUN_DY:FUN_DY)],[LE,ly]];
+}
+function fanSeg(kind,end,lane){
+ if(kind==='entry'){const f=funnelPts(INY[end],lane);return[[X(end,f[0][0]),f[0][1]],[X(end,LE),LY(lane.idx)]]}
+ const ty=INY[other(end)],f=funnelPts(ty,lane);return[[X(end,LE),LY(lane.idx)],[X(end,f[0][0]),ty]];
+}
 function claimConflict(end,kind,seg){
  for(const c of S.claims[end]){
   if(c.kind===kind)return c;
@@ -1632,7 +1673,7 @@ function spawnEntry(e){
  const sd=e.side,key=e.key;S.remaining[key]--;const type=e.ltd?limType():TT[key],iy=INY[sd];
  const ent=!!e.entry&&entryOn(sd),ek=entryK(sd),eiy=iy+ldy(sd,ek); // an entry train comes in on the dedicated entry and runs up to the siding signal
  let epath=null,esWait=0;
- if(ent){const rp=roundPath(mir(sd,[entryStart(sd,ek,eiy),[1170,eiy],[LHOLD,eiy]]),16);epath=mkPath(rp.pts);esWait=epath.cum[rp.map[2]]}
+ if(ent){const rp=roundPath(mir(sd,[entryStart(sd,ek,eiy),[1170,eiy],[LHOLD,eiy]]),THROAT_R);epath=mkPath(rp.pts);esWait=epath.cum[rp.map[2]]}
  const t={key,type,num:'#'+(S.num++),side:sd,state:'arriving',s:0,v:90,L:type.cars*CAR,waitT:0,lane:null,loopK:ent?ek:0,iy,viaEntry:ent,
           path:ent?epath:mkPath(mir(sd,[[W+4,iy],[1130,iy]])),sWait:ent?esWait:(W+4)-WAITX,entryLock:false,exitLock:false,lossWait:0,lossLate:0,vcap:Infinity,leader:null,gapHit:null,
           pat:type.pat*LV.pat*patMul(key),buf:type.buf,satLoss:0,sat:100,vip:false};
@@ -1754,7 +1795,7 @@ function tailLocal(side,i,key){ // the route after the junction fan, in the ente
  if(key==='branch'){const dy=side==='W'?-1:1;return [[380,i],[270,i+dy*48],[-730,i+dy*484]]}
  return [[-700,i]];
 }
-function exitLineAbs(t,key){return mir(t.side,[[W-(t.lane?peelX(t.iy,t.lane):LH),t.iy],...tailLocal(t.side,t.iy,key)])} // absolute points of an exit line, from the end of the junction fan
+function exitLineAbs(t,key){return mir(t.side,[[W-(t.lane?funnelPts(t.iy,t.lane)[0][0]:LH),t.iy],...tailLocal(t.side,t.iy,key)])} // absolute points of an exit line, from the end of the junction fan
 function branchSig(sd){ // the branch signal stands just after the fork, beside the branch track; one signal serves every platform
  const i=INY[sd],dy=sd==='W'?-1:1,p=mir(sd,[[380,i],[270,i+dy*48]]),f=.4;
  return{x:p[0][0]+(p[1][0]-p[0][0])*f,y:p[0][1]+(p[1][1]-p[0][1])*f+dy*14,a:Math.atan2(p[1][1]-p[0][1],p[1][0]-p[0][0])};
@@ -1779,15 +1820,15 @@ function buildPath(t,tg,tailKey,rebuild){ // rebuild: used at the exit, when the
  if(tg.kind==='loop'){
   const iy=i+ldy(t.side,tg.k);
   const orig=mir(t.side,[[W+4,i],[1200,i],[1170,iy],[LHOLD,iy]]);
-  const rp=roundPath(orig,16);
+  const rp=roundPath(orig,THROAT_R);
   return{path:mkPath(rp.pts),orig,clearIn:1,stop:3,rp,mode:'loop',routeFrom:1,routeTo:3,sClearIn:null};
  }
- const l=tg.lane,ly=LY(l.idx),sx=stopXFor(l,t),px=peelX(i,l); // px: where this platform peels off the approach (and, at the far end, the exit) line
+ const l=tg.lane,ly=LY(l.idx),sx=stopXFor(l,t),F=funnelPts(i,l),m=F.length,Fx=F.slice(0,-1).reverse().map(p=>[W-p[0],p[1]]); // F: the merging junction route on the approach line (main line, merge node, platform end); Fx: the same route mirrored, at the far end, where the train leaves
  let orig,ci,si,fi,co,rs,re;
- if(fromOuter){orig=mir(t.side,[[W+4,i],[px,i],[LE,ly],[sx,ly],[LW,ly],[W-px,i],...tail]);ci=2;si=3;fi=4;co=5;rs=1;re=3} // ci=2: entry lock is released when the tail has left the junction fan (reached the platform end), not when it enters it
+ if(fromOuter){orig=mir(t.side,[[W+4,i],...F,[sx,ly],[LW,ly],...Fx,...tail]);ci=m;si=m+1;fi=m+2;co=m+2+Fx.length;rs=1;re=m+1} // ci: entry lock is released when the tail has left the junction fan (reached the platform end), not when it enters it
  else{const iy=i+ldy(t.side,lk),ve=!!t.viaEntry,head=ve?[entryStart(t.side,lk,iy),[1170,iy]]:[[W+4,i],[1200,i],[1170,iy]],sh=ve?-1:0; // a train from a dedicated entry starts on the entry line (one point fewer than from the approach line)
-  orig=mir(t.side,[...head,[1000,iy],[peelX(iy,l),iy],[LE,ly],[sx,ly],[LW,ly],[W-px,i],...tail]);ci=5+sh;si=6+sh;fi=7+sh;co=8+sh;rs=3+sh;re=6+sh} // from a siding the train runs straight on into the platform beside it: it does not rejoin the approach line
- const rp=roundPath(orig,18),path=mkPath(rp.pts);
+  orig=mir(t.side,[...head,[1000,iy],[peelX(iy,l),iy],[LE,ly],[sx,ly],[LW,ly],...Fx,...tail]);ci=5+sh;si=6+sh;fi=7+sh;co=7+sh+Fx.length;rs=3+sh;re=6+sh} // from a siding the train runs straight on into the platform beside it: it does not rejoin the approach line
+ const rp=roundPath(orig,THROAT_R),path=mkPath(rp.pts);
  return{path,orig,rp,mode:'lane',clearIn:ci,stop:si,free:fi,clearOut:co,routeFrom:rs,routeTo:re};
 }
 /* ---------- sidings ----------
@@ -2100,11 +2141,24 @@ function weakestRound(ch){
  for(const r of chapterRounds(ch)){const c=REC[r];if(!c)continue;const v=c.st/3+c.sat/100+c.eff/100+c.pts/REFS[lvKey()][r-1];if(v<wv){wv=v;w=r}}
  return w;
 }
+/* A small skyline for a station tier 1..6 (a hamlet's cottages up to a metropolis's towers), drawn as an SVG from a seeded random so it is the same every time. */
+function townSvg(tier){
+ tier=Math.max(1,Math.min(6,tier|0||1));let seed=tier*977+13;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
+ const Hh=90,n=6+tier*4,hmin=[10,16,24,32,40,50][tier-1],hmax=[24,34,50,66,80,88][tier-1];let x=-8,out='';
+ for(let i=0;i<n&&x<600;i++){
+  const w=14+rnd()*(tier<3?16:24),h=hmin+rnd()*(hmax-hmin),y=Hh-h;
+  out+=tier<=2?'<path d="M'+x+' '+Hh+'V'+(y+8)+'L'+(x+w/2)+' '+y+'L'+(x+w)+' '+(y+8)+'V'+Hh+'Z" fill="#164a5a" opacity=".8"/>':'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="#164a5a" opacity=".8"/>';
+  for(let wy=y+(tier<=2?12:6);wy<Hh-6;wy+=9)for(let wx=x+4;wx<x+w-5;wx+=7)if(rnd()<.42)out+='<rect x="'+wx+'" y="'+wy+'" width="3" height="4" fill="#ffd27a" opacity=".9"/>';
+  x+=w+2+rnd()*6;
+ }
+ return '<svg viewBox="0 0 600 90" preserveAspectRatio="xMidYMax slice" aria-hidden="true">'+out+'</svg>';
+}
 function openReview(ch,from){
  const $=id=>document.getElementById(id),r=reviewOf(ch),nx=STATIONS[Math.min(STATIONS.length-1,ch)],cur=STATIONS[ch-1],w=weakestRound(ch);
  $('review').dataset.ch=ch;$('review').dataset.from=from||'result';
  {const b=$('rvBanner');b.style.setProperty('--lc',LV.col);b.style.setProperty('--lc2',LV.lite);b.style.setProperty('--lc3',LV.dark)}
  $('rvKick').textContent='Promotion review · chapter '+ch+' · '+LV.name;
+ $('rvTown').innerHTML=townSvg(Math.min(6,r.qualified?ch+1:ch)); // the picture of the town: the new one when promoted
  $('rvTitle').textContent=r.qualified?'Promoted to '+nx.name:'Promotion pending';
  $('rvTitle').className=r.qualified?'pass':'';
  $('rvDots').innerHTML=Array.from({length:CH_LEN},(_,i)=>'<i class="on"></i>').join('');
@@ -2468,6 +2522,11 @@ function update(dt){
   pt.x+=pt.vx*dt;pt.y+=pt.vy*dt;
   pt.size+=pt.growth*dt;
  }
+ if(!reduce&&!SHADOW)for(const t of S.trains){ // a locomotive standing at a signal or a platform lets off a slow puff of steam now and then
+  if((t.state==='dwell'||t.state==='ready'||t.state==='outer'||t.state==='loop')&&!t.type.nonstop&&S.particles.length<50){
+   t.idleT=(t.idleT||Math.random()*1.5)-dt;
+   if(t.idleT<=0){t.idleT=1.2+Math.random()*.8;const h=at(t.path,t.s-CAR/2);S.particles.push({x:h.x,y:h.y-9,vx:(Math.random()-.5)*5,vy:-13-Math.random()*5,size:2,growth:5.5,life:1.2,maxLife:1.2,col:'rgba(235,245,250,0.4)'})}}
+ }
  if(!reduce&&!SHADOW){
   for(const t of S.trains){
    if(t.v>10&&t.state!=='outer'&&t.state!=='dwell'&&t.state!=='loop'){
@@ -2649,12 +2708,38 @@ function selectTrain(t){
 function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h)}
 function track(x1,y1,x2,y2,col,w){
  ctx.lineCap='round';
+ if(!col&&!w){ // a running rail: a soft dark line under it (depth), the rail itself, and a thin bright line on top (the shine of the steel)
+  ctx.strokeStyle='rgba(4,16,20,.3)';ctx.lineWidth=5.6;ctx.beginPath();ctx.moveTo(x1,y1+.8);ctx.lineTo(x2,y2+.8);ctx.stroke();
+  ctx.strokeStyle='#c3e4ec';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.38)';ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x1,y1-.7);ctx.lineTo(x2,y2-.7);ctx.stroke();
+  return}
  ctx.strokeStyle=col||'#c3e4ec';
  ctx.lineWidth=w||3;
  ctx.beginPath();
  ctx.moveTo(x1,y1);
  ctx.lineTo(x2,y2);
  ctx.stroke();
+}
+function throatTrack(side,lx1,y1,lx2,y2,col,w){ // a junction track from a main line (local x lx1, height y1) to a platform end (lx2, y2), with soft curves at both ends (the same rounding the trains follow)
+ const R=THROAT_R,pts=roundPath([[X(side,lx1+2*R),y1],[X(side,lx1),y1],[X(side,lx2),y2],[X(side,lx2-2*R),y2]],R).pts.slice(1,-1);
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();
+}
+function trackPoly(side,loc,col,w,trimFirst){ // a rounded polyline of track in local coordinates (same look as track()); trimFirst drops the lead-in point that only exists to give the first corner its curve
+ const all=roundPath(loc.map(p=>[X(side,p[0]),p[1]]),THROAT_R).pts,pts=trimFirst?all.slice(1):all;
+ const line=dy=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]+dy);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]+dy);ctx.stroke()};
+ ctx.lineCap='round';ctx.lineJoin='round';
+ if(!col&&!w){ctx.strokeStyle='rgba(4,16,20,.3)';ctx.lineWidth=5.6;line(.8);ctx.strokeStyle='#c3e4ec';ctx.lineWidth=3;line(0);ctx.strokeStyle='rgba(255,255,255,.38)';ctx.lineWidth=.9;line(-.7);return}
+ ctx.strokeStyle=col||'#c3e4ec';ctx.lineWidth=w||3;line(0);
+}
+function throatFunnels(side,lineY){ // the merging junction on one main line at one end: every platform track converges on the merge node and a single track joins the main line (drawn in one stroke, so where the tracks share a section it is not painted twice)
+ const R=THROAT_R;let any=false;
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='rgba(215,238,244,.62)';ctx.lineWidth=2.4;ctx.beginPath();
+ for(const l of S.lanes){
+  if(l.thru||!l.enabled)continue;
+  const F=funnelPts(lineY,l),loc=[[F[0][0]+2*R,F[0][1]],...F,[LE-2*R,F[F.length-1][1]]],pts=roundPath(loc.map(p=>[X(side,p[0]),p[1]]),R).pts.slice(1,-1);
+  ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);any=true;
+ }
+ if(any)ctx.stroke();
 }
 /* Glows are painted once into small off-screen canvases (at the screen's pixel density) and copied each frame with drawImage, instead of the canvas blur shadow, which is very expensive on a phone-sized canvas every frame. */
 const glowCache={};
@@ -2901,14 +2986,17 @@ function drawTrain(t){
 
    // Side illuminated carriage windows with 3D glass sheen
    if(k>0){
-    ctx.fillStyle='rgba(255,235,160,0.3)'; // a soft lit margin around each window (the glow, without a blur shadow)
+    const dk=Math.min(1,TOD.n+TOD.d); // at dusk and night the windows are lit warmer and brighter
+    ctx.fillStyle='rgba(255,235,160,'+(.3+.3*dk)+')'; // a soft lit margin around each window (the glow, without a blur shadow)
     ctx.fillRect(-7,-8.5,5.2,4.4);ctx.fillRect(-2,-8.5,5.2,4.4);ctx.fillRect(3,-8.5,5.2,4.4);
     ctx.fillRect(-7,4.1,5.2,4.4);ctx.fillRect(-2,4.1,5.2,4.4);ctx.fillRect(3,4.1,5.2,4.4);
-    ctx.fillStyle='rgba(255,248,220,0.9)';
+    ctx.fillStyle=dk>.3?'rgba(255,228,150,.98)':'rgba(255,248,220,0.9)';
     // Top row windows
     ctx.fillRect(-6,-7.5,3.2,2.4);ctx.fillRect(-1,-7.5,3.2,2.4);ctx.fillRect(4,-7.5,3.2,2.4);
     // Bottom row windows
     ctx.fillRect(-6,5.1,3.2,2.4);ctx.fillRect(-1,5.1,3.2,2.4);ctx.fillRect(4,5.1,3.2,2.4);
+    ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(-2.2,-9.5,.7,19);ctx.fillRect(2.8,-9.5,.7,19); // door seams
+    ctx.fillStyle='rgba(18,28,32,.85)';ctx.fillRect(-CAR/2-.8,-1.3,2,2.6); // the coupling to the car in front
    }
   }
 
@@ -2927,6 +3015,9 @@ function drawTrain(t){
    g.addColorStop(0,t.vip?'rgba(255,225,120,'+bAlpha+')':'rgba(255,248,210,'+bAlpha+')');
    g.addColorStop(1,'rgba(255,248,210,0)');
    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(CAR/2,-4);ctx.lineTo(CAR/2+bLen,-18);ctx.lineTo(CAR/2+bLen,18);ctx.lineTo(CAR/2,4);ctx.closePath();ctx.fill();
+   {const nl=Math.min(1,TOD.n*1.1);if(nl>.05){ // at night the headlight also leaves a warm pool of light on the ground ahead (a cached sprite, added with 'lighter')
+    const hp=glowSprite('headPool',80,(gg,c)=>{const gr=gg.createRadialGradient(c,c,2,c,c,c);gr.addColorStop(0,'rgba(255,236,170,.55)');gr.addColorStop(1,'rgba(255,236,170,0)');gg.fillStyle=gr;gg.fillRect(0,0,2*c,2*c)});
+    ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=nl*(moving?.8:.35);ctx.drawImage(hp,CAR/2+6,-hp.sz*.32,hp.sz,hp.sz*.64);ctx.restore()}}
 
    // Twin 3D Locomotive Front Lanterns
    ctx.save();
@@ -3012,7 +3103,12 @@ function drawIslands(){
   const top=LY(a.idx)+11,bot=LY(b.idx)-11,h=bot-top,mid=(top+bot)/2,x0=a.x0+6,w=a.len-12;
   const halfH=h/2;
   const fs=Math.min(22,Math.max(17,Math.round(h*0.28))),subFs=Math.min(16,Math.max(13,Math.round(fs*0.8)));
-  ctx.fillStyle='#2a6272';ctx.fillRect(x0,top,w,h); // the platform is drawn only when at least one face is active
+  ctx.fillStyle='#2a6272';ctx.fillRect(x0,top,w,h);
+  // depth: a soft shadow falling on the track bed along both long edges, a lit top edge and a darker lip, and the joints of the paving slabs
+  {const sh1=ctx.createLinearGradient(0,top-8,0,top);sh1.addColorStop(0,'rgba(0,0,0,0)');sh1.addColorStop(1,'rgba(0,0,0,.3)');ctx.fillStyle=sh1;ctx.fillRect(x0,top-8,w,8);
+   const sh2=ctx.createLinearGradient(0,bot,0,bot+8);sh2.addColorStop(0,'rgba(0,0,0,.3)');sh2.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=sh2;ctx.fillRect(x0,bot,w,8);
+   ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(x0,top,w,1.5);ctx.fillStyle='rgba(4,20,26,.3)';ctx.fillRect(x0,bot-2,w,2);
+   ctx.fillStyle='rgba(0,0,0,.07)';for(let jx=x0+44;jx<x0+w-20;jx+=44)ctx.fillRect(jx,top+3,1,h-6)} // the platform is drawn only when at least one face is active
   for(const l of [a,b]){
    const isTop=l.face==='top',edge=isTop?top:bot;
    const faceMid=isTop?top+halfH/2:mid+halfH/2;
@@ -3020,6 +3116,7 @@ function drawIslands(){
    if(l.enabled){
     ctx.fillStyle=KC[l.kind];ctx.fillRect(x0,isTop?edge:edge-3,w,3); // coloured edge strip
     ctx.fillStyle='#e8c547';ctx.fillRect(x0,isTop?edge-2:edge,w,2); // yellow safety line next to the track
+    ctx.fillStyle=tactilePat();ctx.fillRect(x0,isTop?edge+3:edge-6,w,3); // the studded tactile strip behind it (a cached pattern)
     if(l.glow>0){ctx.fillStyle='rgba(255,181,71,'+Math.min(1,l.glow)*.3+')';ctx.fillRect(x0,isTop?edge:mid,w,halfH)}
     ctx.fillStyle=l.busy?'#ff7a59':'#3ddc84';ctx.fillRect(x0+6,faceMid-fs/2,4,fs); // free / busy light
     ctx.fillStyle='#ffffff';ctx.font='700 '+fs+'px "Chakra Petch",sans-serif';ctx.textAlign='left';ctx.fillText(l.name,x0+16,ty);
@@ -3032,9 +3129,9 @@ function drawIslands(){
   // Subtle center line dividing the two platform faces
   ctx.fillStyle='rgba(12,34,42,0.35)';ctx.fillRect(x0+30,mid-1,w-60,2);
   // Platform lamps grow with the station (none at the halt, 3 per platform from the Small station, 6 from the Growing station) and glow at dusk and night.
-  {const nl=S.stage.id>=3?6:S.stage.id>=2?3:0,ph=((S.round||1)-1)%4,lvl=ph===3?1:ph===2?.55:0;
+  {const nl=S.stage.id>=3?6:S.stage.id>=2?3:0,lvl=Math.min(1,TOD.d+TOD.n);
    for(let i=0;i<nl;i++){const lx=x0+30+(w-60)*(i+.5)/nl;
-    if(lvl>0){const ls=glowSprite('lampGlow',48,(g,c)=>{const gr=g.createRadialGradient(c,c,0,c,c,c);gr.addColorStop(0,'rgba(255,214,130,.4)');gr.addColorStop(1,'rgba(255,214,130,0)');g.fillStyle=gr;g.fillRect(0,0,2*c,2*c)});ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=lvl;ctx.drawImage(ls,lx-24,mid-24,48,48);ctx.restore()} // the platform lamp glow, built once
+    if(lvl>0){const ls=glowSprite('lampGlow',48,(g,c)=>{const gr=g.createRadialGradient(c,c,0,c,c,c);gr.addColorStop(0,'rgba(255,214,130,.4)');gr.addColorStop(1,'rgba(255,214,130,0)');g.fillStyle=gr;g.fillRect(0,0,2*c,2*c)});ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=lvl*(reduce?1:.93+.07*Math.sin(performance.now()/380+lx*.1));ctx.drawImage(ls,lx-24,mid-24,48,48);ctx.restore()} // the platform lamp glow, built once
     ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(lx,mid,2.1,0,7);ctx.fill();ctx.strokeStyle='rgba(12,34,42,.55)';ctx.lineWidth=.8;ctx.stroke()}}
   // maintenance: a flashing outline during the warning, hatching while closed (one track, or the whole platform)
   const fl=.5+.5*Math.sin(performance.now()/160);
@@ -3083,7 +3180,7 @@ function buildScenery(){
  const g=c.getContext('2d');g.setTransform(DPR,0,0,DPR,0,0);
  let seed=20241;const rand=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
  // ground
- const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#438f9a');bg.addColorStop(.5,'#3c7f89');bg.addColorStop(1,'#336e76');g.fillStyle=bg;g.fillRect(0,0,W,H);
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#58a8b4');bg.addColorStop(.5,'#4e9aa6');bg.addColorStop(1,'#448a96');g.fillStyle=bg;g.fillRect(0,0,W,H);
  for(let i=0;i<28;i++){g.fillStyle='rgba(52,130,98,'+(.06+rand()*.07)+')';g.beginPath();g.ellipse(rand()*W,rand()*H,40+rand()*110,14+rand()*34,0,0,7);g.fill()}
  for(let i=0;i<900;i++){g.fillStyle=rand()<.5?'rgba(190,235,225,.07)':'rgba(5,25,30,.08)';const s=1+rand()*1.6;g.fillRect(rand()*W,rand()*H,s,s)}
  // gravel bed + sleepers under every straight stretch of track
@@ -3189,13 +3286,17 @@ function buildScenery(){
  }
  for(const t of trees)tree(t);
  // soft vignette so the eye stays on the tracks
- const vg=g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,Math.max(W,H)*.62);vg.addColorStop(0,'rgba(2,12,16,0)');vg.addColorStop(1,'rgba(2,12,16,.1)');g.fillStyle=vg;g.fillRect(0,0,W,H);
+ const vg=g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,Math.max(W,H)*.62);vg.addColorStop(0,'rgba(2,12,16,0)');vg.addColorStop(1,'rgba(2,12,16,.08)');g.fillStyle=vg;g.fillRect(0,0,W,H);
  c.win=wins; // lit window positions, for the night glow
  return c;
 }
 /* the street along the top edge: a farm cart in the hamlet, then more and more cars and buses as the town grows (drawn every frame, but only a handful of small shapes) */
 function drawTraffic(){
  if(!scn)return;
+ if(!reduce&&TOD.n<.6){ // by day a few birds cross the sky above the station (three thin strokes, no images)
+  const tt=performance.now()/1000;ctx.save();ctx.strokeStyle='rgba(20,40,48,'+(.5*(1-TOD.n/.6))+')';ctx.lineWidth=1.4;ctx.lineCap='round';
+  for(let i=0;i<3;i++){const x=((tt*(26+i*5)+i*470)%(W+240))-120,y=22+i*13+Math.sin(tt*.9+i)*5,f=Math.sin(tt*9+i*2)*4;ctx.beginPath();ctx.moveTo(x-6,y+f);ctx.quadraticCurveTo(x-2,y-3,x,y);ctx.quadraticCurveTo(x+2,y-3,x+6,y+f);ctx.stroke()}
+  ctx.restore()}
  if(tierOf()>=6){ // a metro train rattling along the tunnel strip at the bottom edge
   const tm=reduce?0:performance.now()/1000,x0=((tm*80)%(W+420))-340;
   for(let i=0;i<5;i++){const x=x0+i*46;ctx.fillStyle='#9fd0ff';ctx.fillRect(x,H-8,42,6);ctx.fillStyle='#ffe9a8';ctx.fillRect(x+5,H-7,32,2.4)}
@@ -3213,17 +3314,27 @@ function drawTraffic(){
   ctx.fillStyle=night?'#fff3b0':'rgba(255,243,176,.7)';ctx.fillRect(dir>0?x+len-1.5:x-.5,y-1.5,2,2.4);
  }
 }
+/* The time of day changes smoothly through each cycle of four rounds (day, day, dusk, night) and along each round, instead of jumping from round to round: TOD.d is the dusk amount (0 to .55), TOD.n the night amount (0 to 1). */
+const ss=(a,b,x)=>{const u=Math.max(0,Math.min(1,(x-a)/(b-a)));return u*u*(3-2*u)};
+let TOD={d:0,n:0};
+function updateTod(){
+ const prog=S.total?Math.min(1,S.done/S.total):0,u=(((S.round||1)-1)%4)+prog;let d=0,n=0;
+ if(u<.4)n=1-ss(0,.4,u);else if(u<1.8){}else if(u<2.6)d=.55*ss(1.8,2.6,u);else if(u<3.2){d=.55*(1-ss(2.6,3.2,u));n=ss(2.6,3.2,u)}else n=1;
+ TOD={d,n};
+}
+let tactile=null;
+function tactilePat(){if(!tactile){const c=document.createElement('canvas');c.width=8;c.height=3;const g=c.getContext('2d');g.fillStyle='rgba(110,80,0,.55)';g.beginPath();g.arc(4,1.5,1.1,0,7);g.fill();tactile=ctx.createPattern(c,'repeat')}return tactile||'rgba(110,80,0,.3)'}
 function drawScenery(){
+ updateTod();
  const key=S.stage.id+'|t'+tierOf()+'|'+H+'|'+Y0+'|'+(S.stage.loops?1:0)+(S.stage.loop3?1:0)+'|'+(branchOn('W')?1:0)+(branchOn('E')?1:0)+'|'+S.lanes.map(l=>l.enabled?1:0).join('');
  if(!scn||key!==scnKey){scn=buildScenery();scnKey=key}
  ctx.drawImage(scn,0,0,W,H);
  drawTraffic();
  // Time of day follows the round: two day rounds, then dusk, then night, repeating. Only the ground is tinted, so trains, labels and signals stay fully readable.
- {const ph=((S.round||1)-1)%4;
-  if(ph===2){ctx.fillStyle='rgba(255,128,56,.12)';ctx.fillRect(0,0,W,H)}
-  else if(ph===3){ctx.fillStyle='rgba(8,18,60,.16)';ctx.fillRect(0,0,W,H)}
+ {if(TOD.d>.01){ctx.fillStyle='rgba(255,128,56,'+(.12*TOD.d/.55)+')';ctx.fillRect(0,0,W,H)}
+  if(TOD.n>.01){ctx.fillStyle='rgba(8,18,60,'+(.16*TOD.n)+')';ctx.fillRect(0,0,W,H)}
   // the station's lit windows glow at dusk and night
-  const lvl=ph===3?1:ph===2?.55:0;
+  const lvl=Math.min(1,TOD.d+TOD.n);
   if(lvl>0&&scn.win&&scn.win.length){ctx.save();ctx.globalCompositeOperation='lighter';
    {const ws=glowSprite('winGlow',52,(g,c)=>{const gr=g.createRadialGradient(c,c,0,c,c,c);gr.addColorStop(0,'rgba(255,200,110,.34)');gr.addColorStop(1,'rgba(255,200,110,0)');g.fillStyle=gr;g.fillRect(0,0,2*c,2*c)}); // built once, reused for every lit window
     ctx.globalAlpha=lvl;for(const [wx,wy] of scn.win)ctx.drawImage(ws,wx-26,wy-26,52,52)}
@@ -3245,15 +3356,16 @@ function draw(){
    if(!built)continue; // a loop that is not there is not drawn at all
    const isEnt=entryOn(side)&&k===entryK(side),y=IN+ldy(side,k),isNew=built&&S.hiT>0&&(isEnt?(S.newEntries||[]).includes(side):S.newLoops.includes(k));
    const sl=sidingLanes(side,k),ey=y+90*Math.sign(ldy(side,k)); // a dedicated entry comes in at an angle from off screen instead of leaving the approach line
-   if(isNew){const gc='rgba(255,194,61,'+(.25+.5*pulse())+')';if(isEnt){track(X(side,1418),ey,X(side,1170),y,gc,10);track(X(side,1170),y,X(side,LH),y,gc,10)}else{track(X(side,1200),IN,X(side,1170),y,gc,10);track(X(side,1170),y,X(side,LH),y,gc,10)}for(const l of sl)track(X(side,LH),y,X(side,LE),LY(l.idx),gc,10)} // glow behind a newly opened siding or entry
-   if(isEnt){track(X(side,1418),ey,X(side,1170),y);track(X(side,1170),y,X(side,LH),y)}
-   else{track(X(side,1200),IN,X(side,1170),y);track(X(side,1170),y,X(side,LH),y)}
-   for(const l of sl)track(X(side,peelX(y,l)),y,X(side,LE),LY(l.idx),'rgba(195,228,236,.6)',2.4); // the siding runs straight into the platforms beside it
+   const sPts=isEnt?[[1418,ey],[1170,y],[LH,y]]:[[1280,IN],[1200,IN],[1170,y],[LH,y]]; // the siding or entry line, with soft curves where it leaves the main line and where it levels out (the trains' paths use the same rounding)
+   if(isNew){const gc='rgba(255,194,61,'+(.25+.5*pulse())+')';trackPoly(side,sPts,gc,10,!isEnt);for(const l of sl)throatTrack(side,peelX(y,l),y,LE,LY(l.idx),gc,10)} // glow behind a newly opened siding or entry
+   trackPoly(side,sPts,null,null,!isEnt);
+   for(const l of sl)throatTrack(side,peelX(y,l),y,LE,LY(l.idx),'rgba(195,228,236,.6)',2.4); // the siding runs straight into the platforms beside it
   }
   for(const l of S.lanes){
    if(l.thru){track(X(side,LE),LY(l.idx),X(side,LH),LY(l.idx));continue} // a through line connects straight to its own main line, always
    if(!l.enabled)continue;
-   track(X(side,LE),LY(l.idx),X(side,peelX(IN,l)),IN,'rgba(195,228,236,.72)',2.4);track(X(side,LE),LY(l.idx),X(side,peelX(OUT,l)),OUT,'rgba(195,228,236,.72)',2.4)} // throat tracks are drawn a little thinner and softer so the platforms and trains stand out
+  }
+  throatFunnels(side,IN);throatFunnels(side,OUT); // the platform tracks converge on a merge node and a single track joins each main line; they are drawn a little thinner and softer so the platforms and trains stand out
   ctx.fillStyle='#aab5da';ctx.font='700 17px "Chakra Petch",sans-serif';
   for(const k of [1,2,3]){
    const built=loopKs(side).includes(k);
@@ -3601,7 +3713,7 @@ const DEVMODE=location.protocol==='file:'&&/[?&]dev=1(&|$)/.test(location.search
 function initDev(){
  const $=id=>document.getElementById(id);
  const box=document.createElement('div');box.id='devpanel';
- box.style.cssText='position:fixed;right:8px;top:8px;z-index:99999;width:310px;max-height:94vh;overflow:auto;background:rgba(4,14,20,.95);color:#d6e8ec;border:1px solid #ffc23d;border-radius:10px;font:12px/1.4 system-ui,Segoe UI,sans-serif;padding:8px 10px;box-shadow:0 6px 20px rgba(0,0,0,.6)';
+ box.style.cssText='position:fixed;right:8px;top:8px;z-index:99999;width:310px;max-height:94vh;overflow:auto;background:rgba(4,14,20,.95);color:#d6e8ec;border:1px solid #ffc23d;border-radius:var(--r-md);font:12px/1.4 system-ui,Segoe UI,sans-serif;padding:8px 10px;box-shadow:0 6px 20px rgba(0,0,0,.6)';
  const rounds=Array.from({length:MAX_ROUND},(_,i)=>{const r=i+1,t=THEMES[r];return '<option value="'+r+'">'+r+' · '+(t?t.name:'')+' · ch'+chapterOf(r)+'</option>'}).join('');
  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><b style="color:#ffc23d">DEV MODE</b><span style="color:#9fc2cb">nothing is saved</span><button id="dvHide" style="padding:1px 8px">–</button></div>'
   +'<div id="dvBody"><div style="margin:6px 0">Level <select id="dvLevel">'+Object.keys(LEVELS).map(k=>'<option value="'+k+'"'+(k==='normal'?' selected':'')+'>'+LEVELS[k].name+'</option>').join('')+'</select> Round <select id="dvRound">'+rounds+'</select></div>'
@@ -3662,7 +3774,7 @@ function initDev(){
   go(Math.min(MAX_ROUND,Math.max(1,parseInt(q.get('round'),10)||1)))}
 }
 let demoPrev=null;
-window.__sm={msg:Msg,laneBox,tailPast,showLeaderboard,challenge:()=>CHAL,MAX_ROUND,rno,rmax,gate:()=>gated()?gateGet():0,openReview:(ch,from)=>openReview(ch||gateGet(),from||'load'),stationName:r=>stationOf(r).name,get H(){return H},get Y0(){return Y0},adaptCanvas,tapY,other,bodyPos:t=>at(t.path,t.s-CAR/2),
+window.__sm={msg:Msg,townSvg,laneBox,tailPast,showLeaderboard,challenge:()=>CHAL,MAX_ROUND,rno,rmax,gate:()=>gated()?gateGet():0,openReview:(ch,from)=>openReview(ch||gateGet(),from||'load'),stationName:r=>stationOf(r).name,get H(){return H},get Y0(){return Y0},adaptCanvas,tapY,other,bodyPos:t=>at(t.path,t.s-CAR/2),
  demoStart(r){demoPrev=LEVEL;applyLevel('normal',true);DEMO=true;reset(r||1,0)}, // the demo always runs on Normal
  demoEnd(){DEMO=false;if(demoPrev)applyLevel(demoPrev,true);demoPrev=null;const pg=loadProgress();if(pg)reset(pg.round,pg.score);else reset()},
  level:()=>LEVEL,
@@ -3773,6 +3885,7 @@ if(DEVMODE){const ready=()=>{try{initDev()}catch(e){console.error('dev panel fai
   });
   document.getElementById('wStatus').textContent=saved?(smx.gate&&smx.gate()?'Promotion review pending · '+smx.stationName(c.round):'Round '+smx.rno(cur,c.round)+' of '+smx.rmax(cur)+(cur==='daily'?'':' · '+smx.stationName(c.round)))+' · score '+c.score.toLocaleString('en-US'):(fin?'Journey complete · '+fin.rank+' · '+fin.score.toLocaleString('en-US')+' points':'A new station is waiting for its first train.');
   document.getElementById('wPlay').textContent=saved?'Continue':(fin?'Play again':'Play');
+  {const sk=document.getElementById('wSky');if(sk&&smx.townSvg)sk.innerHTML=smx.townSvg(Math.ceil((saved?c.round:1)/5))} // the skyline of the station the player has reached
   {const COL={easy:['#4aa8ff','#8fcbff','#1d5a9e'],normal:['#2fd08a','#86f0bd','#127a4d'],hard:['#ff4d6d','#ff95a8','#a3182f'],daily:['#ffc23d','#ffe08a','#a8780a']}[cur]||['#2fd08a','#86f0bd','#127a4d'];
    ['--lc','--lc2','--lc3'].forEach((v,i)=>welcome.style.setProperty(v,COL[i])); // the ribbon wears the chosen level's colour
    const wd=document.getElementById('wDots');if(wd){const r=saved?smx.rno(cur,c.round):0;wd.innerHTML=Array.from({length:smx.rmax(cur)},(_,i)=>'<i'+(i<r-1||(fin&&!saved)?' class="on"':i===r-1?' class="cur"':'')+'></i>').join('');wd.setAttribute('aria-label',saved?'Round '+r+' of '+smx.rmax(cur):'New journey')}}
